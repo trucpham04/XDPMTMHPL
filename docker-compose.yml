@@ -1,5 +1,4 @@
 services:
-  # container_name: "XDPMTMHPL"
   mysql:
     image: "mysql:lts"
     container_name: "user-service-mysql"
