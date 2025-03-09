@@ -7,7 +7,7 @@ import MessageLayout from "@/components/layouts/MessageLayout";
 
 import Home from "@/pages/main/Home";
 import Friends from "@/pages/main/Friends";
-import Messages from "@/pages/main/Messages";
+import Messages from "@/features/messages/pages/MessagesPage";
 import Notifications from "@/pages/main/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
