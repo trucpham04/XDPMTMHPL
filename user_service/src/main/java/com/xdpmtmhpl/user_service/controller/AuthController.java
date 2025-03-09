@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*", maxAge = 3600, allowCredentials = "true")
+@CrossOrigin(origins = "all", maxAge = 3600, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -50,13 +50,13 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        
-        org.springframework.security.core.userdetails.User userDetails = 
-                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-        
+
+        org.springframework.security.core.userdetails.User userDetails = (org.springframework.security.core.userdetails.User) authentication
+                .getPrincipal();
+
         String jwt = jwtUtils.generateJwtToken(authentication);
         String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
-        
+
         // Create cookies
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(jwt);
         ResponseCookie refreshCookie = jwtUtils.generateRefreshJwtCookie(refreshToken);
@@ -66,7 +66,7 @@ public class AuthController {
                 .collect(Collectors.toList());
 
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-        
+
         // Update last login time
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
@@ -124,49 +124,50 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
-    
+
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String refreshToken = jwtUtils.getJwtRefreshFromCookies(request);
-        
+
         if (refreshToken == null) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Refresh token is missing"));
         }
-        
+
         if (jwtUtils.validateJwtToken(refreshToken)) {
             String username = jwtUtils.getUserNameFromJwtToken(refreshToken);
-            
+
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-            
-            String newAccessToken = jwtUtils.generateTokenFromUsername(username, jwtUtils.getJwtProperties().getExpirationMs());
+
+            String newAccessToken = jwtUtils.generateTokenFromUsername(username,
+                    jwtUtils.getJwtProperties().getExpirationMs());
             ResponseCookie accessCookie = jwtUtils.generateJwtCookie(newAccessToken);
-            
+
             List<String> roles = user.getRoles().stream()
                     .collect(Collectors.toList());
-                    
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                     .body(new JwtResponse(
-                            newAccessToken, 
+                            newAccessToken,
                             user.getId(),
                             user.getUsername(),
                             user.getEmail(),
                             roles));
         }
-        
+
         return ResponseEntity
                 .badRequest()
                 .body(new MessageResponse("Error: Invalid refresh token"));
     }
-    
+
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser() {
         ResponseCookie accessCookie = jwtUtils.getCleanJwtCookie();
         ResponseCookie refreshCookie = jwtUtils.getCleanJwtRefreshCookie();
-        
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
