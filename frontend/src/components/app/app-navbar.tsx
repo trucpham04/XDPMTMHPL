@@ -10,7 +10,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HomeIcon, Users, MessageCircle, Bell, SearchIcon } from "lucide-react";
@@ -74,7 +73,6 @@ const AppNavBar: React.FC = () => {
             <NavigationMenuList className="w-full">
               {navItems.map((item) => {
                 return (
-                  // <div className="w-20 sm:w-24 md:w-28 xl:w-32" key={item.name}>
                   <NavLink
                     key={item.name}
                     to={item.link}
@@ -100,7 +98,6 @@ const AppNavBar: React.FC = () => {
                       </Tooltip>
                     </NavigationMenuItem>
                   </NavLink>
-                  // </div>
                 );
               })}
             </NavigationMenuList>

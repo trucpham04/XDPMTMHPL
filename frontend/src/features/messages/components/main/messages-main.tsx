@@ -7,7 +7,7 @@ function MessagesMain({ className, ...props }: React.ComponentProps<"div">) {
     <>
       <div className="flex w-full flex-col">
         <MessagesMainHeader />
-        <MessagesMainContent className="flex-1" />
+        <MessagesMainContent className="max-h-full flex-1 overflow-auto" />
         <MessagesMainInput />
       </div>
     </>

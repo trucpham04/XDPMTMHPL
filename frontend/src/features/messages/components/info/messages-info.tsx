@@ -7,7 +7,6 @@ import { UserRound, Bell } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -26,36 +25,20 @@ function MessagesInfo({ className }: React.ComponentProps<"div">) {
               <div className="text-2xl font-semibold">Pham Duy Truc</div>
 
               <div className="my-3 flex justify-around">
-                <Tooltip>
-                  <div className="flex flex-col gap-1 text-center">
-                    <TooltipTrigger>
-                      <Button
-                        variant={"secondary"}
-                        size={"icon"}
-                        className="rounded-full"
-                      >
-                        <UserRound className="size-5!" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Profile</TooltipContent>
+                <Tooltip delayDuration={700}>
+                  <TooltipTrigger className="flex flex-col items-center gap-1">
+                    <UserRound className="size-5!" />
                     <div className="text-xs">Profile</div>
-                  </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Profile</TooltipContent>
                 </Tooltip>
 
-                <Tooltip>
-                  <div className="flex flex-col gap-1 text-center">
-                    <TooltipTrigger>
-                      <Button
-                        variant={"secondary"}
-                        size={"icon"}
-                        className="rounded-full"
-                      >
-                        <Bell className="size-5!" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Mute</TooltipContent>
+                <Tooltip delayDuration={700}>
+                  <TooltipTrigger className="flex flex-col items-center gap-1">
+                    <Bell className="size-5!" />
                     <div className="text-xs">Mute</div>
-                  </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Mute</TooltipContent>
                 </Tooltip>
               </div>
             </div>

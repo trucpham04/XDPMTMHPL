@@ -6,3 +6,9 @@ export type MessagesSidebarItemType = {
   lastMessageTime: string;
   unreadMessages: number;
 };
+
+export type MessagesMainItemType = {
+  sender_id: number;
+  content: string;
+  time: string;
+};

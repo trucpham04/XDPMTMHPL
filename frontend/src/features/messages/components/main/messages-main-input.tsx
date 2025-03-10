@@ -8,7 +8,7 @@ function MessagesMainInput({
 }: React.ComponentProps<"div">) {
   return (
     <>
-      <div className="flex h-15 gap-3 p-3">
+      <div className="flex h-15 gap-2 border-t p-3 px-6">
         <Input />
         <Button className="w-16">
           <Send className="size-5!" />

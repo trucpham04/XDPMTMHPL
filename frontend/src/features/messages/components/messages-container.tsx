@@ -38,6 +38,7 @@ function MessagesContainer({
               "--sidebar-width-icon": "",
             } as React.CSSProperties
           }
+          defaultOpen={false}
         >
           <MessagesMain />
           <MessagesInfo className="mt-14" />
