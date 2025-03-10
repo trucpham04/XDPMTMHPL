@@ -40,7 +40,7 @@ function MessagesContainer({
           }
         >
           <MessagesMain />
-          <MessagesInfo />
+          <MessagesInfo className="mt-14" />
         </SidebarProvider>
       </div>
     </>

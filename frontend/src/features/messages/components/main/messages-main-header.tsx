@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Info } from "lucide-react";
+import { Link } from "react-router-dom";
 function MessagesMainHeader({
   className,
   ...props
@@ -13,10 +14,12 @@ function MessagesMainHeader({
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarImage />
-            <AvatarFallback></AvatarFallback>
+            <AvatarFallback>TP</AvatarFallback>
           </Avatar>
 
-          <div>Name</div>
+          <div>
+            <Link to={"/messages"}>Name</Link>
+          </div>
         </div>
         <Button
           className="cursor-pointer rounded-full"
@@ -24,7 +27,7 @@ function MessagesMainHeader({
           onClick={toggleSidebar}
           size={"icon"}
         >
-          <Info className="h-5! w-5!" />
+          <Info className="size-5!" />
         </Button>
       </div>
     </>

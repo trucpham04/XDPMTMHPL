@@ -19,7 +19,7 @@ function MessagesSidebarHeader({
           variant={"secondary"}
           className="hidden h-10 w-10 cursor-pointer rounded-full sm:block"
         >
-          <SquarePen className="h-5! w-5!" />
+          <SquarePen className="size-5!" />
         </Button>
       </div>
     </>

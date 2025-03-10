@@ -16,6 +16,7 @@ import {
 import { HomeIcon, Users, MessageCircle, Bell, SearchIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import FacebookLogo from "@/assets/logos/facebook_logo.png";
+import { Button } from "../ui/button";
 
 const navItems = [
   {
@@ -69,51 +70,51 @@ const AppNavBar: React.FC = () => {
         </nav>
 
         <nav className="center-nav absolute top-1/2 left-1/2 hidden w-fit -translate-1/2 transform sm:block">
-          <NavigationMenu>
-            <NavigationMenuList>
+          <NavigationMenu className="w-full">
+            <NavigationMenuList className="w-full">
               {navItems.map((item) => {
                 return (
-                  <TooltipProvider key={item.name}>
-                    <NavLink
-                      to={item.link}
-                      className={({ isActive }) =>
-                        cn(
-                          "h-14 w-20 sm:w-24 md:w-28 xl:w-32",
-                          isActive
-                            ? "border-b-3 border-blue-600 bg-transparent text-blue-600"
-                            : "",
-                        )
-                      }
-                    >
-                      <NavigationMenuItem key={item.link}>
-                        <Tooltip delayDuration={700}>
-                          <TooltipTrigger className="h-full w-full">
-                            <NavigationMenuLink asChild>
-                              <div className="flex cursor-pointer items-center justify-center py-3 hover:text-inherit">
-                                <item.icon className="h-6! w-6! text-inherit"></item.icon>
-                              </div>
-                            </NavigationMenuLink>
-                            <TooltipContent>{item.name}</TooltipContent>
-                          </TooltipTrigger>
-                        </Tooltip>
-                      </NavigationMenuItem>
-                    </NavLink>
-                  </TooltipProvider>
+                  // <div className="w-20 sm:w-24 md:w-28 xl:w-32" key={item.name}>
+                  <NavLink
+                    key={item.name}
+                    to={item.link}
+                    className={({ isActive }) =>
+                      cn(
+                        "h-14 w-20 sm:w-24 md:w-28 xl:w-32",
+                        isActive
+                          ? "border-b-3 border-blue-600 bg-transparent text-blue-600"
+                          : "",
+                      )
+                    }
+                  >
+                    <NavigationMenuItem key={item.link}>
+                      <Tooltip delayDuration={700}>
+                        <TooltipTrigger className="h-full w-full">
+                          <NavigationMenuLink asChild>
+                            <div className="flex cursor-pointer items-center justify-center py-3 hover:text-inherit">
+                              <item.icon className="h-6! w-6! text-inherit"></item.icon>
+                            </div>
+                          </NavigationMenuLink>
+                          <TooltipContent>{item.name}</TooltipContent>
+                        </TooltipTrigger>
+                      </Tooltip>
+                    </NavigationMenuItem>
+                  </NavLink>
+                  // </div>
                 );
               })}
             </NavigationMenuList>
           </NavigationMenu>
         </nav>
 
-        <nav className="user flex gap-3 pr-4">
-          {/* <Button className="h-10 w-10 rounded-full cursor-pointer hover:bg-zinc-300" variant={"secondary"}>
-            <Bell className="w-5! h-5!" fill=""/>
-          </Button> */}
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={FacebookLogo} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-        </nav>
+        <div className="user flex gap-3 pr-4">
+          <Button asChild className="cursor-pointer">
+            <Avatar className="h-10 w-10 rounded-full p-0 shadow-sm">
+              <AvatarImage src={FacebookLogo} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </Button>
+        </div>
       </div>
     </>
   );
