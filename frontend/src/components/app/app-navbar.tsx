@@ -78,14 +78,17 @@ const AppNavBar: React.FC = () => {
                     to={item.link}
                     className={({ isActive }) =>
                       cn(
-                        "h-14 w-20 sm:w-24 md:w-28 xl:w-32",
+                        "flex h-14 items-center justify-center",
                         isActive
                           ? "border-b-3 border-blue-600 bg-transparent text-blue-600"
                           : "",
                       )
                     }
                   >
-                    <NavigationMenuItem key={item.link}>
+                    <NavigationMenuItem
+                      key={item.link}
+                      className="w-20 sm:w-24 md:w-28 xl:w-32"
+                    >
                       <Tooltip delayDuration={700}>
                         <TooltipTrigger className="h-full w-full">
                           <NavigationMenuLink asChild>
