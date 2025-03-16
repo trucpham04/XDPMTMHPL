@@ -7,7 +7,7 @@ const DefaultLayout: React.FC = () => {
     <div className="bg-muted">
       <AppSidebar />
 
-      <main className="flex items-center justify-center">
+      <main className="mt-14 flex items-center justify-center">
         <div className="w-3xl max-w-3xl">
           <Outlet />
         </div>

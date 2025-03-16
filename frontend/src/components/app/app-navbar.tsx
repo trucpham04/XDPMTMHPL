@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState, useRef } from "react";
 import clsx from "clsx";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   NavigationMenu,
@@ -10,7 +12,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HomeIcon, Users, MessageCircle, Bell, SearchIcon } from "lucide-react";
@@ -21,6 +22,7 @@ import { User } from "@/API/UserServiceInterface";
 import SearchDropdown from "@/components/search/search-dropdown";
 import SearchResults from "@/components/search/search-results";
 import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
+import { Button } from "../ui/button";
 
 const navItems = [
   {
@@ -45,7 +47,7 @@ const navItems = [
   },
 ];
 
-const Sidebar: React.FC = () => {
+const AppNavBar: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [users, setUsers] = useState<User[]>([]);
   const [searchHistory, setSearchHistory] = useState<User[]>([]);
@@ -161,50 +163,48 @@ const Sidebar: React.FC = () => {
             <NavigationMenuList>
               {navItems.map((item) => {
                 return (
-                  <TooltipProvider key={item.name}>
-                    <NavLink
-                      to={item.link}
-                      className={({ isActive }) =>
-                        clsx(
-                          "h-14 w-20 sm:w-24 md:w-28 xl:w-32",
-                          isActive
-                            ? "border-b-3 border-blue-600 bg-transparent text-blue-600"
-                            : "",
-                        )
-                      }
-                    >
-                      <NavigationMenuItem key={item.link}>
-                        <Tooltip delayDuration={700}>
-                          <TooltipTrigger className="h-full w-full">
-                            <NavigationMenuLink asChild>
-                              <div className="flex cursor-pointer items-center justify-center py-3 hover:text-inherit">
-                                <item.icon className="h-6! w-6! text-inherit"></item.icon>
-                              </div>
-                            </NavigationMenuLink>
-                            <TooltipContent>{item.name}</TooltipContent>
-                          </TooltipTrigger>
-                        </Tooltip>
-                      </NavigationMenuItem>
-                    </NavLink>
-                  </TooltipProvider>
+                  <NavLink
+                    key={item.name}
+                    to={item.link}
+                    className={({ isActive }) =>
+                      cn(
+                        "h-14 w-20 sm:w-24 md:w-28 xl:w-32",
+                        isActive
+                          ? "border-b-3 border-blue-600 bg-transparent text-blue-600"
+                          : "",
+                      )
+                    }
+                  >
+                    <NavigationMenuItem key={item.link}>
+                      <Tooltip delayDuration={700}>
+                        <TooltipTrigger className="h-full w-full">
+                          <NavigationMenuLink asChild>
+                            <div className="flex cursor-pointer items-center justify-center py-3 hover:text-inherit">
+                              <item.icon className="h-6! w-6! text-inherit"></item.icon>
+                            </div>
+                          </NavigationMenuLink>
+                          <TooltipContent>{item.name}</TooltipContent>
+                        </TooltipTrigger>
+                      </Tooltip>
+                    </NavigationMenuItem>
+                  </NavLink>
                 );
               })}
             </NavigationMenuList>
           </NavigationMenu>
         </nav>
 
-        <nav className="user flex gap-3 pr-4">
-          {/* <Button className="h-10 w-10 rounded-full cursor-pointer hover:bg-zinc-300" variant={"secondary"}>
-            <Bell className="w-5! h-5!" fill=""/>
-          </Button> */}
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={FacebookLogo} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-        </nav>
+        <div className="user flex gap-3 pr-4">
+          <Button asChild className="cursor-pointer">
+            <Avatar className="h-10 w-10 rounded-full p-0 shadow-sm">
+              <AvatarImage src={FacebookLogo} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </Button>
+        </div>
       </div>
     </>
   );
 };
 
-export default Sidebar;
+export default AppNavBar;
