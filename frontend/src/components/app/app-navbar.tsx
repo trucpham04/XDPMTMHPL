@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import clsx from "clsx";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   NavigationMenu,
@@ -20,6 +20,7 @@ import { User } from "@/API/UserServiceInterface";
 import SearchDropdown from "@/components/search/search-dropdown";
 import SearchResults from "@/components/search/search-results";
 import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
+import { Button } from "../ui/button";
 
 const navItems = [
   {
@@ -44,7 +45,7 @@ const navItems = [
   },
 ];
 
-const Sidebar: React.FC = () => {
+const AppNavBar: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [users, setUsers] = useState<User[]>([]);
   const [searchHistory, setSearchHistory] = useState<User[]>([]);
@@ -104,7 +105,7 @@ const Sidebar: React.FC = () => {
   }, []);
   return (
     <>
-      <div className="fixed left-0 top-0 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
+      <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
         <nav className="logo flex gap-2 pl-4">
           <Avatar className="h-10 w-10">
             <AvatarImage src={FacebookLogo}></AvatarImage>
@@ -155,7 +156,7 @@ const Sidebar: React.FC = () => {
           </div>
         </nav>
 
-        <nav className="center-nav -translate-1/2 absolute left-1/2 top-1/2 hidden w-fit transform sm:block">
+        <nav className="center-nav absolute top-1/2 left-1/2 hidden w-fit -translate-1/2 transform sm:block">
           <NavigationMenu>
             <NavigationMenuList>
               {navItems.map((item) => {
