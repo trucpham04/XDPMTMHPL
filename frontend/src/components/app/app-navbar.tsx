@@ -1,6 +1,4 @@
-
 import React, { useEffect, useState, useRef } from "react";
-import clsx from "clsx";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -107,7 +105,7 @@ const AppNavBar: React.FC = () => {
   }, []);
   return (
     <>
-      <div className="fixed top-0 left-0 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
+      <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
         <nav className="logo flex gap-2 pl-4">
           <Avatar className="h-10 w-10">
             <AvatarImage src={FacebookLogo}></AvatarImage>
@@ -168,14 +166,17 @@ const AppNavBar: React.FC = () => {
                     to={item.link}
                     className={({ isActive }) =>
                       cn(
-                        "h-14 w-20 sm:w-24 md:w-28 xl:w-32",
+                        "flex h-14 items-center justify-center",
                         isActive
                           ? "border-b-3 border-blue-600 bg-transparent text-blue-600"
                           : "",
                       )
                     }
                   >
-                    <NavigationMenuItem key={item.link}>
+                    <NavigationMenuItem
+                      key={item.link}
+                      className="w-20 sm:w-24 md:w-28 xl:w-32"
+                    >
                       <Tooltip delayDuration={700}>
                         <TooltipTrigger className="h-full w-full">
                           <NavigationMenuLink asChild>

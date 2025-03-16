@@ -10,7 +10,7 @@ function MessagesMainHeader({
   const { toggleSidebar } = useSidebar();
   return (
     <>
-      <div className="flex h-14 w-full items-center justify-between px-4 shadow-md">
+      <div className="z-10 flex h-14 w-full items-center justify-between px-4 shadow-md">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarImage />
