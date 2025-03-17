@@ -11,6 +11,7 @@ interface SearchDropdownProps {
 }
 
 const SearchDropdown: React.FC<SearchDropdownProps> = ({ history, onSelect, onDelete }) => {
+  console.log("Dropdown nhận history:", history);
   return (
     <div className="absolute mt-1 w-full bg-white border rounded-xl shadow-lg z-50">
       {/* Header */}

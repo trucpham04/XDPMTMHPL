@@ -16,7 +16,7 @@ import MessagesPage from "@/features/messages/pages/MessagesPage";
 import Notifications from "@/pages/main/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
-import Search from "@/pages/main/Search";
+import Search from "@/pages/main/search/SearchPage";
 
 const routes: React.FC = () => {
   return (

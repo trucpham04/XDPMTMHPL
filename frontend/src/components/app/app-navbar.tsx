@@ -21,6 +21,7 @@ import SearchDropdown from "@/components/search/search-dropdown";
 import SearchResults from "@/components/search/search-results";
 import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
 import { Button } from "../ui/button";
+import { useNavigate } from "react-router-dom";
 
 const navItems = [
   {
@@ -48,9 +49,14 @@ const navItems = [
 const AppNavBar: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [users, setUsers] = useState<User[]>([]);
-  const [searchHistory, setSearchHistory] = useState<User[]>([]);
+  const [searchHistory, setSearchHistory] = useState<User[]>(() => {
+    const stored = localStorage.getItem("searchHistory");
+    return stored ? JSON.parse(stored) : [];
+  });
+
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const search = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log(event.target.value);
@@ -59,24 +65,37 @@ const AppNavBar: React.FC = () => {
   };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && name.trim() !== "") {
+      const trimmedName = name.trim();
       const newUser: User = {
-        id: Date.now(), // Tạm thời, vì không lấy từ API
-        name: name.trim(),
-        avatarUrl: "", // Avatar rỗng hoặc avatar mặc định
+        id: Date.now(), // Tạm thời
+        name: trimmedName,
+        avatarUrl: "",
       };
 
       setSearchHistory((prev) => {
-        const exists = prev.some((u) => u.name === newUser.name);
-        if (exists) return prev;
-        return [newUser, ...prev.slice(0, 7)];
+        const exists = prev.some(
+          (u) => u.name.trim().toLowerCase() === trimmedName.toLowerCase(),
+        );
+
+        if (exists) return prev; // Không thêm trùng vào lịch sử
+
+        const updated = [newUser, ...prev.slice(0, 7)];
+        console.log("Updated History AppNavBar:", updated);
+        localStorage.setItem("searchHistory", JSON.stringify(updated));
+        return updated;
       });
 
-      setShowDropdown(false); // Ẩn dropdown nếu muốn
+      setShowDropdown(false);
+      navigate(`/search?q=${encodeURIComponent(trimmedName)}`);
     }
   };
 
   const handleDeleteHistory = (idToDelete: number) => {
-    setSearchHistory((prev) => prev.filter((user) => user.id !== idToDelete));
+    setSearchHistory((prev) => {
+      const updated = prev.filter((user) => user.id !== idToDelete);
+      localStorage.setItem("searchHistory", JSON.stringify(updated)); // ✅ cập nhật luôn
+      return updated;
+    });
   };
 
   useEffect(() => {
@@ -103,6 +122,16 @@ const AppNavBar: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  useEffect(() => {
+    localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
+  }, [searchHistory]);
+  useEffect(() => {
+    if (name.trim() === "" && showDropdown === false) {
+      // Hiện lại Dropdown sau khi lịch sử được cập nhật
+      setShowDropdown(true);
+    }
+  }, [searchHistory]);
+
   return (
     <>
       <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
@@ -128,30 +157,48 @@ const AppNavBar: React.FC = () => {
             </div>
 
             {/* Popup hiển thị khi showDropdown true */}
-            {showDropdown && name.trim() === "" && (
-              <SearchDropdown
-                history={searchHistory}
-                onSelect={(value) => setName(value)}
-                onDelete={handleDeleteHistory}
-              />
-            )}
+            {showDropdown && (
+              <>
+                {name.trim() === "" ? (
+                  <SearchDropdown
+                    key={`history-${searchHistory.length}-${searchHistory[0]?.id ?? 0}`}
+                    history={searchHistory}
+                    onSelect={() => {
+                      setName("");
+                      setShowDropdown(true);
+                    }}
+                    onDelete={handleDeleteHistory}
+                  />
+                ) : users.length > 0 ? (
+                  <SearchResults
+                    users={users}
+                    onSelect={(selectedUser) => {
+                      setSearchHistory((prev) => {
+                        const exists = prev.some(
+                          (user) => user.id === selectedUser.id,
+                        );
+                        const updated = exists
+                          ? [...prev] // ✅ Luôn tạo mảng mới dù đã tồn tại
+                          : [selectedUser, ...prev.slice(0, 7)];
 
-            {showDropdown && name.trim() !== "" && users.length > 0 && (
-              <SearchResults
-                users={users}
-                onSelect={(selectedUser) => {
-                  setName(selectedUser.name);
+                        console.log("Updated History AppNavBar:", updated); // Log chuẩn
 
-                  // Thêm vào lịch sử, tránh trùng id
-                  setSearchHistory((prev) => {
-                    if (prev.some((user) => user.id === selectedUser.id))
-                      return prev;
-                    return [selectedUser, ...prev.slice(0, 7)];
-                  });
+                        localStorage.setItem(
+                          "searchHistory",
+                          JSON.stringify(updated),
+                        );
+                        return updated;
+                      });
 
-                  setShowDropdown(false); // Ẩn dropdown sau khi chọn
-                }}
-              />
+                      setName("");
+                      setShowDropdown(false);
+                      setTimeout(() => {
+                        setShowDropdown(true);
+                      }, 0);
+                    }}
+                  />
+                ) : null}
+              </>
             )}
           </div>
         </nav>
