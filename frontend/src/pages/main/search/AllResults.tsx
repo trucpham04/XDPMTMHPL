@@ -3,7 +3,7 @@ import { User } from "@/API/UserServiceInterface";
 // import { fetchUsers } from "@/API/UserService";
 import { fetchPosts, Post } from "@/API/PostService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getAllUsers } from "@/API/UserServiceMock"; 
+import { getAllUsers } from "@/API/UserServiceMock";
 
 interface AllResultsProps {
   query: string;
@@ -16,11 +16,11 @@ const AllResults: React.FC<AllResultsProps> = ({ query }) => {
   useEffect(() => {
     const fetchData = async () => {
       const result = await getAllUsers(query); // Truyền query vào
-      setUsers(result.data); 
+      setUsers(result.data);
 
       const allPosts = await fetchPosts();
       const filteredPosts = allPosts.filter((post) =>
-        post.content.toLowerCase().includes(query.toLowerCase())
+        post.content.toLowerCase().includes(query.toLowerCase()),
       );
       setPosts(filteredPosts);
     };
@@ -39,7 +39,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query }) => {
     <div className="space-y-6">
       {hasUsers && (
         <div>
-          <h2 className="text-xl font-bold mb-2">People</h2>
+          <h2 className="mb-2 text-xl font-bold">People</h2>
           <ul className="space-y-4">
             {users.map((user) => (
               <li key={user.id} className="flex items-center justify-between">
@@ -50,7 +50,10 @@ const AllResults: React.FC<AllResultsProps> = ({ query }) => {
                     const prev: User[] = stored ? JSON.parse(stored) : [];
                     const exists = prev.some((u) => u.id === user.id);
                     const updated = exists ? prev : [user, ...prev.slice(0, 7)];
-                    localStorage.setItem("searchHistory", JSON.stringify(updated));
+                    localStorage.setItem(
+                      "searchHistory",
+                      JSON.stringify(updated),
+                    );
                   }}
                 >
                   <Avatar className="h-10 w-10">
@@ -58,8 +61,12 @@ const AllResults: React.FC<AllResultsProps> = ({ query }) => {
                     <AvatarFallback>{user.name[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium hover:underline cursor-pointer">{user.name}</p>
-                    <p className="text-sm text-gray-500">Friend · X mutual friends</p>
+                    <p className="cursor-pointer font-medium hover:underline">
+                      {user.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Friend · X mutual friends
+                    </p>
                   </div>
                 </div>
                 <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
@@ -73,10 +80,10 @@ const AllResults: React.FC<AllResultsProps> = ({ query }) => {
 
       {hasPosts && (
         <div>
-          <h2 className="text-xl font-bold mb-2">Posts</h2>
+          <h2 className="mb-2 text-xl font-bold">Posts</h2>
           <ul className="space-y-4">
             {posts.map((post) => (
-              <li key={post.id} className="border rounded p-3 bg-gray-50">
+              <li key={post.id} className="rounded border bg-gray-50 p-3">
                 <p>{post.content}</p>
               </li>
             ))}

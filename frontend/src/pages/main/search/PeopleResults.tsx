@@ -4,13 +4,10 @@ import { User } from "@/API/UserServiceInterface";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
 
-
-// ✅ fetchUsers không cần tham số → dùng "" làm mặc định
 export const fetchUsers = async (): Promise<User[]> => {
   const result = await getAllUsers(""); // Lấy toàn bộ user mock
   return result.data;
 };
-
 
 interface Props {
   query: string;
@@ -46,7 +43,10 @@ const PeopleResults: React.FC<Props> = ({ query }) => {
                   const prev: User[] = stored ? JSON.parse(stored) : [];
                   const exists = prev.some((u) => u.id === user.id);
                   const updated = exists ? prev : [user, ...prev.slice(0, 7)];
-                  localStorage.setItem("searchHistory", JSON.stringify(updated));
+                  localStorage.setItem(
+                    "searchHistory",
+                    JSON.stringify(updated),
+                  );
                 }}
               >
                 <Avatar className="h-10 w-10">
@@ -54,8 +54,12 @@ const PeopleResults: React.FC<Props> = ({ query }) => {
                   <AvatarFallback>{user.name[0]}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium hover:underline cursor-pointer">{user.name}</p>
-                  <p className="text-sm text-gray-500">Friend · X mutual friends</p>
+                  <p className="cursor-pointer font-medium hover:underline">
+                    {user.name}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Friend · X mutual friends
+                  </p>
                 </div>
               </div>
               <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
@@ -86,4 +90,4 @@ export default PeopleResults;
 //     { id: 12, name: "khook", avatarUrl: "" },
 //     { id: 13, name: "nona", avatarUrl: "" },
 //   ];
-// }; 
+// };

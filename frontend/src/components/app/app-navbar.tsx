@@ -59,9 +59,9 @@ const AppNavBar: React.FC = () => {
   const navigate = useNavigate();
 
   const search = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
-    setName(event.target.value);
-    setShowDropdown(true);
+    const value = event.target.value;
+    setName(value);
+    setShowDropdown(value.trim() !== "");
   };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && name.trim() !== "") {
@@ -125,12 +125,6 @@ const AppNavBar: React.FC = () => {
   useEffect(() => {
     localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
   }, [searchHistory]);
-  useEffect(() => {
-    if (name.trim() === "" && showDropdown === false) {
-      // Hiện lại Dropdown sau khi lịch sử được cập nhật
-      setShowDropdown(true);
-    }
-  }, [searchHistory]);
 
   return (
     <>
@@ -181,7 +175,7 @@ const AppNavBar: React.FC = () => {
                           ? [...prev] // ✅ Luôn tạo mảng mới dù đã tồn tại
                           : [selectedUser, ...prev.slice(0, 7)];
 
-                        console.log("Updated History AppNavBar:", updated); // Log chuẩn
+                        console.log("Updated History AppNavBar:", updated);
 
                         localStorage.setItem(
                           "searchHistory",

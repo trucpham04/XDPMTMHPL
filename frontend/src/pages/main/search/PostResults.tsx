@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { fetchPosts } from "@/API/PostService"; // dùng mock
 
-
 export const fetchpost = async (): Promise<Post[]> => {
-  const result = await fetchPosts(); // ✅ Không cần truyền tham số
-  return result; // ✅ Loại bỏ dấu chấm thừa
+  const result = await fetchPosts();
+  return result;
 };
-
 
 interface Post {
   id: number;
@@ -24,7 +22,7 @@ const PostResults: React.FC<Props> = ({ query }) => {
     const fetchResults = async () => {
       const allPosts = await fetchPosts();
       const filtered = allPosts.filter((post) =>
-        post.content.toLowerCase().includes(query.toLowerCase())
+        post.content.toLowerCase().includes(query.toLowerCase()),
       );
       setResults(filtered);
     };
@@ -35,13 +33,11 @@ const PostResults: React.FC<Props> = ({ query }) => {
     <>
       <h2 className="mb-4 text-xl font-bold">Posts</h2>
       {results.length === 0 ? (
-        <p className="text-gray-500 italic">
-          No posts found for "{query}".
-        </p>
+        <p className="text-gray-500 italic">No posts found for "{query}".</p>
       ) : (
         <ul className="space-y-4">
           {results.map((post) => (
-            <li key={post.id} className="p-3 border rounded">
+            <li key={post.id} className="rounded border p-3">
               {post.content}
             </li>
           ))}

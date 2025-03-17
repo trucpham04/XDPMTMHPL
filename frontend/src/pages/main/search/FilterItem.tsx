@@ -8,11 +8,16 @@ interface FilterItemProps {
   onClick?: () => void;
 }
 
-const FilterItem: React.FC<FilterItemProps> = ({ label, icon, active, onClick }) => {
+const FilterItem: React.FC<FilterItemProps> = ({
+  label,
+  icon,
+  active,
+  onClick,
+}) => {
   return (
     <div
-      className={`flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg ${
-        active ? "bg-blue-100 text-blue-600 font-medium" : "hover:bg-gray-100"
+      className={`flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 ${
+        active ? "bg-blue-100 font-medium text-blue-600" : "hover:bg-gray-100"
       }`}
       onClick={onClick}
     >
