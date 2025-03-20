@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HomeIcon, Users, MessageCircle, Bell, SearchIcon } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import FacebookLogo from "@/assets/logos/facebook_logo.png";
 // import { getAllUsers } from "@/API/UserService";
 import { User } from "@/API/UserServiceInterface";
@@ -237,12 +237,14 @@ const AppNavBar: React.FC = () => {
         </nav>
 
         <div className="user flex gap-3 pr-4">
-          <Button asChild className="cursor-pointer">
-            <Avatar className="h-10 w-10 rounded-full p-0 shadow-sm">
-              <AvatarImage src={FacebookLogo} />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-          </Button>
+          <Link to="/profile">
+            <Button asChild className="cursor-pointer">
+              <Avatar className="h-10 w-10 rounded-full p-0 shadow-sm">
+                <AvatarImage src={FacebookLogo} />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+            </Button>
+          </Link>
         </div>
       </div>
     </>
