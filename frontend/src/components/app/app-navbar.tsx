@@ -130,10 +130,13 @@ const AppNavBar: React.FC = () => {
     <>
       <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
         <nav className="logo flex gap-2 pl-4">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={FacebookLogo}></AvatarImage>
-            <AvatarFallback>FB</AvatarFallback>
-          </Avatar>
+          <Link to="/">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={FacebookLogo}></AvatarImage>
+              <AvatarFallback>FB</AvatarFallback>
+            </Avatar>
+          </Link>
+
           <div className="relative w-full xl:w-fit" ref={dropdownRef}>
             {/* Ô tìm kiếm */}
             <div className="border-input bg-muted flex h-10 w-10 items-center rounded-full text-sm xl:w-[300px] xl:pl-2">
