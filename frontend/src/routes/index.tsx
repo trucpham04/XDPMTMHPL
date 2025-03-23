@@ -16,6 +16,8 @@ import MessagesPage from "@/features/messages/pages/MessagesPage";
 import Notifications from "@/pages/main/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
+import Search from "@/pages/main/search/SearchPage";
+import Profile from "@/pages/profile/Profile";
 
 const routes: React.FC = () => {
   return (
@@ -32,14 +34,16 @@ const routes: React.FC = () => {
               <Route path="custom-list" element={<FriendCustomList />} />
           </Route>
           <Route path="notifications" element={<Notifications />} />
+          <Route path="search" element={<Search />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
         </Route>
         <Route path="/messages" element={<MessageLayout />}>
-          <Route index element={<MessagesPage />}></Route>
-          <Route path=":id" element={<MessagesPage />}></Route>
+          <Route index element={<MessagesPage />} />
+          <Route path=":id" element={<MessagesPage />} />
         </Route>
         <Route path="*" element={<h1>404 Not Found</h1>} />
       </Routes>
@@ -48,3 +52,4 @@ const routes: React.FC = () => {
 };
 
 export default routes;
+ 
