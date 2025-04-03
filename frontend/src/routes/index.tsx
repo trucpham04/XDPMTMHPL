@@ -17,6 +17,7 @@ import Notifications from "@/pages/main/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import Profile from "@/pages/profile/Profile";
+import SearchPage from "@/pages/main/search/SearchPage";
 
 const routes: React.FC = () => {
   return (
@@ -26,14 +27,14 @@ const routes: React.FC = () => {
           <Route index element={<Home />} />
           <Route path="friends/*" element={<FriendPage />}>
             <Route index element={<FriendHome />} />
-             <Route path="requests" element={<FriendRequest />} />
-             <Route path="suggestions" element={<FriendSuggest />}/>               
-             <Route path="all" element={<AllFriend />} />
-             <Route path="birthdays" element={<FriendBirthday />} />
-              <Route path="custom-list" element={<FriendCustomList />} />
+            <Route path="requests" element={<FriendRequest />} />
+            <Route path="suggestions" element={<FriendSuggest />} />
+            <Route path="all" element={<AllFriend />} />
+            <Route path="birthdays" element={<FriendBirthday />} />
+            <Route path="custom-list" element={<FriendCustomList />} />
           </Route>
           <Route path="notifications" element={<Notifications />} />
-          <Route path="search" element={<Search />} />
+          <Route path="search" element={<SearchPage />} />
           <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="auth" element={<AuthLayout />}>

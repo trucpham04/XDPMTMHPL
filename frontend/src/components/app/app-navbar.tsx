@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HomeIcon, Users, MessageCircle, Bell, SearchIcon } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import FacebookLogo from "@/assets/logos/facebook_logo.png";
 // import { getAllUsers } from "@/API/UserService";
 import { User } from "@/API/UserServiceInterface";
@@ -51,14 +51,16 @@ const AppNavBar: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<User[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const search = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
+    // console.log(event.target.value);
     setName(event.target.value);
     setShowDropdown(true);
   };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && name.trim() !== "") {
+      const trimmedName = name.trim();
       const newUser: User = {
         id: Date.now(), // Tạm thời, vì không lấy từ API
         name: name.trim(),
@@ -72,6 +74,8 @@ const AppNavBar: React.FC = () => {
       });
 
       setShowDropdown(false); // Ẩn dropdown nếu muốn
+
+      navigate(`/search?q=${encodeURIComponent(trimmedName)}`);
     }
   };
 

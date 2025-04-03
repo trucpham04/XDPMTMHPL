@@ -1,15 +1,30 @@
 import { useState } from "react";
-import * as React from "react"
+import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Smile, Video, MoreHorizontal, ThumbsUp, MessageCircle, Share2, ImagePlus } from "lucide-react";
+import {
+  Camera,
+  Smile,
+  Video,
+  MoreHorizontal,
+  ThumbsUp,
+  MessageCircle,
+  Share2,
+  ImagePlus,
+} from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import { Card, CardContent } from "@/components/ui/card"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Home: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const posts = Array(
+  const posts = [
     {
       userName: `Minh Hằng`,
       postContent: `hehe`,
@@ -21,7 +36,7 @@ const Home: React.FC = () => {
         "https://via.placeholder.com/150",
         "https://via.placeholder.com/150",
       ],
-      viewer: `Mọi người`
+      viewer: `Mọi người`,
     },
     {
       userName: `Minh Hằng`,
@@ -46,7 +61,7 @@ const Home: React.FC = () => {
         "https://via.placeholder.com/150",
         "https://via.placeholder.com/150",
       ],
-      viewer: `Mọi người`
+      viewer: `Mọi người`,
     },
     {
       userName: `Minh Hằng`,
@@ -62,7 +77,7 @@ const Home: React.FC = () => {
         "https://via.placeholder.com/150",
         "https://via.placeholder.com/150",
       ],
-      viewer: `Bạn bè`
+      viewer: `Bạn bè`,
     },
     {
       userName: `Minh Hằng`,
@@ -75,26 +90,26 @@ const Home: React.FC = () => {
       comments: 15,
       imageLinks: [
         "https://via.placeholder.com/150",
-        "https://via.placeholder.com/150"
+        "https://via.placeholder.com/150",
       ],
-      viewer: `Mọi người`
-    }
-  );
+      viewer: `Mọi người`,
+    },
+  ];
 
   return (
     <div className="flex h-screen justify-center">
-      <div className="h-auto w-[1000px] flex flex-col p-4">
+      <div className="flex h-auto w-[1000px] flex-col p-4">
         {/* Thanh đăng bài viết */}
-        <div className="h-[130px] bg-white shadow-lg rounded-2xl p-4 flex flex-col mt-16">
+        <div className="mt-16 flex h-[130px] flex-col rounded-2xl bg-white p-4 shadow-lg">
           <div className="flex items-center space-x-4">
             <img
               src="https://via.placeholder.com/40"
               alt="Avatar"
-              className="w-10 h-10 rounded-full"
+              className="h-10 w-10 rounded-full"
             />
             <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
               <Dialog.Trigger asChild>
-                <Button className="flex-1 justify-start text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
+                <Button className="flex-1 justify-start rounded-full bg-gray-100 px-4 py-2 text-gray-500">
                   Ấy ơi, bạn đang nghĩ gì thế?
                 </Button>
               </Dialog.Trigger>
@@ -102,21 +117,25 @@ const Home: React.FC = () => {
               {/* Popup đăng bài */}
               <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[550px] bg-white rounded-lg shadow-lg p-2">
-                  <Dialog.Close className="text-gray-500 cursor-pointer text-2xl font-bold ml-[95%]">
+                <Dialog.Content className="fixed top-1/2 left-1/2 h-[550px] w-[600px] -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white p-2 shadow-lg">
+                  <Dialog.Close className="ml-[95%] cursor-pointer text-2xl font-bold text-gray-500">
                     &#x2715;
                   </Dialog.Close>
-                  <div className="flex justify-center items-center">
+                  <div className="flex items-center justify-center">
                     <h1 className="text-2xl font-semibold"> Tạo bài viết </h1>
                   </div>
-                  <div className="flex items-center m-6">
+                  <div className="m-6 flex items-center">
                     <div className="flex flex-row gap-3">
-                      <img src="https://via.placeholder.com/40" alt="Avatar" className="w-10 h-10 rounded-full" />
-                      <div className="flex flex-col gap-1 justify-start">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt="Avatar"
+                        className="h-10 w-10 rounded-full"
+                      />
+                      <div className="flex flex-col justify-start gap-1">
                         <p className="ml-3 font-semibold"> Minh Hằng </p>
                         <select
                           name="viewer"
-                          className="border border-gray-300 rounded text-sm text-gray-700"
+                          className="rounded border border-gray-300 text-sm text-gray-700"
                           defaultValue="Mọi người"
                           onChange={(e) => e.target.value}
                         >
@@ -127,38 +146,58 @@ const Home: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="w-full h-2/5 flex justify-center">
-                    <textarea className="w-[90%] h-full border-2 border-none overflow-auto p-2" style={{ fontSize: '17px' }}
-                      placeholder="Bạn đang nghĩ gì?" name=''
+                  <div className="flex h-2/5 w-full justify-center">
+                    <textarea
+                      className="h-full w-[90%] overflow-auto border-2 border-none p-2"
+                      style={{ fontSize: "17px" }}
+                      placeholder="Bạn đang nghĩ gì?"
+                      name=""
                       defaultValue=""
-                      onChange={(e) => e.target.value}>
-                    </textarea>
+                      onChange={(e) => e.target.value}
+                    ></textarea>
                   </div>
-                  <div className="flex justify-start mt-3 w-full">
-                    <Button  variant="outline" className="flex items-center space-x-2 ml-4 text-gray-700">
-                      <ImagePlus  size={24} />
+                  <div className="mt-3 flex w-full justify-start">
+                    <Button
+                      variant="outline"
+                      className="ml-4 flex items-center space-x-2 text-gray-700"
+                    >
+                      <ImagePlus size={24} />
                       <span>Thêm ảnh</span>
                     </Button>
-                    <div className="w-auto max-w-full h-[70px] flex flex-row gap-2 ml-2"> 
-                      <img src="https://via.placeholder.com/40" alt="" className="h-[70px] w-[70px]" />
-                      <img src="https://via.placeholder.com/40" alt="" className="h-[70px] w-[70px]" />
-                      <img src="https://via.placeholder.com/40" alt="" className="h-[70px] w-[70px]" />
-                      <img src="https://via.placeholder.com/40" alt="" className="h-[70px] w-[70px]" />
-
+                    <div className="ml-2 flex h-[70px] w-auto max-w-full flex-row gap-2">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt=""
+                        className="h-[70px] w-[70px]"
+                      />
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt=""
+                        className="h-[70px] w-[70px]"
+                      />
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt=""
+                        className="h-[70px] w-[70px]"
+                      />
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt=""
+                        className="h-[70px] w-[70px]"
+                      />
                     </div>
                   </div>
-                  <div className="flex justify-center mt-6 w-full">
-                    <Button className="flex items-center space-x-2 bg-blue-600 text-white hover:bg-blue-500 ">
+                  <div className="mt-6 flex w-full justify-center">
+                    <Button className="flex items-center space-x-2 bg-blue-600 text-white hover:bg-blue-500">
                       <span>Đăng bài viết</span>
                     </Button>
                   </div>
-
                 </Dialog.Content>
               </Dialog.Portal>
             </Dialog.Root>
           </div>
 
-          <div className="flex justify-around mt-4">
+          <div className="mt-4 flex justify-around">
             <Button variant="outline" className="flex items-center space-x-2">
               <Video className="text-red-500" size={20} />
               <span>Video trực tiếp</span>
@@ -176,20 +215,27 @@ const Home: React.FC = () => {
 
         {/* Bài viết */}
         {posts.map((post, index) => (
-          <div key={index} className="h-auto bg-white shadow-lg rounded-2xl p-4 flex flex-col mt-8">
+          <div
+            key={index}
+            className="mt-8 flex h-auto flex-col rounded-2xl bg-white p-4 shadow-lg"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <img src="https://via.placeholder.com/40" alt="Avatar" className="w-10 h-10 rounded-full" />
+                <img
+                  src="https://via.placeholder.com/40"
+                  alt="Avatar"
+                  className="h-10 w-10 rounded-full"
+                />
                 <div>
                   <p className="font-semibold">{post.userName}</p>
-                  <span className="text-gray-500 text-sm"> 16 giờ trước</span>
+                  <span className="text-sm text-gray-500"> 16 giờ trước</span>
                 </div>
               </div>
-              <MoreHorizontal className="text-gray-500 cursor-pointer" />
+              <MoreHorizontal className="cursor-pointer text-gray-500" />
             </div>
 
-            <div className="mt-4 flex flex-col justify-center items-center h-auto gap-2">
-              <div className="h-auto flex items-center justify-start ml-2 w-full">
+            <div className="mt-4 flex h-auto flex-col items-center justify-center gap-2">
+              <div className="ml-2 flex h-auto w-full items-center justify-start">
                 <p>{post.postContent}</p>
               </div>
               <Carousel className="max-w-[500px]">
@@ -198,8 +244,10 @@ const Home: React.FC = () => {
                     <CarouselItem key={idx}>
                       <div className="p-1">
                         <Card>
-                          <CardContent className="flex aspect-square items-center justify-center p-6 w-1/1">
-                            <span className="text-sm font-semibold">{idx + 1}</span>
+                          <CardContent className="flex aspect-square w-1/1 items-center justify-center p-6">
+                            <span className="text-sm font-semibold">
+                              {idx + 1}
+                            </span>
                           </CardContent>
                         </Card>
                       </div>
@@ -211,17 +259,17 @@ const Home: React.FC = () => {
               </Carousel>
             </div>
 
-            <div className="flex justify-between items-center mt-4 border-t pt-2">
-              <div className="flex space-x-4 text-gray-500 text-sm ml-4">
+            <div className="mt-4 flex items-center justify-between border-t pt-2">
+              <div className="ml-4 flex space-x-4 text-sm text-gray-500">
                 <span>{post.likes} lượt thích</span>
               </div>
-              <div className="flex space-x-4 text-gray-500 text-sm mr-4">
+              <div className="mr-4 flex space-x-4 text-sm text-gray-500">
                 <span>{post.comments} bình luận</span>
                 <span>{post.shares} lượt chia sẻ</span>
               </div>
             </div>
 
-            <div className="flex justify-around mt-2 border-t pt-2">
+            <div className="mt-2 flex justify-around border-t pt-2">
               <Button variant="ghost" className="flex items-center space-x-2">
                 <ThumbsUp size={20} color="gray" />
                 <span>Thích</span>
