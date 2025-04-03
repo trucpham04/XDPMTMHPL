@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { MessagesMainItemType } from "../../types/messages-sidebar-item-type";
 import Message from "./message";
 
+// Remove WebSocket-related props and just accept messages directly
 interface MessagesSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: MessagesMainItemType[];
   currentUserId?: number;
@@ -13,6 +14,7 @@ function getMessageClassName(
   nextMessage: MessagesMainItemType,
   currentUserId: number,
 ) {
+  // Existing getMessageClassName function remains the same
   const isCurrentUser = message.sender_id === currentUserId;
   const isFirstOfGroup =
     !prevMessage || prevMessage.sender_id !== message.sender_id;
@@ -44,11 +46,13 @@ function getMessageClassName(
 function MessagesSection({
   messages,
   className,
-  currentUserId = 1, // Default to 1 but allow override
+  currentUserId = 1,
   ...props
 }: MessagesSectionProps) {
+  // No WebSocket or state management here, just render messages passed as props
   return (
     <div className={cn("flex w-full flex-col gap-1 p-4", className)} {...props}>
+      {/* Messages list */}
       {messages.map((message, index) => {
         const prevMessage = messages[index - 1];
         const nextMessage = messages[index + 1];
@@ -61,7 +65,7 @@ function MessagesSection({
 
         return (
           <Message
-            key={message.sender_id || `${message.sender_id}-${index}`} // Use unique id if available
+            key={message.id || `${message.sender_id}-${index}`} // Use unique id if available
             message={message}
             isCurrentUser={message.sender_id === currentUserId}
             className={messageClassName}
