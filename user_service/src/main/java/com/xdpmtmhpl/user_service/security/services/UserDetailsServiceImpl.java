@@ -1,5 +1,6 @@
 package com.xdpmtmhpl.user_service.security.services;
 
+// import com.xdpmtmhpl.user_service.models.Role;
 import com.xdpmtmhpl.user_service.models.User;
 import com.xdpmtmhpl.user_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
 
         return new org.springframework.security.core.userdetails.User(
