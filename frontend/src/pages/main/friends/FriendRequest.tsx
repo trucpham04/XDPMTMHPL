@@ -1,27 +1,104 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
+import axios from "axios";
+import { time } from "console";
 
 
-const mockRequests = [
-  { id: 1, name: "Cường Mai", mutualFriends: 87, time: "2 ngày" },
-  { id: 2, name: "Bé Bông", mutualFriends: 15, time: "44 tuần" },
-  { id: 3, name: "Thanh Truyền", mutualFriends: 8, time: "2 năm" },
-  { id: 4, name: "Trúc Giang", mutualFriends: 12, time: "2 năm" },
-  { id: 5, name: "Hưng Thịnh", mutualFriends: 20, time: "35 tuần" },
-];
+type FriendRequest = {
+  id: number;
+  name: string;
+  mutualFriends: number;
+  avatar: string;
+  time: string;
+};
 
-const FriendRequests = () => {
-  const [requests, setRequests] = useState(mockRequests);
+const FriendRequests: React.FC = () => {
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const calculateTimeSince = (date: string): string => {
+    const requestDate = new Date(date);
+    const now = new Date();
+    const diffInMs = now.getTime() - requestDate.getTime();
+  
+    const years = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
+    if (years > 0) return `${years} năm`;
+  
+    const weeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
+    if (weeks > 0) return `${weeks} tuần`;
+  
+    const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    return `${days} ngày`;
+    
+  };
+
+  const fetchFriendRequests = () => {
+    axios
+      .get("http://localhost:8080/api/friends/requests", {
+        headers: {
+          Authorization: "Bearer fake-token",
+        },
+      })
+      .then((response) => {
+        const fetchedRequests = response.data.map((req: any) => ({
+          id: req.id,
+          name: req.firstName + " " + req.lastName,
+          mutualFriends: req.mutualFriends,
+          avatar: req.avatar,
+          time: calculateTimeSince(req.time),
+        }));
+        
+        setRequests(fetchedRequests);
+        setError(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách lời mời kết bạn:", error);
+        setError("Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.");
+      });
+  };
+
+  useEffect(() => {
+    fetchFriendRequests();
+  }, []);
 
   const handleAccept = (id: number) => {
-    setRequests(requests.filter((req) => req.id !== id));
+    console.log("Accepting friend request with id:", id);
+    axios
+      .post(`http://localhost:8080/api/friends/requests/accept/${id}`, null, {
+        headers: {
+          Authorization: "Bearer fake-token",
+        },
+      })
+      .then(() => {
+        fetchFriendRequests(); 
+        setError(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi chấp nhận lời mời:", error);
+        const errorMessage = error.response?.data || "Không thể chấp nhận lời mời. Vui lòng thử lại.";
+        setError(errorMessage);
+      });
   };
 
   const handleDelete = (id: number) => {
-    setRequests(requests.filter((req) => req.id !== id));
+    axios
+      .delete(`http://localhost:8080/api/friends/requests/delete/${id}`, {
+        headers: {
+          Authorization: "Bearer fake-token",
+        },
+      })
+      .then(() => {
+        fetchFriendRequests(); 
+        setError(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi xóa lời mời:", error);
+        const errorMessage = error.response?.data || "Không thể xóa lời mời. Vui lòng thử lại.";
+        setError(errorMessage);
+      });
   };
 
   const navigate = useNavigate();

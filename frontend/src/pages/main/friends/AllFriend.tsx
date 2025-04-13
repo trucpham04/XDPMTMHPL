@@ -16,26 +16,54 @@ const AllFriend: React.FC = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const navigate = useNavigate();
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Gọi API để lấy danh sách bạn bè khi component được mount
-  useEffect(() => {
-    axios.get("http://localhost:8080/friends") // Đổi URL API theo backend của bạn
-      .then(response => {
-        console.log("Dữ liệu nhận được:", response.data);
-        setFriends(response.data);
+  const fetchFriends = () => {
+    axios
+      .get("http://localhost:8080/api/friends", {
+        headers: {
+          Authorization: "Bearer fake-token",
+        },
       })
-      .catch(error => console.error("Lỗi khi lấy danh sách bạn bè:", error));
-  }, []);
-
-  // Hàm xóa bạn bè
-  const handleRemoveFriend = (id: number) => {
-    axios.delete(`http://localhost:8080/friends/${id}`) // API xóa bạn bè
-      .then(() => {
-        setFriends(friends.filter(friend => friend.id !== id));
+      .then((response) => {
+        const fetchedFriends = response.data.map((friend: any) => ({
+          id: friend.id,
+          name: friend.firstName + " " + friend.lastName,
+          mutualFriends: friend.mutualFriends,
+          avatar: friend.avatar,
+        }));
+        setFriends(fetchedFriends);
+        setError(null);
       })
-      .catch(error => console.error("Lỗi khi xóa bạn bè:", error));
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách bạn bè:", error);
+        setError("Không thể tải danh sách bạn bè. Vui lòng thử lại sau.");
+      });
   };
 
+  useEffect(() => {
+    fetchFriends();
+  }, []);
+
+  const handleRemoveFriend = (id: number, name: string) => {
+    if (!window.confirm(`Bạn có chắc muốn hủy kết bạn với ${name}?`)) {
+        return;
+    }
+    axios
+        .delete(`http://localhost:8080/api/friends/${id}`, { 
+            headers: {
+                Authorization: "Bearer fake-token",
+            },
+        })
+        .then(() => {
+            setFriends(friends.filter((friend) => friend.id !== id));
+            setError(null);
+        })
+        .catch((error) => {
+            console.error("Lỗi khi xóa bạn bè:", error); 
+            setError(`Không thể hủy kết bạn với ${name}. Vui lòng thử lại.`);
+        });
+};
   return (
     <>
       <div className="w-90 left-0 bg-white shadow-sm h-screen">
@@ -53,6 +81,7 @@ const AllFriend: React.FC = () => {
                 
               </div>
 
+              {error && <p className="text-red-500 text-center py-2">{error}</p>}
           {friends.length > 0 ? (
             friends.map((friend) => (
               <div key={friend.id} className="w-full py-3 px-2 flex flex-col hover:bg-gray-200 rounded-lg"
@@ -85,7 +114,7 @@ const AllFriend: React.FC = () => {
                     className="bg-gray-400 text-white px-4 py-1 w-30 rounded hover:bg-gray-500"
                     onClick={(e) =>{
                       e.stopPropagation();
-                      handleRemoveFriend(friend.id)}}
+                      handleRemoveFriend(friend.id, friend.name)}}
                   >
                     Hủy kết bạn
                   </button>
