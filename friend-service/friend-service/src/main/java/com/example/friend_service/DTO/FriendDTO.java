@@ -11,4 +11,5 @@ public class FriendDTO {
     private String lastName;
     private String avatar;
     private Date dateOfBirth;
+    // private Integer mutualFriends;
 }

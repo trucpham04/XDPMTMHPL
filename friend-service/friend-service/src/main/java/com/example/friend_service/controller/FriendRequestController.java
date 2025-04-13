@@ -13,14 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.friend_service.DTO.FriendDTO;
-import com.example.friend_service.Entity.Friend;
 import com.example.friend_service.Entity.FriendRequest;
-import com.example.friend_service.Repository.FriendRequestRepository;
 import com.example.friend_service.service.FriendRequestService;
-import com.example.friend_service.service.FriendService;
 
 @RestController
-@RequestMapping("/api/requests")
+@RequestMapping("/api/friends/requests")
 public class FriendRequestController {
     @Autowired
     private FriendRequestService friendRequestService;
@@ -36,7 +33,7 @@ public class FriendRequestController {
         }
     }
 
-    @GetMapping("/sent")
+    @GetMapping("/allsent")
     public ResponseEntity<List<FriendDTO>> getAllRequestsSent(){
         try {
             List<FriendDTO> requestSents= friendRequestService.getAllRequestSent();
@@ -44,6 +41,19 @@ public class FriendRequestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 
+        }
+    }
+
+    @PostMapping("/accept/{senderId}")
+    public ResponseEntity<FriendRequest> acceptFriendRequest(@PathVariable("senderId") Integer senderId) {
+
+        try {
+            friendRequestService.acceptFriendRequest(senderId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -60,7 +70,7 @@ public class FriendRequestController {
         }
     }
 
-    @DeleteMapping("/{senderId}")
+    @DeleteMapping("/delete/{senderId}")
     public ResponseEntity<Void> removeFriend(@PathVariable("senderId") Integer senderId) {
         try {
             friendRequestService.removeRequest(senderId);

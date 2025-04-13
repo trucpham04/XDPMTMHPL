@@ -11,7 +11,11 @@ import com.example.friend_service.Entity.*;
 import com.example.friend_service.DTO.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,6 +70,8 @@ public class FriendService {
             throw new IllegalStateException("Error retrieving current user: " + e.getMessage());
         }
     }
+
+
     public List<FriendDTO> getAllFriends() {
         Integer user1Id = getCurrentUserId();
         List<Friend> friends = friendRepository.findByUser1Id(user1Id);
@@ -142,5 +148,29 @@ public class FriendService {
             friendRepository.delete(friend2);
         }
     }
+
+    
+    // private int calculateMutualFriends(Integer userId, Integer friendId, Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
+    //     Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId, new HashSet<>());
+    //     Set<Integer> mutualFriends = new HashSet<>(friendOfFriendIds);
+    //     mutualFriends.retainAll(userFriends);
+    //     mutualFriends.remove(userId);
+    //     mutualFriends.remove(friendId);
+
+    //     return mutualFriends.size();
+    // }
+
+    // private Map<Integer, Set<Integer>> getFriendsOfFriendsMap(List<Integer> userIds) {
+    //     if (userIds.isEmpty()) {
+    //         return new HashMap<>();
+    //     }
+    //     List<Friend> friendsOfFriends = friendRepository.findByUser1IdIn(userIds);
+
+    //     return friendsOfFriends.stream()
+    //         .collect(Collectors.groupingBy(
+    //             Friend::getUser1Id,
+    //             Collectors.mapping(Friend::getUser2Id, Collectors.toSet())
+    //         ));
+    // }
     
 }

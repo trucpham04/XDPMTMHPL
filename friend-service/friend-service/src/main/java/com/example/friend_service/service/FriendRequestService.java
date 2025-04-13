@@ -18,12 +18,18 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.friend_service.DTO.FriendDTO;
 import com.example.friend_service.Entity.FriendRequest;
+import com.example.friend_service.Repository.FriendRepository;
 import com.example.friend_service.Repository.FriendRequestRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class FriendRequestService {
     @Autowired
     private FriendRequestRepository friendRequestRepository;
+
+    @Autowired
+    private FriendService friendService;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -88,6 +94,25 @@ public class FriendRequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(rollbackOn = Exception.class)
+    public void acceptFriendRequest(Integer senderId) {
+        try {
+            Integer userId = getCurrentUserId();
+            FriendRequest friendRequest = friendRequestRepository.findBySenderIdAndReceiverId(senderId, userId);
+
+            if (friendRequest == null) {
+                throw new IllegalArgumentException("Friend request not found");
+            }
+            friendService.addFriend(senderId);  
+            removeRequest(senderId);  
+        } catch (DataAccessException e) {
+            System.err.println("Database error while saving friend: " + e.getMessage());
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("Unexpected error while saving friend: " + e.getMessage());
+            throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
+        }
+    }
     public FriendRequest SendRequest(Integer receiverId){
         try {
             Integer senderId= getCurrentUserId();
@@ -116,6 +141,8 @@ public class FriendRequestService {
             throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
         }
     }
+
+    
 
     public void removeRequest (Integer senderId){
         Integer receiverId= getCurrentUserId();

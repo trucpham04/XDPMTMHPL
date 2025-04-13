@@ -25,6 +25,7 @@ public class FriendController {
     @GetMapping
     public ResponseEntity<List<FriendDTO>> getAllFriends() {
         try {
+            
             List<FriendDTO> friends = friendService.getAllFriends();
             return ResponseEntity.ok(friends);
         } catch (Exception e) {
