@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
 import axios from "axios";
 
-
 type Friend = {
   id: number;
   name: string;

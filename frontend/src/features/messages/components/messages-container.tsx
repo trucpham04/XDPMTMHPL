@@ -5,7 +5,7 @@ import { MessagesSidebarItemType } from "../types/messages-sidebar-item-type";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MessagesInfo from "./info/messages-info";
 const conversations: MessagesSidebarItemType[] = [];
-const numberOfItems = 20; // số lượng đối tượng bạn muốn tạo
+const numberOfItems = 5; // số lượng đối tượng bạn muốn tạo
 
 for (let i = 0; i < numberOfItems; i++) {
   conversations.push({
