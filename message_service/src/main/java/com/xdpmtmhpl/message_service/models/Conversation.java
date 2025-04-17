@@ -1,9 +1,19 @@
 package com.xdpmtmhpl.message_service.models;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "conversations")
@@ -13,6 +23,7 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name")
     private String name;
 
     @Column(name = "is_group_chat")
@@ -21,19 +32,13 @@ public class Conversation {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ConversationParticipant> participants = new HashSet<>();
+    @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ConversationParticipant> participants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Message> messages = new HashSet<>();
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+    @Transient
+    private Message lastMessage;
 
     // Getters and Setters
-
     public Long getId() {
         return id;
     }
@@ -66,19 +71,19 @@ public class Conversation {
         this.createdAt = createdAt;
     }
 
-    public Set<ConversationParticipant> getParticipants() {
+    public List<ConversationParticipant> getParticipants() {
         return participants;
     }
 
-    public void setParticipants(Set<ConversationParticipant> participants) {
+    public void setParticipants(List<ConversationParticipant> participants) {
         this.participants = participants;
     }
 
-    public Set<Message> getMessages() {
-        return messages;
+    public Message getLastMessage() {
+        return lastMessage;
     }
 
-    public void setMessages(Set<Message> messages) {
-        this.messages = messages;
+    public void setLastMessage(Message lastMessage) {
+        this.lastMessage = lastMessage;
     }
 }
