@@ -1,14 +1,35 @@
 services:
-  mysql:
-    image: "mysql:lts"
-    container_name: "user-service-mysql"
+  message-service:
+    build:
+      context: ./message_service
+      dockerfile: Dockerfile
+    image: message-service:latest
+    container_name: message-service
     environment:
-      - "MYSQL_DATABASE=user_service"
+      SPRING_DATASOURCE_URL: jdbc:mysql://message-db:3306/message_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: message_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./message_service/src:/app/src
+    depends_on:
+      message-db:
+        condition: service_healthy
+    networks:
+      - database-network
+
+  message-db:
+    image: "mysql:lts"
+    container_name: "message-service-mysql"
+    environment:
+      - "MYSQL_DATABASE=message_service"
       - "MYSQL_ROOT_PASSWORD=root"
-      - "MYSQL_USER=user_service"
+      - "MYSQL_USER=message_service"
       - "MYSQL_PASSWORD=root"
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - "database-network"
 
@@ -19,8 +40,6 @@ services:
       - "PMA_ARBITRARY=1"
     ports:
       - "80:80"
-    depends_on:
-      - "mysql"
     networks:
       - "database-network"
 
