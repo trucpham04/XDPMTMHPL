@@ -16,7 +16,7 @@ export function useWebSocket({ url, conversationId }: UseWebSocketProps) {
     if (!conversationId) return;
 
     // Create WebSocket connection
-    const socket = new WebSocket(`${url}/conversations/${conversationId}`);
+    const socket = new WebSocket(`${url}`);
     socketRef.current = socket;
 
     // Connection opened

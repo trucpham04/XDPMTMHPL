@@ -15,9 +15,9 @@ interface MessagesMainProps extends React.ComponentProps<"div"> {
 
 function MessagesMain({
   className,
-  conversationId,
+  conversationId = 1,
   currentUserId = 1,
-  websocketUrl = "wss://api.example.com/ws",
+  websocketUrl = "ws://localhost:8084/ws",
   initialMessages = [],
   ...props
 }: MessagesMainProps) {
@@ -64,7 +64,7 @@ function MessagesMain({
 
   return (
     <>
-      <div className={cn("flex w-full flex-col", className)} {...props}>
+      <div className={cn("flex h-full w-full flex-col", className)} {...props}>
         <MessagesMainHeader
           isConnected={isConnected}
           conversationId={conversationId}

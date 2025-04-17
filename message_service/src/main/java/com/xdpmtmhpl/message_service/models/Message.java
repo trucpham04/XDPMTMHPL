@@ -1,7 +1,15 @@
 package com.xdpmtmhpl.message_service.models;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import com.xdpmtmhpl.message_service.Enum.MessageStatus;
 import com.xdpmtmhpl.message_service.Enum.MessageType;
@@ -14,35 +22,30 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conversation_id")
-    private Conversation conversation;
+    @Column(name = "conversation_id", nullable = false)
+    private Long conversationId;
 
-    @Column(name = "sender_id")
-    private Long senderId; // Only storing the sender ID, not the entire user entity
+    @Column(name = "sender_id", nullable = false)
+    private Long senderId;
+
+    @Column(name = "content", columnDefinition = "TEXT")
+    private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "message_type")
-    private MessageType messageType;
+    @Column(name = "type")
+    private MessageType type;
 
-    private String content;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private MessageStatus status;
 
     @Column(name = "media_url")
     private String mediaUrl;
 
-    @Enumerated(EnumType.STRING)
-    private MessageStatus status;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+    @Column(name = "timestamp")
+    private LocalDateTime timestamp;
 
     // Getters and Setters
-
     public Long getId() {
         return id;
     }
@@ -51,12 +54,12 @@ public class Message {
         this.id = id;
     }
 
-    public Conversation getConversation() {
-        return conversation;
+    public Long getConversationId() {
+        return conversationId;
     }
 
-    public void setConversation(Conversation conversation) {
-        this.conversation = conversation;
+    public void setConversationId(Long conversationId) {
+        this.conversationId = conversationId;
     }
 
     public Long getSenderId() {
@@ -67,14 +70,6 @@ public class Message {
         this.senderId = senderId;
     }
 
-    public MessageType getMessageType() {
-        return messageType;
-    }
-
-    public void setMessageType(MessageType messageType) {
-        this.messageType = messageType;
-    }
-
     public String getContent() {
         return content;
     }
@@ -83,12 +78,12 @@ public class Message {
         this.content = content;
     }
 
-    public String getMediaUrl() {
-        return mediaUrl;
+    public MessageType getType() {
+        return type;
     }
 
-    public void setMediaUrl(String mediaUrl) {
-        this.mediaUrl = mediaUrl;
+    public void setType(MessageType type) {
+        this.type = type;
     }
 
     public MessageStatus getStatus() {
@@ -99,11 +94,19 @@ public class Message {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public String getMediaUrl() {
+        return mediaUrl;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setMediaUrl(String mediaUrl) {
+        this.mediaUrl = mediaUrl;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 }
