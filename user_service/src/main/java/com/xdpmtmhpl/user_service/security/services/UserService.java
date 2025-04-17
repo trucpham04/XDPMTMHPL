@@ -17,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-// import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -33,9 +32,6 @@ public class UserService {
 
     @Autowired
     private RoleRepository roleRepository;
-
-    // @Autowired
-    // private PasswordEncoder passwordEncoder;
 
     @Autowired
     private JwtUtils jwtUtils;
@@ -91,32 +87,35 @@ public class UserService {
     }
 
     public ResponseEntity<JwtResponse> login(LoginRequest loginRequest) {
-        // Sử dụng AuthenticationManager để xác thực
+        // Xác thực bằng identifier (username hoặc email)
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
+                new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
+    
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        org.springframework.security.core.userdetails.User userDetails = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-
-        String jwt = jwtUtils.generateJwtToken(authentication);
+    
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        
+        // Sử dụng userDetails thay vì authentication
+        String jwt = jwtUtils.generateJwtToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
-
+    
         // Create cookies
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(jwt);
         ResponseCookie refreshCookie = jwtUtils.generateRefreshJwtCookie(refreshToken);
-
+    
+        // Tìm user bằng username hoặc email
         User user = userRepository.findByUsername(userDetails.getUsername())
+                .or(() -> userRepository.findByEmail(loginRequest.getIdentifier()))
                 .orElseThrow(() -> new RuntimeException("Error: User not found!"));
-
+    
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
-
+    
         // Chuyển đổi Set<Role> thành List<String>
         List<String> roleNames = user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList());
-
+    
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
@@ -128,7 +127,7 @@ public class UserService {
                         user.getEmail(),
                         roleNames));
     }
-
+    
     public UserProfileResponse getUserProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: User not found!"));

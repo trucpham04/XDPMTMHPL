@@ -10,6 +10,7 @@ import com.xdpmtmhpl.user_service.payload.response.UserProfileResponse;
 import com.xdpmtmhpl.user_service.repository.RoleRepository;
 import com.xdpmtmhpl.user_service.repository.UserRepository;
 import com.xdpmtmhpl.user_service.security.jwt.JwtUtils;
+import com.xdpmtmhpl.user_service.security.services.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,28 +54,30 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
+                new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
+    
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        org.springframework.security.core.userdetails.User userDetails = (org.springframework.security.core.userdetails.User) authentication
-                .getPrincipal();
-
-        String jwt = jwtUtils.generateJwtToken(authentication);
+    
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    
+        // Sử dụng userDetails thay vì authentication
+        String jwt = jwtUtils.generateJwtToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
-
+    
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(jwt);
         ResponseCookie refreshCookie = jwtUtils.generateRefreshJwtCookie(refreshToken);
-
+    
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-
-        User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-
+    
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .or(() -> userRepository.findByEmail(loginRequest.getIdentifier()))
+                .orElseThrow(() -> new RuntimeException("User not found with identifier: " + loginRequest.getIdentifier()));
+    
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
-
+    
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
@@ -187,7 +190,6 @@ public class AuthController {
                 .body(new MessageResponse("You've been logged out!"));
     }
 
-    // API mới: GET /api/auth/me
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -210,7 +212,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // API mới: GET /api/users/{id}
     @GetMapping("/users/{id}")
     public ResponseEntity<UserProfileResponse> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
@@ -227,7 +228,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // API mới: PUT /api/users/{id}
     @PutMapping("/users/{id}")
     public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest updateRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -255,7 +255,6 @@ public class AuthController {
     }
 }
 
-// Class cho request body của PUT
 class UserUpdateRequest {
     private String firstName;
     private String lastName;
@@ -263,7 +262,6 @@ class UserUpdateRequest {
     private String bio;
     private String profilePictureUrl;
 
-    // Getters và Setters
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public String getLastName() { return lastName; }
