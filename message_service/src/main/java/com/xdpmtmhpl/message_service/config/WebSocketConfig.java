@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatWebSocketController, "/ws")
+        registry.addHandler(chatWebSocketController, "/ws/chat")
                 .setAllowedOrigins("*");
     }
 
@@ -30,4 +30,5 @@ public class WebSocketConfig implements WebSocketConfigurer {
         container.setMaxBinaryMessageBufferSize(8192);
         return container;
     }
+
 }

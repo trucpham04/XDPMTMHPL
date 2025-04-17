@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import Facebook from "@/assets/logos/facebook_logo.png";
-import { Button } from "@/components/ui/button";
 import { UserRound, Bell } from "lucide-react";
 import {
   Tooltip,

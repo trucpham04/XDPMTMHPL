@@ -10,18 +10,23 @@ import com.xdpmtmhpl.message_service.dto.ConversationDTO;
 import com.xdpmtmhpl.message_service.dto.UserDTO;
 import com.xdpmtmhpl.message_service.models.Conversation;
 import com.xdpmtmhpl.message_service.models.Message;
+import com.xdpmtmhpl.message_service.repository.MessageRepository;
 import com.xdpmtmhpl.message_service.service.ChatService;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/chat")
 public class ChatRestController {
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     // Get all conversations for a user
     @GetMapping("/conversations/{userId}")
@@ -91,8 +96,10 @@ public class ChatRestController {
         dto.setParticipantIds(participantIds);
 
         // Set last message if available
-        if (conversation.getLastMessage() != null) {
-            Message lastMessage = conversation.getLastMessage();
+        Message lastMessage = messageRepository
+                .findLastMessageByConversationId(conversation.getId());
+
+        if (lastMessage != null) {
             ChatMessageDTO lastMessageDTO = new ChatMessageDTO();
             lastMessageDTO.setId(lastMessage.getId());
             lastMessageDTO.setConversationId(lastMessage.getConversationId());
@@ -113,4 +120,5 @@ public class ChatRestController {
 
         return dto;
     }
+
 }

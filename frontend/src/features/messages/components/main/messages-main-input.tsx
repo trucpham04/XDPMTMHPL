@@ -1,18 +1,46 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface MessageInputProps extends React.HTMLAttributes<HTMLFormElement> {
   onSendMessage: (content: string) => void;
+  onTyping?: () => void;
   disabled?: boolean;
 }
 
 function MessageInput({
   onSendMessage,
+  onTyping,
   disabled = false,
   className,
   ...props
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle typing notification with debounce
+  useEffect(() => {
+    if (message && onTyping) {
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Send typing notification
+      onTyping();
+
+      // Set cooldown period before sending another typing notification
+      typingTimeoutRef.current = setTimeout(() => {
+        typingTimeoutRef.current = null;
+      }, 3000); // 3 seconds cooldown
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [message, onTyping]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
