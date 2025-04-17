@@ -6,21 +6,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component // Đánh dấu lớp này là một bean để chạy khi ứng dụng khởi động
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
+    @Autowired // Inject RoleRepository để thao tác với DB
     private RoleRepository roleRepository;
 
     @Override
     public void run(String... args) throws Exception {
-        // Khởi tạo vai trò nếu chưa tồn tại
+        // Thêm ROLE_USER nếu chưa tồn tại
         if (roleRepository.findByName(Role.ROLE_USER).isEmpty()) {
             Role userRole = new Role();
             userRole.setName(Role.ROLE_USER);
             roleRepository.save(userRole);
         }
 
+        // Thêm ROLE_ADMIN nếu chưa tồn tại
         if (roleRepository.findByName(Role.ROLE_ADMIN).isEmpty()) {
             Role adminRole = new Role();
             adminRole.setName(Role.ROLE_ADMIN);
