@@ -1,45 +1,29 @@
-import axios from "axios";
+// // src/services/apiClient.js
+// import axios from 'axios';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
+// // URL gốc của API
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
-// Create axios instance with default config
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// // Tạo axios instance
+// const apiClient = axios.create({
+//   baseURL: API_BASE_URL,
+//   timeout: 10000,
+//   headers: {
+//     'Content-Type': 'application/json'
+//   },
+//   withCredentials: true, // Gửi cookie cùng request
+// });
 
-// Request interceptor for adding auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+// // Xử lý phản hồi và lỗi chung
+// apiClient.interceptors.response.use(
+//   (response) => response.data,
+//   (error) => {
+//     const { response } = error;
+//     if (response && response.status === 401) {
+//       window.location.href = '/auth/login'; // Chuyển hướng khi không xác thực
+//     }
+//     return Promise.reject(error.response?.data?.message || 'Lỗi không xác định');
+//   },
+// );
 
-// Response interceptor for handling common errors
-apiClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    const { response } = error;
-
-    if (response && response.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem("authToken");
-      window.location.href = "/login";
-    }
-
-    return Promise.reject(error);
-  },
-);
-
-export default apiClient;
+// export default apiClient;
