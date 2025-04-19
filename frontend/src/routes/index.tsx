@@ -5,19 +5,21 @@ import DefaultLayout from "@/components/layouts/DefaultLayout";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import MessageLayout from "@/components/layouts/MessageLayout";
 import Home from "@/pages/main/Home";
-import FriendPage from "@/pages/main/friends/FriendPage";
+import FriendLayout from "@/components/layouts/FriendLayout";
 import FriendHome from "@/pages/main/friends/FriendHome";
 import FriendRequest from "@/pages/main/friends/FriendRequest";
 import FriendSuggest from "@/pages/main/friends/FriendSuggest";
 import AllFriend from "@/pages/main/friends/AllFriend";
 import FriendBirthday from "@/pages/main/friends/FriendBirthday";
 import FriendCustomList from "@/pages/main/friends/FriendCustomList";
+import FriendProfile from "@/pages/main/friends/FriendProfile";
 import MessagesPage from "@/features/messages/pages/MessagesPage";
 import Notifications from "@/features/notifications/pages/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import Profile from "@/pages/profile/Profile";
 import SearchPage from "@/pages/main/search/SearchPage";
+import AllSentRequest from "@/pages/main/friends/AllSentRequest";
 
 const routes: React.FC = () => {
   return (
@@ -25,13 +27,14 @@ const routes: React.FC = () => {
       <Routes>
         <Route path="/" element={<DefaultLayout />}>
           <Route index element={<Home />} />
-          <Route path="friends/*" element={<FriendPage />}>
+          <Route path="friends/*" element={<FriendLayout />}>
             <Route index element={<FriendHome />} />
-            <Route path="requests" element={<FriendRequest />} />
-            <Route path="suggestions" element={<FriendSuggest />} />
-            <Route path="all" element={<AllFriend />} />
-            <Route path="birthdays" element={<FriendBirthday />} />
-            <Route path="custom-list" element={<FriendCustomList />} />
+             <Route path="requests" element={<FriendRequest />} />
+              {/* <Route path="sentRequest" element={<AllSentRequest />} /> */}
+             <Route path="suggestions" element={<FriendSuggest />}/>               
+             <Route path="all" element={<AllFriend />} />
+             <Route path="birthdays" element={<FriendBirthday />} />
+              <Route path="custom-list" element={<FriendCustomList />} />    
           </Route>
           <Route path="notifications" element={<Notifications />} />
           <Route path="search" element={<SearchPage />} />
