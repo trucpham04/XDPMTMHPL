@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Users, User, UserPlus, UserCheck, Gift, List, ChevronRight } from "lucide-react";
 
 const friendNavItems = [
@@ -11,22 +11,25 @@ const friendNavItems = [
 ];
 
 const FriendNavBar: React.FC = () => {
+  const location= useLocation();
   return (
     <aside className="w-full p-2 bg-white shadow-sm h-screen">
       <h2 className="text-xl font-bold mb-4">Bạn bè</h2>
       <ul>
-        {friendNavItems.map((item, index) => (
-          <li key={index}>
+        {friendNavItems.map((item, index) => {
+          const isActive = location.pathname === item.link ;
+          return (
+          <li key={index} className={`rounded-lg ${isActive ? "bg-gray-200" : ""}`}>
           <Link to={item.link} className="flex text-base font-medium items-center p-2 hover:bg-gray-100 rounded">
-            <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-200 mr-3">
-              <item.icon className="w-5 h-5 text-gray-700" />
+            <div className={`w-9 h-9 flex items-center justify-center rounded-full mr-3 ${isActive ? "bg-blue-500": " bg-gray-200"}`}>
+              <item.icon className={`w-5 h-5 relative ${isActive ? "text-white": " text-gray-700"}`} />
             </div>
             {item.name}
-            {item.extraIcon2 && <item.extraIcon2 className="w-2 h-2 text-gray-500 ml-2" />}
+            {item.extraIcon2 && <item.extraIcon2 className="w-2 h-2 text-gray-500 ml-6 mb-2 absolute" />}
             {item.extraIcon && <item.extraIcon className="w-6 h-6 text-gray-500 ml-auto" />}
           </Link>
         </li>
-        ))}
+        )})}
       </ul>
     </aside>
   );

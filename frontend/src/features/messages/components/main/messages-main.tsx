@@ -1,16 +1,104 @@
-import MessagesMainContent from "./messages-main-content";
+import { useState, useEffect } from "react";
+import MessagesSection from "./message-section";
 import MessagesMainHeader from "./messages-main-header";
-import MessagesMainInput from "./messages-main-input";
+import { cn } from "@/lib/utils";
+import { useWebSocket } from "../../hooks/useWebSocket";
+import MessageInput from "./messages-main-input";
+import { ChatMessage } from "../../types";
+import useMessage from "../../hooks/use-message";
 
-function MessagesMain({ className, ...props }: React.ComponentProps<"div">) {
+interface MessagesMainProps extends React.ComponentProps<"div"> {
+  conversationId?: string | number;
+  currentUserId?: number;
+  websocketUrl?: string;
+  initialMessages?: ChatMessage[];
+}
+
+function MessagesMain({
+  className,
+  conversationId,
+  currentUserId,
+  initialMessages = [],
+  ...props
+}: MessagesMainProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+
+  const websocketUrl = "ws://localhost:8084/ws/chat";
+
+  const {
+    messages: newMessages,
+    isConnected,
+    sendMessage,
+    joinConversation,
+    leaveConversation,
+    sendTypingNotification,
+  } = useWebSocket({
+    url: websocketUrl,
+    userId: currentUserId,
+  });
+
+  const { getMessages } = useMessage();
+
+  // Join/leave websocket room
+  useEffect(() => {
+    if (isConnected && conversationId) {
+      joinConversation(conversationId);
+    }
+
+    return () => {
+      if (conversationId && isConnected) {
+        leaveConversation();
+      }
+    };
+  }, [conversationId, isConnected, joinConversation, leaveConversation]);
+
+  // Load initial messages from server
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!conversationId) return;
+      const serverMessages = await getMessages(Number(conversationId));
+      setMessages(serverMessages);
+    };
+
+    loadMessages();
+  }, [conversationId, getMessages]);
+
+  // Append new websocket messages
+  useEffect(() => {
+    if (newMessages.length > 0) {
+      setMessages((prev) => [...prev, ...newMessages]);
+    }
+  }, [newMessages]);
+
+  const handleSendMessage = (content: string) => {
+    if (!content.trim()) return;
+
+    const newMessage: ChatMessage = {
+      senderId: currentUserId,
+      content,
+      timestamp: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+
+    sendMessage(content);
+  };
+
   return (
-    <>
-      <div className="flex w-full flex-col">
-        <MessagesMainHeader />
-        <MessagesMainContent className="max-h-full flex-1 overflow-auto" />
-        <MessagesMainInput />
+    <div className={cn("flex h-full w-full flex-col", className)} {...props}>
+      <MessagesMainHeader
+        isConnected={isConnected}
+        conversationId={conversationId}
+      />
+      <div className="flex-1 overflow-auto">
+        <MessagesSection messages={messages} currentUserId={currentUserId} />
       </div>
-    </>
+      <MessageInput
+        onSendMessage={handleSendMessage}
+        onTyping={sendTypingNotification}
+        disabled={!isConnected || !conversationId}
+      />
+    </div>
   );
 }
 

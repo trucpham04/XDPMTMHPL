@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HomeIcon, Users, MessageCircle, Bell, SearchIcon } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import FacebookLogo from "@/assets/logos/facebook_logo.png";
 // import { getAllUsers } from "@/API/UserService";
 import { User } from "@/API/UserServiceInterface";
@@ -51,14 +51,16 @@ const AppNavBar: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<User[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const search = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
+    // console.log(event.target.value);
     setName(event.target.value);
     setShowDropdown(true);
   };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && name.trim() !== "") {
+      const trimmedName = name.trim();
       const newUser: User = {
         id: Date.now(), // Tạm thời, vì không lấy từ API
         name: name.trim(),
@@ -72,6 +74,8 @@ const AppNavBar: React.FC = () => {
       });
 
       setShowDropdown(false); // Ẩn dropdown nếu muốn
+
+      navigate(`/search?q=${encodeURIComponent(trimmedName)}`);
     }
   };
 
@@ -107,10 +111,13 @@ const AppNavBar: React.FC = () => {
     <>
       <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
         <nav className="logo flex gap-2 pl-4">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={FacebookLogo}></AvatarImage>
-            <AvatarFallback>FB</AvatarFallback>
-          </Avatar>
+          <Link to="/">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={FacebookLogo}></AvatarImage>
+              <AvatarFallback>FB</AvatarFallback>
+            </Avatar>
+          </Link>
+
           <div className="relative w-full xl:w-fit" ref={dropdownRef}>
             {/* Ô tìm kiếm */}
             <div className="border-input bg-muted flex h-10 w-10 items-center rounded-full text-sm xl:w-[300px] xl:pl-2">
@@ -196,12 +203,14 @@ const AppNavBar: React.FC = () => {
         </nav>
 
         <div className="user flex gap-3 pr-4">
-          <Button asChild className="cursor-pointer">
-            <Avatar className="h-10 w-10 rounded-full p-0 shadow-sm">
-              <AvatarImage src={FacebookLogo} />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-          </Button>
+          <Link to="/profile">
+            <Button asChild className="cursor-pointer">
+              <Avatar className="h-10 w-10 rounded-full p-0 shadow-sm">
+                <AvatarImage src={FacebookLogo} />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+            </Button>
+          </Link>
         </div>
       </div>
     </>
