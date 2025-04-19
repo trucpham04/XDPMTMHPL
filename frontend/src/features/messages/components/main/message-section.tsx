@@ -1,25 +1,25 @@
 import { cn } from "@/lib/utils";
-import { MessagesMainItemType } from "../../types/messages-sidebar-item-type";
 import Message from "./message";
+import { ChatMessage } from "../../types";
 
 // Remove WebSocket-related props and just accept messages directly
 interface MessagesSectionProps extends React.HTMLAttributes<HTMLDivElement> {
-  messages: MessagesMainItemType[];
+  messages: ChatMessage[];
   currentUserId?: number;
 }
 
 function getMessageClassName(
-  message: MessagesMainItemType,
-  prevMessage: MessagesMainItemType,
-  nextMessage: MessagesMainItemType,
+  message: ChatMessage,
+  prevMessage: ChatMessage,
+  nextMessage: ChatMessage,
   currentUserId: number,
 ) {
   // Existing getMessageClassName function remains the same
-  const isCurrentUser = message.sender_id === currentUserId;
+  const isCurrentUser = message.senderId === currentUserId;
   const isFirstOfGroup =
-    !prevMessage || prevMessage.sender_id !== message.sender_id;
+    !prevMessage || prevMessage.senderId !== message.senderId;
   const isLastOfGroup =
-    !nextMessage || nextMessage.sender_id !== message.sender_id;
+    !nextMessage || nextMessage.senderId !== message.senderId;
 
   return cn(
     isFirstOfGroup && isLastOfGroup
@@ -65,9 +65,9 @@ function MessagesSection({
 
         return (
           <Message
-            key={message.id || `${message.sender_id}-${index}`} // Use unique id if available
+            key={message.id || `${message.senderId}-${index}`} // Use unique id if available
             message={message}
-            isCurrentUser={message.sender_id === currentUserId}
+            isCurrentUser={message.senderId === currentUserId}
             className={messageClassName}
           />
         );

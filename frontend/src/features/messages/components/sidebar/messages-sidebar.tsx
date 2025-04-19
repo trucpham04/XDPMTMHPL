@@ -2,14 +2,13 @@ import { cn } from "@/lib/utils";
 
 import MessageSidebarItem from "./messages-sidebar-item";
 import MessageSidebarHeader from "./messages-sidebar-header";
-
-import { MessagesSidebarItemType } from "../../types/messages-sidebar-item-type";
+import { Conversation } from "../../types";
 
 function MessagesSidebar({
   className,
   conversations,
   ...props
-}: React.ComponentProps<"div"> & { conversations: MessagesSidebarItemType[] }) {
+}: React.ComponentProps<"div"> & { conversations: Conversation[] }) {
   return (
     <>
       <div className={cn("px-2", className)} {...props}>

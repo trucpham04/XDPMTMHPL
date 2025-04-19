@@ -14,7 +14,7 @@ import FriendBirthday from "@/pages/main/friends/FriendBirthday";
 import FriendCustomList from "@/pages/main/friends/FriendCustomList";
 import FriendProfile from "@/pages/main/friends/FriendProfile";
 import MessagesPage from "@/features/messages/pages/MessagesPage";
-import Notifications from "@/pages/main/Notifications";
+import Notifications from "@/features/notifications/pages/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import Profile from "@/pages/profile/Profile";
