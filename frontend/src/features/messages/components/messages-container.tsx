@@ -1,27 +1,28 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import MessagesMain from "./main/messages-main";
 import MessagesSidebar from "./sidebar/messages-sidebar";
-import { MessagesSidebarItemType } from "../types/messages-sidebar-item-type";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MessagesInfo from "./info/messages-info";
-const conversations: MessagesSidebarItemType[] = [];
-const numberOfItems = 5; // số lượng đối tượng bạn muốn tạo
-
-for (let i = 0; i < numberOfItems; i++) {
-  conversations.push({
-    id: (i + 1).toString(), // id thay đổi theo index của vòng lặp
-    name: "John Doe",
-    avatar: "https://randomuser.me/api/portraits/",
-    lastMessage: "Hello, how are you?",
-    lastMessageTime: "10:00 AM",
-    unreadMessages: 2,
-  });
-}
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useMessage } from "../hooks/use-message";
 
 function MessagesContainer({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { id } = useParams<{ id: string }>();
+  const { getUserConversations, conversations } = useMessage();
+
+  const currentUserId = 1; // Replace with actual user ID from context or props
+
+  useEffect(() => {
+    getUserConversations(currentUserId);
+    console.log(conversations);
+  }, [getUserConversations, currentUserId]);
+
   return (
     <>
       <div className={cn("flex", className)} {...props}>
@@ -40,7 +41,7 @@ function MessagesContainer({
           }
           defaultOpen={false}
         >
-          <MessagesMain />
+          <MessagesMain currentUserId={1} conversationId={id} />
           <MessagesInfo className="mt-14" />
         </SidebarProvider>
       </div>
