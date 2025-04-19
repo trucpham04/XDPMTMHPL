@@ -19,6 +19,7 @@ import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import Profile from "@/pages/profile/Profile";
 import SearchPage from "@/pages/main/search/SearchPage";
+import AllSentRequest from "@/pages/main/friends/AllSentRequest";
 
 const routes: React.FC = () => {
   return (
@@ -27,8 +28,9 @@ const routes: React.FC = () => {
         <Route path="/" element={<DefaultLayout />}>
           <Route index element={<Home />} />
           <Route path="friends/*" element={<FriendLayout />}>
-              <Route index element={<FriendHome />} />
+            <Route index element={<FriendHome />} />
              <Route path="requests" element={<FriendRequest />} />
+              {/* <Route path="sentRequest" element={<AllSentRequest />} /> */}
              <Route path="suggestions" element={<FriendSuggest />}/>               
              <Route path="all" element={<AllFriend />} />
              <Route path="birthdays" element={<FriendBirthday />} />

@@ -3,7 +3,6 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
 import axios from "axios";
-import { time } from "console";
 
 
 type FriendRequest = {
@@ -116,7 +115,7 @@ const FriendRequests: React.FC = () => {
                 {requests.length}
               </span>
             </h2>
-            <a href="#" className="text-blue-500 hover:underline">
+            <a href="/sentRequest" className="text-blue-500 hover:underline">
               Xem lời mời đã gửi
             </a>
           </div>

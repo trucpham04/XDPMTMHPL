@@ -10,108 +10,102 @@ type FriendRequest = {
     name: string;
     mutualFriends: number;
     avatar: string;
-    time: string; // Thời gian tính từ requestDate
+    time: string;
   };
   
-  // Hàm tính thời gian kể từ ngày gửi lời mời
-  const calculateTimeSince = (date: string): string => {
-    const requestDate = new Date(date);
-    const now = new Date();
-    const diffInMs = now.getTime() - requestDate.getTime();
-  
-    const years = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
-    if (years > 0) return `${years} năm`;
-  
-    const weeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
-    if (weeks > 0) return `${weeks} tuần`;
-  
-    const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    return `${days} ngày`;
-  };
+const calculateTimeSince = (date: string): string => {
+const requestDate = new Date(date);
+const now = new Date();
+const diffInMs = now.getTime() - requestDate.getTime();
 
+const years = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
+if (years > 0) return `${years} năm`;
 
+const weeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
+if (weeks > 0) return `${weeks} tuần`;
+
+const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+return `${days} ngày`;
+};
 
 const FriendList: React.FC = ()=>{
-        const navigate = useNavigate();
-      
-        // State cho "Lời mời kết bạn"
-        const [visibleCount1, setVisibleCount1] = useState(10);
-        const [requests1, setRequests1] = useState<FriendRequest[]>([]);
-        const [error1, setError1] = useState<string | null>(null); // Lưu lỗi nếu có
-      
-        const handleShowMore1 = () => {
-          setVisibleCount1((prev) => prev + 10);
-        };
-      
-        // Lấy danh sách lời mời kết bạn từ API
-        const fetchFriendRequests = () => {
-          axios
-            .get("http://localhost:8080/api/friends/requests", {
-              headers: {
-                Authorization: "Bearer fake-token",
-              },
-            })
-            .then((response) => {
-              const fetchedRequests = response.data.map((req: any) => ({
-                id: req.id,
-                name: req.firstName + " " + req.lastName,
-                mutualFriends: req.mutualFriends,
-                avatar: req.avatar,
-                time: calculateTimeSince(req.requestDate),
-              }));
-              setRequests1(fetchedRequests);
-              setError1(null);
-            })
-            .catch((error) => {
-              console.error("Lỗi khi lấy danh sách lời mời kết bạn:", error);
-              setError1("Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.");
-            });
-        };
-      
-        // Gọi API khi component được render
-        useEffect(() => {
-          fetchFriendRequests();
-        }, []);
-      
-        // Xử lý "Xác nhận" lời mời
-        const handleAccept1 = (id: number) => {
-          console.log("Accepting friend request with id:", id);
-          axios
-            .post(`http://localhost:8080/api/friends/requests/accept/${id}`, null, {
-              headers: {
-                Authorization: "Bearer fake-token",
-              },
-            })
-            .then(() => {
-              fetchFriendRequests(); // Cập nhật danh sách lời mời
-              setError1(null);
-            })
-            .catch((error) => {
-              console.error("Lỗi khi chấp nhận lời mời:", error);
-              const errorMessage = error.response?.data || "Không thể chấp nhận lời mời. Vui lòng thử lại.";
-              setError1(errorMessage);
-            });
-        };
-      
-        // Xử lý "Xóa" lời mời
-        const handleDelete1 = (id: number) => {
-          console.log("Deleting friend request with id:", id);
-          axios
-            .delete(`http://localhost:8080/api/friends/requests/delete/${id}`, {
-              headers: {
-                Authorization: "Bearer fake-token",
-              },
-            })
-            .then(() => {
-              fetchFriendRequests(); // Cập nhật danh sách lời mời
-              setError1(null);
-            })
-            .catch((error) => {
-              console.error("Lỗi khi xóa lời mời:", error);
-              const errorMessage = error.response?.data || "Không thể xóa lời mời. Vui lòng thử lại.";
-              setError1(errorMessage);
-            });
-        };
+    const navigate = useNavigate();
+    const [visibleCount1, setVisibleCount1] = useState(10);
+    const [requests1, setRequests1] = useState<FriendRequest[]>([]);
+    const [error1, setError1] = useState<string | null>(null); 
+
+    const handleShowMore1 = () => {
+        setVisibleCount1((prev) => prev + 10);
+    };
+
+    const fetchFriendRequests = () => {
+        axios
+        .get("http://localhost:8080/api/friends/requests", {
+            headers: {
+            Authorization: "Bearer fake-token",
+            },
+        })
+        .then((response) => {
+            const fetchedRequests = response.data.map((req: any) => ({
+            id: req.id,
+            name: req.firstName + " " + req.lastName,
+            mutualFriends: req.mutualFriends,
+            avatar: req.avatar,
+            time: calculateTimeSince(req.requestDate),
+            }));
+            setRequests1(fetchedRequests);
+            setError1(null);
+        })
+        .catch((error) => {
+            console.error("Lỗi khi lấy danh sách lời mời kết bạn:", error);
+            setError1("Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.");
+        });
+    };
+
+
+    useEffect(() => {
+        fetchFriendRequests();
+    }, []);
+
+
+    const handleAccept1 = (id: number) => {
+        console.log("Accepting friend request with id:", id);
+        axios
+        .post(`http://localhost:8080/api/friends/requests/accept/${id}`, null, {
+            headers: {
+            Authorization: "Bearer fake-token",
+            },
+        })
+        .then(() => {
+            fetchFriendRequests(); 
+            setError1(null);
+        })
+        .catch((error) => {
+            console.error("Lỗi khi chấp nhận lời mời:", error);
+            const errorMessage = error.response?.data || "Không thể chấp nhận lời mời. Vui lòng thử lại.";
+            setError1(errorMessage);
+        });
+    };
+
+
+    const handleDelete1 = (id: number) => {
+        console.log("Deleting friend request with id:", id);
+        axios
+        .delete(`http://localhost:8080/api/friends/requests/delete/${id}`, {
+            headers: {
+            Authorization: "Bearer fake-token",
+            },
+        })
+        .then(() => {
+            fetchFriendRequests();
+            setError1(null);
+        })
+        .catch((error) => {
+            console.error("Lỗi khi xóa lời mời:", error);
+            const errorMessage = error.response?.data || "Không thể xóa lời mời. Vui lòng thử lại.";
+            setError1(errorMessage);
+        });
+    };
 
    
     return (
@@ -166,7 +160,6 @@ const FriendList: React.FC = ()=>{
                 </div>
             </div>
             )}
-            {/* <hr className="my-4 border-t-2 border-gray-300 font-bold" />  */}
         </div>
         
     )
