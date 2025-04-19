@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   NavigationMenu,
@@ -19,8 +20,10 @@ import FacebookLogo from "@/assets/logos/facebook_logo.png";
 import { User } from "@/API/UserServiceInterface";
 import SearchDropdown from "@/components/search/search-dropdown";
 import SearchResults from "@/components/search/search-results";
-import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
+// import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
 import { Button } from "../ui/button";
+import { RootState } from "../../features/messages/store/store";
+import axios from "axios";
 
 const navItems = [
   {
@@ -46,53 +49,58 @@ const navItems = [
 ];
 
 const AppNavBar: React.FC = () => {
-  const [name, setName] = useState<string>("");
-  const [users, setUsers] = useState<User[]>([]);
-  const [searchHistory, setSearchHistory] = useState<User[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<User[]>([]);
 
-  const search = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // console.log(event.target.value);
-    setName(event.target.value);
-    setShowDropdown(true);
-  };
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && name.trim() !== "") {
-      const trimmedName = name.trim();
-      const newUser: User = {
-        id: Date.now(), // Tạm thời, vì không lấy từ API
-        name: name.trim(),
-        avatarUrl: "", // Avatar rỗng hoặc avatar mặc định
-      };
+  const currentUser = useSelector((state: RootState) => state.user.user);
+  const currentUserId = currentUser?.id ?? 4;
 
-      setSearchHistory((prev) => {
-        const exists = prev.some((u) => u.name === newUser.name);
-        if (exists) return prev;
-        return [newUser, ...prev.slice(0, 7)];
-      });
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim() !== "") {
+      try {
+        await axios.post("http://localhost:8080/api/search/history", null, {
+          params: {
+            searcherId: currentUserId,
+            userId: null,
+            searchText: searchQuery.trim(),
+          },
+        });
+        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
 
-      setShowDropdown(false); // Ẩn dropdown nếu muốn
-
-      navigate(`/search?q=${encodeURIComponent(trimmedName)}`);
+        console.log("✅ Đã lưu tìm kiếm text");
+      } catch (error) {
+        console.error("❌ Lỗi khi lưu lịch sử:", error);
+      }
     }
   };
 
-  const handleDeleteHistory = (idToDelete: number) => {
-    setSearchHistory((prev) => prev.filter((user) => user.id !== idToDelete));
-  };
-
   useEffect(() => {
-    if (name.trim() === "") return;
-    getAllUsers(name)
-      .then((userList) => {
-        setUsers(userList.data);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi tìm user:", err);
-      });
-  }, [name]);
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim() === "") {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const response = await axios.get<User[]>(
+          `http://localhost:8080/api/users/search/users`,
+          {
+            params: {
+              query: searchQuery,
+              currentUserId: currentUser?.id ?? 0,
+            },
+          },
+        );
+        setSuggestions(response.data);
+      } catch (error) {
+        console.error("Lỗi khi tìm kiếm:", error);
+      }
+    };
+
+    fetchSuggestions();
+  }, [searchQuery]); // <== gọi lại mỗi khi searchQuery thay đổi
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -107,6 +115,7 @@ const AppNavBar: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  console.log("👤 currentUser từ Redux:", currentUser);
   return (
     <>
       <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
@@ -125,7 +134,8 @@ const AppNavBar: React.FC = () => {
                 <SearchIcon className="text-muted-foreground h-[16px] w-[16px]" />
               </div>
               <input
-                onChange={search}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 type="search"
                 onKeyDown={handleKeyDown}
                 onFocus={() => setShowDropdown(true)} // focus hiển thị dropdown
@@ -135,30 +145,86 @@ const AppNavBar: React.FC = () => {
             </div>
 
             {/* Popup hiển thị khi showDropdown true */}
-            {showDropdown && name.trim() === "" && (
-              <SearchDropdown
-                history={searchHistory}
-                onSelect={(value) => setName(value)}
-                onDelete={handleDeleteHistory}
-              />
-            )}
+            {showDropdown && (
+              <>
+                {/* Nếu input rỗng → hiện lịch sử tìm kiếm */}
+                {searchQuery.trim() === "" ? (
+                  <SearchDropdown
+                    userId={currentUser?.id ?? null}
+                    onSelect={async (history) => {
+                      const name = history.user
+                        ? `${history.user.firstName} ${history.user.lastName}`
+                        : history.searchText || "";
 
-            {showDropdown && name.trim() !== "" && users.length > 0 && (
-              <SearchResults
-                users={users}
-                onSelect={(selectedUser) => {
-                  setName(selectedUser.name);
+                      setSearchQuery(name);
 
-                  // Thêm vào lịch sử, tránh trùng id
-                  setSearchHistory((prev) => {
-                    if (prev.some((user) => user.id === selectedUser.id))
-                      return prev;
-                    return [selectedUser, ...prev.slice(0, 7)];
-                  });
+                      try {
+                        // Lưu lịch sử tìm kiếm trước khi thay đổi trạng thái
+                        await axios.post(
+                          "http://localhost:8080/api/search/history",
+                          null,
+                          {
+                            params: {
+                              searcherId: currentUserId,
+                              userId: history?.targetUser?.id,
+                              searchText: name,
+                            },
+                          },
+                        );
+                        console.log(
+                          "✅ Đã lưu lịch sử khi click vào dropdown:",
+                          name,
+                        );
+                      } catch (err) {
+                        console.error(
+                          "❌ Lỗi khi lưu lịch sử từ dropdown:",
+                          err,
+                        );
+                      }
+                      setShowDropdown(false);
 
-                  setShowDropdown(false); // Ẩn dropdown sau khi chọn
-                }}
-              />
+                      // Chuyển hướng đến trang tìm kiếm
+                      navigate(`/search?q=${encodeURIComponent(name)}`);
+                    }}
+                  />
+                ) : (
+                  suggestions.length > 0 && (
+                    <SearchResults
+                      users={suggestions}
+                      onSelect={async (user) => {
+                        const name = `${user.firstName} ${user.lastName}`;
+
+                        try {
+                          await axios.post(
+                            "http://localhost:8080/api/search/history",
+                            null,
+                            {
+                              params: {
+                                searcherId: currentUserId,
+                                userId: user.id,
+                                searchText: name,
+                              },
+                            },
+                          );
+
+                          console.log(
+                            "✅ Đã lưu lịch sử tìm kiếm cho user:",
+                            user,
+                          );
+                        } catch (error) {
+                          console.error(
+                            "❌ Lỗi khi lưu lịch sử tìm kiếm:",
+                            error,
+                          );
+                        }
+
+                        setShowDropdown(false);
+                        navigate(`/search?q=${encodeURIComponent(name)}`);
+                      }}
+                    />
+                  )
+                )}
+              </>
             )}
           </div>
         </nav>
