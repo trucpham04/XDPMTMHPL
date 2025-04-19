@@ -17,7 +17,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ users, onSelect }) => {
         <div className="p-2 text-sm text-gray-400">Không tìm thấy người dùng</div>
       ) : (
         users.map((user) => {
-          const displayName = user.name || "Unknown";
+          const displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || "Unknown";
           return (
             <div
               key={user.id}

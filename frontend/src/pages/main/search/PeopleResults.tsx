@@ -1,70 +1,111 @@
-// src/pages/search/PeopleResults.tsx
 import React, { useEffect, useState } from "react";
-import { User } from "@/API/UserServiceInterface";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
+import axios from "axios";
 
-export const fetchUsers = async (): Promise<User[]> => {
-  const result = await getAllUsers(""); // Lấy toàn bộ user mock
-  return result.data;
-};
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string;
+  relationStatus: "FRIEND" | "NOT_FRIEND" | "REQUEST_SENT" | "REQUEST_RECEIVED";
+}
 
 interface Props {
   query: string;
+  currentUserId: number;
 }
 
-const PeopleResults: React.FC<Props> = ({ query }) => {
+const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
   const [results, setResults] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
     const fetchResults = async () => {
-      const allUsers = await fetchUsers();
-      const filtered = allUsers.filter((user) =>
-        user.name.toLowerCase().includes(query.toLowerCase()),
-      );
-      setResults(filtered);
+      setLoading(true);
+      try {
+        const response = await axios.get<User[]>("http://localhost:8080/api/users/search/users", {
+          params: {
+            query: query.trim(),
+            currentUserId,
+          },
+        });
+        setResults(response.data);
+      } catch (error) {
+        console.error("Lỗi khi tìm kiếm người dùng:", error);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchResults();
-  }, [query]);
+  }, [query, currentUserId]);
+
+  const handleUserClick = async (user: User) => {
+    try {
+      const params = {
+        searcherId: currentUserId,
+        userId: user.id,
+        searchText: `${user.firstName} ${user.lastName}`,
+      };
+  
+      await axios.post("http://localhost:8080/api/search/history", null, {
+        params,
+      });
+  
+      console.log("✅ Đã lưu lịch sử tìm kiếm cho:", user.firstName, user.lastName);
+    } catch (error) {
+      console.error("❌ Lỗi khi lưu lịch sử người dùng:", error);
+    }
+  };
+  
+  
+  const renderButton = (status: User["relationStatus"]) => {
+    switch (status) {
+      case "FRIEND":
+        return <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">Message</button>;
+      case "NOT_FRIEND":
+        return <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">Add Friend</button>;
+      case "REQUEST_SENT":
+        return <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">Cancel Request</button>;
+      case "REQUEST_RECEIVED":
+        return <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">Accept</button>;
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
       <h2 className="mb-4 text-xl font-bold">People</h2>
-      {results.length === 0 ? (
-        <p className="text-gray-500">No results found.</p>
+      {loading ? (
+        <p className="text-gray-500">Đang tìm kiếm...</p>
+      ) : results.length === 0 ? (
+        <p className="text-gray-500">Không tìm thấy kết quả.</p>
       ) : (
         <ul className="space-y-4">
           {results.map((user) => (
             <li key={user.id} className="flex items-center justify-between">
-              <div
-                className="flex cursor-pointer items-center gap-3"
-                onClick={() => {
-                  const stored = localStorage.getItem("searchHistory");
-                  const prev: User[] = stored ? JSON.parse(stored) : [];
-                  const exists = prev.some((u) => u.id === user.id);
-                  const updated = exists ? prev : [user, ...prev.slice(0, 7)];
-                  localStorage.setItem(
-                    "searchHistory",
-                    JSON.stringify(updated),
-                  );
-                }}
-              >
+              <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={user.avatarUrl || ""} />
-                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                  <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="cursor-pointer font-medium hover:underline">
-                    {user.name}
+                  <p className="font-medium hover:underline cursor-pointer"
+                  onClick={() => handleUserClick(user)}>
+                    {user.firstName} {user.lastName}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Friend · X mutual friends
+                    {user.relationStatus === "FRIEND" ? "Friend" : ""}
                   </p>
                 </div>
               </div>
-              <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
-                Message
-              </button>
+              {renderButton(user.relationStatus)}
             </li>
           ))}
         </ul>
@@ -74,20 +115,3 @@ const PeopleResults: React.FC<Props> = ({ query }) => {
 };
 
 export default PeopleResults;
-
-// const fetchUsers = async (): Promise<User[]> => {
-//   return [
-//     { id: 1, name: "Trang Thủy", avatarUrl: "" },
-//     { id: 2, name: "Truaang", avatarUrl: "" },
-//     { id: 3, name: "Hoàng Traaung", avatarUrl: "" },
-//     { id: 4, name: "Trang hi", avatarUrl: "" },
-//     { id: 6, name: "lala", avatarUrl: "" },
-//     { id: 7, name: "beta", avatarUrl: "" },
-//     { id: 8, name: "gann", avatarUrl: "" },
-//     { id: 9, name: "huara", avatarUrl: "" },
-//     { id: 10, name: "tama", avatarUrl: "" },
-//     { id: 11, name: "jihoom", avatarUrl: "" },
-//     { id: 12, name: "khook", avatarUrl: "" },
-//     { id: 13, name: "nona", avatarUrl: "" },
-//   ];
-// };

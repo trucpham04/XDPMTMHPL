@@ -1,94 +1,187 @@
 import React, { useEffect, useState } from "react";
-import { User } from "@/API/UserServiceInterface";
-// import { fetchUsers } from "@/API/UserService";
-import { fetchPosts, Post } from "@/API/PostService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getAllUsers } from "@/API/UserServiceMock";
+import axios from "axios";
+import { User } from "@/API/UserServiceInterface";
+import { Post } from "@/API/PostServiceInterface";
 
 interface AllResultsProps {
   query: string;
+  currentUserId: number;
 }
 
-const AllResults: React.FC<AllResultsProps> = ({ query }) => {
-  const [users, setUsers] = useState<User[]>([]);
+const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
+  const [users, setUsers] = useState<(User & { relationStatus: string })[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const result = await getAllUsers(query); // Truyền query vào
-      setUsers(result.data);
+    setUsers([]);
+    setPosts([]);
+  }, [query]);
 
-      const allPosts = await fetchPosts();
-      const filteredPosts = allPosts.filter((post) =>
-        post.content.toLowerCase().includes(query.toLowerCase()),
-      );
-      setPosts(filteredPosts);
+  useEffect(() => {
+    if (!query.trim()) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [usersRes, postsRes] = await Promise.all([
+          axios.get("http://localhost:8080/api/users/search/users", {
+            params: { query, currentUserId },
+          }),
+          axios.get("http://localhost:8080/api/post/search/posts", {
+            params: { query },
+          }),
+        ]);
+
+        setUsers(usersRes.data);
+        setPosts(postsRes.data);
+      } catch (err) {
+        console.error("Lỗi khi tìm kiếm:", err);
+        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
-  }, [query]);
+  }, [query, currentUserId]);
 
-  const hasUsers = users.length > 0;
-  const hasPosts = posts.length > 0;
+  const handleUserClick = async (user: User) => {
+    try {
+      await axios.post("http://localhost:8080/api/search/history", null, {
+        params: {
+          searcherId: currentUserId, // 👈 người đang đăng nhập
+          targetUserId: user.id,     // 👈 người được click vào
+          searchText: `${user.firstName} ${user.lastName}`,
+        },
+      });
+      console.log("✅ Đã lưu lịch sử tìm kiếm:", {
+        searcherId: currentUserId,
+        targetUserId: user.id,
+        name: `${user.firstName} ${user.lastName}`,
+      });
+    } catch (error) {
+      console.error("❌ Lỗi khi lưu lịch sử:", error);
+    }
+  };
+  
 
-  if (!hasUsers && !hasPosts) {
-    return <p className="text-gray-500">No results found.</p>;
-  }
+  const renderButton = (status: string) => {
+    switch (status) {
+      case "FRIEND":
+        return (
+          <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
+            Message
+          </button>
+        );
+      case "NOT_FRIEND":
+        return (
+          <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">
+            Add Friend
+          </button>
+        );
+      case "REQUEST_SENT":
+        return (
+          <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">
+            Cancel Request
+          </button>
+        );
+      case "REQUEST_RECEIVED":
+        return (
+          <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">
+            Accept
+          </button>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (!query.trim()) return null;
+
+  if (loading) return <p className="text-gray-500">🔄 Đang tải kết quả...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="space-y-6">
-      {hasUsers && (
+      {users.length > 0 && (
         <div>
-          <h2 className="mb-2 text-xl font-bold">People</h2>
+          <h2 className="mb-3 text-xl font-semibold">People</h2>
           <ul className="space-y-4">
-            {users.map((user) => (
-              <li key={user.id} className="flex items-center justify-between">
-                <div
-                  className="flex cursor-pointer items-center gap-3"
-                  onClick={() => {
-                    const stored = localStorage.getItem("searchHistory");
-                    const prev: User[] = stored ? JSON.parse(stored) : [];
-                    const exists = prev.some((u) => u.id === user.id);
-                    const updated = exists ? prev : [user, ...prev.slice(0, 7)];
-                    localStorage.setItem(
-                      "searchHistory",
-                      JSON.stringify(updated),
-                    );
-                  }}
-                >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatarUrl || ""} />
-                    <AvatarFallback>{user.name[0]}</AvatarFallback>
-                  </Avatar>
+          {users.map((user) => (
+  <li key={user.id} className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <Avatar className="h-10 w-10">
+        <AvatarImage src={user.avatarUrl || ""} />
+        <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
+      </Avatar>
+      <div>
+        <p
+          className="font-medium cursor-pointer hover:underline"
+          onClick={() => handleUserClick(user)}
+        >
+          {user.firstName} {user.lastName}
+        </p>
+        <p className="text-sm text-gray-500">
+          {user.relationStatus === "FRIEND" ? "Friend" : ""}
+        </p>
+      </div>
+    </div>
+    {renderButton(user.relationStatus)}
+  </li>
+))}
+
+          </ul>
+        </div>
+      )}
+
+      {posts.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-xl font-semibold">Posts</h2>
+          <ul className="space-y-4">
+            {posts.map((post) => (
+              <li
+                key={post.id}
+                className="rounded border bg-white p-4 shadow-sm"
+              >
+                <div className="mb-2 flex items-center gap-3">
+                  {post.author?.avatarUrl && (
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={post.author.avatarUrl} />
+                      <AvatarFallback>
+                        {post.author.firstName[0]}
+                        {post.author.lastName[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                   <div>
-                    <p className="cursor-pointer font-medium hover:underline">
-                      {user.name}
+                    <p className="font-medium">
+                      {post.author?.firstName} {post.author?.lastName}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Friend · X mutual friends
+                      {new Date(post.createdAt).toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
-                  Message
-                </button>
+                <p className="text-gray-800">{post.content}</p>
+                <div className="mt-2 text-sm text-gray-400">
+                  Privacy: {post.privacyLevel || "unknown"} | Status:{" "}
+                  {post.status || "unknown"}
+                </div>
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      {hasPosts && (
-        <div>
-          <h2 className="mb-2 text-xl font-bold">Posts</h2>
-          <ul className="space-y-4">
-            {posts.map((post) => (
-              <li key={post.id} className="rounded border bg-gray-50 p-3">
-                <p>{post.content}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {users.length === 0 && posts.length === 0 && (
+        <p className="text-gray-500 italic">
+          Không có kết quả tìm kiếm cho "{query}".
+        </p>
       )}
     </div>
   );

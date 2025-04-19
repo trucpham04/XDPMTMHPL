@@ -11,6 +11,8 @@ const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const type = searchParams.get("type") || "people";
+  const currentUserId = 4;
+  // const currentUserId = useSelector((state: RootState) => state.auth.currentUser?.id);
 
   return (
     <div className="sticky top-14 flex min-h-screen w-full rounded-lg border p-4">
@@ -18,8 +20,10 @@ const SearchPage: React.FC = () => {
       <div className="flex flex-1 justify-center px-4">
         <div className="w-full max-w-2xl">
           <div className="rounded-lg border bg-white p-4">
-            {type === "all" && <AllResults query={query} />}
-            {type === "people" && <PeopleResults query={query} />}
+          {type === "all" && <AllResults query={query} currentUserId={currentUserId}/>}
+
+
+            {type === "people" && <PeopleResults query={query} currentUserId={currentUserId}/>}
             {type === "posts" && <PostResults query={query} />}
 
             {type !== "people" && type !== "posts" && type !== "all" && (
