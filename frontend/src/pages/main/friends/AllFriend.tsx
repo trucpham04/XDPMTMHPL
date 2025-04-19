@@ -19,7 +19,7 @@ const AllFriend: React.FC = () => {
 
   const fetchFriends = () => {
     axios
-      .get("http://localhost:8080/api/friends", {
+      .get("http://localhost:8082/api/friends", {
         headers: {
           Authorization: "Bearer fake-token",
         },
@@ -49,7 +49,7 @@ const AllFriend: React.FC = () => {
         return;
     }
     axios
-        .delete(`http://localhost:8080/api/friends/${id}`, { 
+        .delete(`http://localhost:8082/api/friends/${id}`, { 
             headers: {
                 Authorization: "Bearer fake-token",
             },

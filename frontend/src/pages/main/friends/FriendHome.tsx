@@ -40,7 +40,7 @@ const FriendList: React.FC = ()=>{
 
     const fetchFriendRequests = () => {
         axios
-        .get("http://localhost:8080/api/friends/requests", {
+        .get("http://localhost:8082/api/friends/requests", {
             headers: {
             Authorization: "Bearer fake-token",
             },
@@ -71,7 +71,7 @@ const FriendList: React.FC = ()=>{
     const handleAccept1 = (id: number) => {
         console.log("Accepting friend request with id:", id);
         axios
-        .post(`http://localhost:8080/api/friends/requests/accept/${id}`, null, {
+        .post(`http://localhost:8082/api/friends/requests/accept/${id}`, null, {
             headers: {
             Authorization: "Bearer fake-token",
             },
@@ -91,7 +91,7 @@ const FriendList: React.FC = ()=>{
     const handleDelete1 = (id: number) => {
         console.log("Deleting friend request with id:", id);
         axios
-        .delete(`http://localhost:8080/api/friends/requests/delete/${id}`, {
+        .delete(`http://localhost:8082/api/friends/requests/delete/${id}`, {
             headers: {
             Authorization: "Bearer fake-token",
             },
