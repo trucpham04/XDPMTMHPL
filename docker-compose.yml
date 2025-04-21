@@ -1,0 +1,86 @@
+services:
+  api-gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    image: api-gateway:latest
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    volumes:
+      - ./api_gateway/src:/app/src
+    depends_on:
+      - message-service
+    networks:
+      - service_network
+
+  message-service:
+    build:
+      context: ./message_service
+      dockerfile: dockerfile
+    image: message-service:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://message-db:3306/message_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: message_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./message_service/src:/app/src
+    depends_on:
+      - message-db
+    networks:
+      - database_network
+      - service_network
+
+  message-db:
+    image: "mysql:lts"
+    environment:
+      - "MYSQL_DATABASE=message_service"
+      - "MYSQL_USER=message_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3307:3306"
+    networks:
+      - database_network
+
+  notification-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: notification_service
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: root
+    ports:
+      - "3311:5432"
+    networks:
+      - database_network
+
+  phpmyadmin:
+    image: "phpmyadmin:latest"
+    environment:
+      - "PMA_ARBITRARY=1"
+    ports:
+      - "80:80"
+    networks:
+      - "database_network"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - database_network
+      - service_network
+
+networks:
+  database_network:
+    driver: bridge
+  service_network:
+    driver: bridge
