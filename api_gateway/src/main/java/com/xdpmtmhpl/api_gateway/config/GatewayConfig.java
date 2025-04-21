@@ -18,7 +18,7 @@ public class GatewayConfig {
                                                                                 "/${remaining}")
                                                                 .addRequestHeader("X-Forwarded-Prefix",
                                                                                 "/search-service"))
-                                                .uri("http://message-service:8080"))
+                                                .uri("http://search-service:8080"))
                                 .route("user-service-route", r -> r
                                                 .path("/user-service/**")
                                                 .filters(f -> f

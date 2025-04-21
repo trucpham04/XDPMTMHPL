@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
 
@@ -43,8 +44,8 @@ public class CommentController {
     // Tạo cmt mới
     @PostMapping("/post/{postId}")
     public ResponseEntity<Comment> createComment(@PathVariable Long postId,
-                                                 @RequestBody CommentRequest commentRequest,
-                                                 @AuthenticationPrincipal User userDetails) {
+            @RequestBody CommentRequest commentRequest,
+            @AuthenticationPrincipal User userDetails) {
         User user = (User) userDetails;
         Comment comment = commentService.createComment(commentRequest.getContent(), postId, user.getId());
         return ResponseEntity.ok(comment);
@@ -53,7 +54,7 @@ public class CommentController {
     // Xóa cmt
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long id,
-                                              @AuthenticationPrincipal User userDetails) {
+            @AuthenticationPrincipal User userDetails) {
         Comment comment = commentService.getCommentById(id)
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
         User user = (User) userDetails;
