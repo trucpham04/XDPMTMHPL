@@ -14,10 +14,10 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy jar từ stage build
-COPY --from=build /app/target/*.jar ./app.jar
+COPY --from=build /app/target/*.war ./app.war
 
 # Expose port ứng dụng
-EXPOSE 8090
+EXPOSE 8080
 
 # Entry point
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","app.war"]

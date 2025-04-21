@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     image: api-gateway:latest
     ports:
-      - "8080:8080"
+      - "8090:8090"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     volumes:
@@ -15,10 +15,106 @@ services:
     networks:
       - service_network
 
+  search-service:
+    build:
+      context: ./search_service
+      dockerfile: Dockerfile
+    image: search-service:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://search-db:3306/search_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: search_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./search_service/src:/app/src
+    depends_on:
+      - search-db
+    networks:
+      - database_network
+      - service_network
+
+  search-db:
+    image: "mysql:lts"
+    environment:
+      - "MYSQL_DATABASE=search_service"
+      - "MYSQL_USER=search_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3307:3306"
+    networks:
+      - database_network
+
+  friend-service:
+    build:
+      context: ./friend_service
+      dockerfile: Dockerfile
+    image: friend-service:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://friend-db:3306/friend_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: friend_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./friend_service/src:/app/src
+    depends_on:
+      - friend-db
+    networks:
+      - database_network
+      - service_network
+
+  friend-db:
+    image: mysql:lts
+    environment:
+      - "MYSQL_DATABASE=friend_service"
+      - "MYSQL_USER=friend_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3308:3306"
+    networks:
+      - database_network
+
+  post-service:
+    build:
+      context: ./post_service
+      dockerfile: Dockerfile
+    image: post-service:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://post-db:3306/post_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: post_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./post_service/src:/app/src
+    depends_on:
+      - post-db
+    networks:
+      - database_network
+      - service_network
+
+  post-db:
+    image: mysql:lts
+    environment:
+      - "MYSQL_DATABASE=post_service"
+      - "MYSQL_USER=post_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3309:3306"
+    networks:
+      - database_network
+
   message-service:
     build:
       context: ./message_service
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     image: message-service:latest
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://message-db:3306/message_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -43,15 +139,35 @@ services:
       - "MYSQL_ROOT_PASSWORD=root"
       - "MYSQL_PASSWORD=root"
     ports:
-      - "3307:3306"
+      - "3310:3306"
     networks:
       - database_network
+
+  notification-service:
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile
+    image: notification-service:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notification_service
+      SPRING_DATASOURCE_USERNAME: notification_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./notification_service/src:/app/src
+    depends_on:
+      - notification-db
+    networks:
+      - database_network
+      - service_network
 
   notification-db:
     image: postgres:latest
     environment:
       POSTGRES_DB: notification_service
-      POSTGRES_USER: notification_user
+      POSTGRES_USER: notification_service
       POSTGRES_PASSWORD: root
     ports:
       - "3311:5432"
@@ -65,7 +181,7 @@ services:
     ports:
       - "80:80"
     networks:
-      - "database_network"
+      - database_network
 
   rabbitmq:
     image: rabbitmq:3-management
