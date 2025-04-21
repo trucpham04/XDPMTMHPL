@@ -44,6 +44,8 @@ services:
       - "MYSQL_PASSWORD=root"
     ports:
       - "3307:3306"
+    volumes:
+      - search-db-data:/var/lib/mysql
     networks:
       - database_network
 
@@ -76,6 +78,8 @@ services:
       - "MYSQL_PASSWORD=root"
     ports:
       - "3308:3306"
+    volumes:
+      - friend-db-data:/var/lib/mysql
     networks:
       - database_network
 
@@ -108,6 +112,8 @@ services:
       - "MYSQL_PASSWORD=root"
     ports:
       - "3309:3306"
+    volumes:
+      - post-db-data:/var/lib/mysql
     networks:
       - database_network
 
@@ -140,6 +146,8 @@ services:
       - "MYSQL_PASSWORD=root"
     ports:
       - "3310:3306"
+    volumes:
+      - message-db-data:/var/lib/mysql
     networks:
       - database_network
 
@@ -171,6 +179,8 @@ services:
       POSTGRES_PASSWORD: root
     ports:
       - "3311:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
     networks:
       - database_network
 
@@ -200,3 +210,10 @@ networks:
     driver: bridge
   service_network:
     driver: bridge
+
+volumes:
+  search-db-data:
+  friend-db-data:
+  post-db-data:
+  message-db-data:
+  notification-db-data:
