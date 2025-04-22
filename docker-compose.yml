@@ -10,8 +10,8 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     volumes:
       - ./api_gateway/src:/app/src
-    depends_on:
-      - message-service
+    # depends_on:
+    #   - message-service
     networks:
       - service_network
 
@@ -172,6 +172,7 @@ services:
     depends_on:
       - message-db
       - rabbitmq
+      - notification-service
     networks:
       - database_network
       - service_network

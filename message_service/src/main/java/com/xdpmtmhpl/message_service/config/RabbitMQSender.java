@@ -1,12 +1,16 @@
 package com.xdpmtmhpl.message_service.config;
 
+import java.util.List;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.xdpmtmhpl.message_service.dto.notification.NotificationDTO;
 
 @Component
 public class RabbitMQSender implements CommandLineRunner {
@@ -36,7 +40,15 @@ public class RabbitMQSender implements CommandLineRunner {
                     .convertSendAndReceive("notification_service.queue", request);
 
             if (response != null) {
-                System.out.println("[Client] Response JSON result: " + response.get("notifications"));
+                JsonNode notificationsNode = response.get("notifications");
+                List<NotificationDTO> notifications = objectMapper.convertValue(
+                        notificationsNode,
+                        new TypeReference<List<NotificationDTO>>() {
+                        });
+                for (NotificationDTO noti : notifications) {
+                    System.out.println(noti);
+                }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
