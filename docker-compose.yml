@@ -31,6 +31,7 @@ services:
       - ./user_service/src:/app/src
     depends_on:
       - user-db
+      - rabbitmq
     networks:
       - database_network
       - service_network
@@ -65,6 +66,7 @@ services:
       - ./search_service/src:/app/src
     depends_on:
       - search-db
+      - rabbitmq
     networks:
       - database_network
       - service_network
@@ -99,6 +101,7 @@ services:
       - ./friend_service/src:/app/src
     depends_on:
       - friend-db
+      - rabbitmq
     networks:
       - database_network
       - service_network
@@ -133,6 +136,7 @@ services:
       - ./post_service/src:/app/src
     depends_on:
       - post-db
+      - rabbitmq
     networks:
       - database_network
       - service_network
@@ -167,6 +171,7 @@ services:
       - ./message_service/src:/app/src
     depends_on:
       - message-db
+      - rabbitmq
     networks:
       - database_network
       - service_network
@@ -201,6 +206,7 @@ services:
       - ./notification_service/src:/app/src
     depends_on:
       - notification-db
+      - rabbitmq
     networks:
       - database_network
       - service_network
@@ -238,6 +244,8 @@ services:
     networks:
       - database_network
       - service_network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
 
 networks:
   database_network:
@@ -252,3 +260,4 @@ volumes:
   post-db-data:
   message-db-data:
   notification-db-data:
+  rabbitmq-data:
