@@ -1,5 +1,6 @@
-package com.xdpmtmhpl.message_service.config;
+package com.xdpmtmhpl.notification_service.config;
 
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -13,8 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import org.springframework.amqp.core.Queue;
 
 @Configuration
 public class RabbitMQConfig {
@@ -65,11 +64,11 @@ public class RabbitMQConfig {
         return new RabbitAdmin(connectionFactory);
     }
 
-    @Value("${rabbitmq.queue.message}")
-    private String messageQueueName;
+    @Value("${rabbitmq.queue.notification}")
+    private String notificationQueueName;
 
     @Bean
-    public Queue messageQueue() {
-        return new Queue(messageQueueName, true);
+    public Queue notificationQueue() {
+        return new Queue(notificationQueueName, true);
     }
 }
