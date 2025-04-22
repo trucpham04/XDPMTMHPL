@@ -34,15 +34,15 @@ public class RabbitMQListener {
                 NotificationDTO notificationDTO2 = new NotificationDTO();
 
                 notificationDTO2.setId(Long.valueOf(1));
-                notificationDTO2.setMessage("This is a message from DTO");
+                notificationDTO2.setMessage("This is a message from DTO 1");
                 NotificationDTO notificationDTO3 = new NotificationDTO();
 
-                notificationDTO3.setId(Long.valueOf(1));
-                notificationDTO3.setMessage("This is a message from DTO");
+                notificationDTO3.setId(Long.valueOf(2));
+                notificationDTO3.setMessage("This is a message from DTO 2");
                 NotificationDTO notificationDTO4 = new NotificationDTO();
 
-                notificationDTO4.setId(Long.valueOf(1));
-                notificationDTO4.setMessage("This is a message from DTO");
+                notificationDTO4.setId(Long.valueOf(3));
+                notificationDTO4.setMessage("This is a message from DTO 3");
 
                 // DTO sang JSON cho nhiều DTO
                 ArrayNode notifications = objectMapper.createArrayNode();
