@@ -4,7 +4,7 @@ import history_clock from "@/assets/logos/history_clock.png";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import avatar from "@/assets/logos/avatar.jpg";
-import { SearchHistory } from "@/API/HistoryServiceInterface";
+import { SearchHistory } from "@/types/Search";
 
 interface SearchDropdownProps {
   onSelect: (history: SearchHistory) => void;
@@ -84,11 +84,11 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
           const userName = isTargetUser
             ? `${item.targetUser!.firstName} ${item.targetUser!.lastName}`
             : item.searchText;
-        
+
           const avatarSrc = isTargetUser
             ? item.targetUser?.avatarUrl || avatar
             : history_clock;
-        
+
           return (
             <div
               key={item.id}
@@ -105,7 +105,8 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={avatarSrc} alt="avatar" />
                     <AvatarFallback>
-                      {item.targetUser!.firstName?.[0] || item.targetUser!.lastName?.[0]}
+                      {item.targetUser!.firstName?.[0] ||
+                        item.targetUser!.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
@@ -115,10 +116,10 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                     className="h-6 w-6 rounded-full"
                   />
                 )}
-        
+
                 <span className="text-sm text-gray-800">{userName}</span>
               </div>
-        
+
               <button
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -131,7 +132,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
             </div>
           );
         })
-      )}        
+      )}
     </div>
   );
 };

@@ -26,8 +26,7 @@ public class GatewayConfig {
                                                                                 "/${remaining}")
                                                                 .addRequestHeader("X-Forwarded-Prefix",
                                                                                 "/user-service"))
-                                                .uri("http://user-service:8081"))
-
+                                                .uri("http://127.0.0.1:8081"))
                                 .route("friend-service-route", r -> r
                                                 .path("/friend-service/**")
                                                 .filters(f -> f
@@ -62,4 +61,5 @@ public class GatewayConfig {
                                                 .uri("http://notification-service:8085"))
                                 .build();
         }
+
 }
