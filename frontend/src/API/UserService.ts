@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { User } from './UserServiceInterface';
+import axios from "axios";
+import { User } from "../types/User";
 
 /**
  * Gọi API để lấy danh sách người dùng theo tên.
@@ -8,7 +8,7 @@ import { User } from './UserServiceInterface';
  */
 export const getAllUsers = async (name: string): Promise<User[]> => {
   const response = await axios.get("/api/users", {
-    params: { name }
+    params: { name },
   });
 
   // Kiểm tra dữ liệu trả về hợp lệ không

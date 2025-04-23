@@ -27,29 +27,18 @@ public class RabbitMQSender implements CommandLineRunner {
     public void run(String... args) {
         try {
             ObjectNode chatMessage = objectMapper.createObjectNode();
-            chatMessage.put("type", "send_message");
-            chatMessage.put("id", 1);
-            chatMessage.put("conversationId", 1);
-            chatMessage.put("content", "This is a content");
+            chatMessage.put("type", "user_info");
+            chatMessage.put("user_id", 1);
 
             JsonNode request = chatMessage;
 
             System.out.println("[Client] Requesting with JSON data: " + chatMessage.toString());
 
             JsonNode response = (JsonNode) rabbitTemplate
-                    .convertSendAndReceive("notification_service.queue", request);
+                    .convertSendAndReceive("user_service.queue", request);
 
-            if (response != null) {
-                JsonNode notificationsNode = response.get("notifications");
-                List<NotificationDTO> notifications = objectMapper.convertValue(
-                        notificationsNode,
-                        new TypeReference<List<NotificationDTO>>() {
-                        });
-                for (NotificationDTO noti : notifications) {
-                    System.out.println(noti);
-                }
+            System.out.println("[Client] Received response: " + response.toString());
 
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,53 +1,94 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "@/contexts/AuthContext"; // Import context
 
-export default function Register() {
+const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { register, error, loading } = useAuthContext(); // Lấy register, error, loading từ AuthContext
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    contact: "", 
+    email: "",
     password: "",
-    birthDate: "",
-    gender: "",
+    // birthDate: "",
+    // gender: "",
+    username: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Đăng ký thành công! Chuyển hướng đến đăng nhập.");
-    navigate("/auth/login");
+    const { firstName, lastName, email, username, password } = form;
+
+    // Gọi API đăng ký từ context
+    const isRegistered = await register({
+      username: username,
+      email: email,
+      password,
+      firstName,
+      lastName,
+      roles: ["user"],
+    });
+
+    if (isRegistered) {
+      alert("Đăng ký thành công! Chuyển hướng đến đăng nhập.");
+      navigate("/auth/login");
+    }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="w-[450px] bg-white p-8 rounded-lg shadow-2xl">
-        <h2 className="text-3xl font-bold text-center mb-2">Tạo tài khoản</h2>
-        <p className="text-gray-600 text-center mb-4">Nhanh chóng và dễ dàng.</p>
+    <div className="flex h-screen items-center justify-center bg-gray-100">
+      <div className="w-[450px] rounded-lg bg-white p-8 shadow-2xl">
+        <h2 className="mb-2 text-center text-3xl font-bold">Tạo tài khoản</h2>
+        <p className="mb-4 text-center text-gray-600">
+          Nhanh chóng và dễ dàng.
+        </p>
 
-
-        <p className="text-sm text-gray-500 text-center mb-4">
-          Những người dùng dịch vụ của chúng tôi có thể đã tải thông tin liên hệ của bạn lên Facebook.{" "}
-          <span className="text-blue-600 cursor-pointer hover:underline">Tìm hiểu thêm.</span>
+        <p className="mb-4 text-center text-sm text-gray-500">
+          Những người dùng dịch vụ của chúng tôi có thể đã tải thông tin liên hệ
+          của bạn lên Facebook.{" "}
+          <span className="cursor-pointer text-blue-600 hover:underline">
+            Tìm hiểu thêm.
+          </span>
         </p>
 
         <form onSubmit={handleSubmit}>
-
-          <div className="flex space-x-4 mb-4">
-            <Input name="firstName" placeholder="Họ" className="w-1/2 p-3 text-lg" onChange={handleChange} required />
-            <Input name="lastName" placeholder="Tên" className="w-1/2 p-3 text-lg" onChange={handleChange} required />
+          <div className="mb-4 flex space-x-4">
+            <Input
+              name="firstName"
+              placeholder="Họ"
+              className="w-1/2 p-3 text-lg"
+              onChange={handleChange}
+              required
+            />
+            <Input
+              name="lastName"
+              placeholder="Tên"
+              className="w-1/2 p-3 text-lg"
+              onChange={handleChange}
+              required
+            />
           </div>
 
+          <Input
+            name="username"
+            placeholder="Tên người dùng"
+            className="mb-4 w-full p-3 text-lg"
+            onChange={handleChange}
+            required
+          />
 
           <Input
-            name="contact"
-            placeholder="Email hoặc số di động"
-            className="w-full p-3 text-lg mb-4"
+            name="email"
+            placeholder="Email"
+            className="mb-4 w-full p-3 text-lg"
             onChange={handleChange}
             required
           />
@@ -56,54 +97,90 @@ export default function Register() {
             name="password"
             type="password"
             placeholder="Mật khẩu"
-            className="w-full p-3 text-lg mb-4"
+            className="mb-4 w-full p-3 text-lg"
             onChange={handleChange}
             required
           />
 
-          <label className="block text-gray-700 font-semibold mb-2">Ngày sinh</label>
+          {/* <label className="mb-2 block font-semibold text-gray-700">
+            Ngày sinh
+          </label>
           <Input
             name="birthDate"
             type="date"
-            className="w-full p-3 text-lg mb-4"
+            className="mb-4 w-full p-3 text-lg"
             onChange={handleChange}
             required
-          />
+          /> */}
 
-          <label className="block text-gray-700 font-semibold mb-2">Giới tính</label>
-          <div className="flex justify-between mb-4">
+          {/* <label className="mb-2 block font-semibold text-gray-700">
+            Giới tính
+          </label>
+          <div className="mb-4 flex justify-between">
             <label className="flex items-center space-x-2">
-              <input type="radio" name="gender" value="Nam" onChange={handleChange} required />
+              <input
+                type="radio"
+                name="gender"
+                value="Nam"
+                onChange={handleChange}
+                required
+              />
               <span>Nam</span>
             </label>
             <label className="flex items-center space-x-2">
-              <input type="radio" name="gender" value="Nữ" onChange={handleChange} required />
+              <input
+                type="radio"
+                name="gender"
+                value="Nữ"
+                onChange={handleChange}
+                required
+              />
               <span>Nữ</span>
             </label>
             <label className="flex items-center space-x-2">
-              <input type="radio" name="gender" value="Khác" onChange={handleChange} required />
+              <input
+                type="radio"
+                name="gender"
+                value="Khác"
+                onChange={handleChange}
+                required
+              />
               <span>Khác</span>
             </label>
-          </div>
+          </div> */}
 
           <Button
             type="submit"
-            className="w-full bg-green-500 text-white hover:bg-green-600 text-lg py-3 font-semibold"
+            className="w-full bg-green-500 py-3 text-lg font-semibold text-white hover:bg-green-600"
+            disabled={loading} // Disable button khi đang tải
           >
-            Đăng ký
+            {loading ? "Đang đăng ký..." : "Đăng ký"}
           </Button>
+
+          {error && (
+            <p className="mt-4 text-center text-red-600">{error}</p> // Hiển thị lỗi nếu có
+          )}
         </form>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
+        <p className="mt-4 text-center text-xs text-gray-500">
           Bằng cách nhấp vào Đăng ký, bạn đồng ý với{" "}
-          <span className="text-blue-600 cursor-pointer hover:underline">Điều khoản</span>,{" "}
-          <span className="text-blue-600 cursor-pointer hover:underline">Chính sách quyền riêng tư</span> và{" "}
-          <span className="text-blue-600 cursor-pointer hover:underline">Chính sách cookie</span> của chúng tôi.{" "}
-          Bạn có thể nhận được thông báo của chúng tôi qua SMS và hủy nhận bất kỳ lúc nào.
+          <span className="cursor-pointer text-blue-600 hover:underline">
+            Điều khoản
+          </span>
+          ,{" "}
+          <span className="cursor-pointer text-blue-600 hover:underline">
+            Chính sách quyền riêng tư
+          </span>{" "}
+          và{" "}
+          <span className="cursor-pointer text-blue-600 hover:underline">
+            Chính sách cookie
+          </span>{" "}
+          của chúng tôi. Bạn có thể nhận được thông báo của chúng tôi qua SMS và
+          hủy nhận bất kỳ lúc nào.
         </p>
 
         <p
-          className="text-blue-600 text-center mt-4 cursor-pointer hover:underline"
+          className="mt-4 cursor-pointer text-center text-blue-600 hover:underline"
           onClick={() => navigate("/auth/login")}
         >
           Bạn đã có tài khoản? Đăng nhập
@@ -111,4 +188,6 @@ export default function Register() {
       </div>
     </div>
   );
-}
+};
+
+export default Register;
