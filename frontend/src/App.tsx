@@ -1,9 +1,7 @@
 import RoutesComponent from "@/routes/index";
 
 function App() {
-  return (
-    <RoutesComponent />
-  );
+  return <RoutesComponent />;
 }
 
 export default App;

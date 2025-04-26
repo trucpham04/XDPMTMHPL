@@ -8,6 +8,7 @@ import MessagesInfo from "./info/messages-info";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import useMessage from "@/hooks/useMessage";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 function MessagesContainer({
   className,
@@ -16,12 +17,13 @@ function MessagesContainer({
   const { id } = useParams<{ id: string }>();
   const { getUserConversations, conversations } = useMessage();
 
-  const currentUserId = 1; // Replace with actual user ID from context or props
+  const { user } = useAuthContext();
 
   useEffect(() => {
-    getUserConversations(currentUserId);
-    console.log(conversations);
-  }, [getUserConversations, currentUserId]);
+    if (!user) return;
+    getUserConversations(user?.id);
+    console.log("Conversations: ", conversations);
+  }, [getUserConversations, user]);
 
   return (
     <>
