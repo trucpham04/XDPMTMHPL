@@ -187,7 +187,7 @@ export default function CommentDialog({ postId }: { postId: number }) {
             variant="ghost"
             className="flex flex-1 cursor-pointer items-center space-x-2"
           >
-            <MessageCircle size={20} color="gray" />
+            <MessageCircle className="size-5!" color="gray" />
             <span>Bình luận</span>
           </Button>
         </DialogTrigger>

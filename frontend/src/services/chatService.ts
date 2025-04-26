@@ -5,12 +5,16 @@ import {
   ConversationCreateRequest,
 } from "../types/Message";
 
+const serviceName = "message-service";
+
 class ChatService {
   /**
    * Lấy tất cả cuộc trò chuyện của người dùng
    */
   async getUserConversations(userId: number): Promise<Conversation[]> {
-    return apiClient.get<Conversation[]>(`/conversations/${userId}`);
+    return apiClient.get<Conversation[]>(
+      `${serviceName}/api/chat/conversations/${userId}`,
+    );
   }
 
   /**
@@ -19,7 +23,10 @@ class ChatService {
   async createConversation(
     requestData: ConversationCreateRequest,
   ): Promise<Conversation> {
-    return apiClient.post<Conversation>(`/conversations`, requestData);
+    return apiClient.post<Conversation>(
+      `${serviceName}/api/chat/conversations`,
+      requestData,
+    );
   }
 
   /**
@@ -29,7 +36,7 @@ class ChatService {
     conversationId: number,
   ): Promise<ChatMessage[]> {
     return apiClient.get<ChatMessage[]>(
-      `/conversations/${conversationId}/messages`,
+      `${serviceName}/api/chat/conversations/${conversationId}/messages`,
     );
   }
 
@@ -37,9 +44,12 @@ class ChatService {
    * Cập nhật trạng thái của tin nhắn
    */
   async updateMessageStatus(messageId: number, status: string): Promise<null> {
-    return apiClient.patch<null>(`/messages/${messageId}/status`, {
-      status,
-    });
+    return apiClient.patch<null>(
+      `${serviceName}/api/chat/messages/${messageId}/status`,
+      {
+        status,
+      },
+    );
   }
 
   /**
@@ -50,7 +60,7 @@ class ChatService {
     userId: number,
   ): Promise<boolean> {
     return apiClient.get<boolean>(
-      `/conversations/${conversationId}/users/${userId}`,
+      `${serviceName}/api/chat/conversations/${conversationId}/users/${userId}`,
     );
   }
 }

@@ -11,4 +11,5 @@ export interface User {
   createdAt?: string;
   profilePicture?: string;
   bio?: string | null;
+  cover_photo_url?: string | null;
 }

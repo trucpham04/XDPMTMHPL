@@ -36,7 +36,7 @@ const routes: React.FC = () => {
           </Route>
           <Route path="notifications" element={<Notifications />} />
           <Route path="search" element={<SearchPage />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path="profile/:user_id" element={<Profile />} />
         </Route>
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />

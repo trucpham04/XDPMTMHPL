@@ -1,86 +1,41 @@
 import { Notification } from "../types/Notification";
+import apiClient from "./apiClient";
 
-const API_URL = "http://localhost:3000/api";
+const serviceName = "notification-service";
 
-export const NotificationService = {
+class NotificationService {
+  /**
+   * Lấy danh sách thông báo
+   */
   async getNotifications(): Promise<Notification[]> {
-    try {
-      const response = await fetch(`${API_URL}/notifications`, {
-        credentials: "include", // for sending cookies with the request
-      });
+    return apiClient.get<Notification[]>(`${serviceName}/api/notifications`);
+  }
 
-      if (!response.ok) {
-        throw new Error(`Error fetching notifications: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-      throw error;
-    }
-  },
-
+  /**
+   * Đánh dấu một thông báo là đã đọc
+   */
   async markAsRead(notificationId: string): Promise<void> {
-    try {
-      const response = await fetch(
-        `${API_URL}/notifications/${notificationId}/read`,
-        {
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
+    return apiClient.put<void>(
+      `${serviceName}/api/notifications/${notificationId}/read`,
+    );
+  }
 
-      if (!response.ok) {
-        throw new Error(
-          `Error marking notification as read: ${response.statusText}`,
-        );
-      }
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
-      throw error;
-    }
-  },
-
+  /**
+   * Đánh dấu tất cả thông báo là đã đọc
+   */
   async markAllAsRead(): Promise<void> {
-    try {
-      const response = await fetch(`${API_URL}/notifications/read-all`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    return apiClient.put<void>(`${serviceName}/api/notifications/read-all`);
+  }
 
-      if (!response.ok) {
-        throw new Error(
-          `Error marking all notifications as read: ${response.statusText}`,
-        );
-      }
-    } catch (error) {
-      console.error("Failed to mark all notifications as read:", error);
-      throw error;
-    }
-  },
-
+  /**
+   * Xóa một thông báo
+   */
   async deleteNotification(notificationId: string): Promise<void> {
-    try {
-      const response = await fetch(
-        `${API_URL}/notifications/${notificationId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
+    return apiClient.delete<void>(
+      `${serviceName}/api/notifications/${notificationId}`,
+    );
+  }
+}
 
-      if (!response.ok) {
-        throw new Error(`Error deleting notification: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error("Failed to delete notification:", error);
-      throw error;
-    }
-  },
-};
+export const notificationService = new NotificationService();
+export default notificationService;

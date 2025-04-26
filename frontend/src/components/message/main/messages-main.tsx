@@ -23,7 +23,7 @@ function MessagesMain({
 }: MessagesMainProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 
-  const websocketUrl = "ws://localhost:8084/ws/chat";
+  const websocketUrl = "ws://127.0.0.1:8090/message-service/ws/chat";
 
   const {
     messages: newMessages,

@@ -275,27 +275,41 @@ const AppNavBar: React.FC = () => {
             <PopoverContent className="w-40 rounded-sm p-1">
               <div className="grid gap-1">
                 {user ? (
+                  <>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className="cursor-pointer rounded-xs"
+                    >
+                      <Link
+                        to={`/profile/${user.id}`}
+                        className="justify-start"
+                      >
+                        Your profile
+                      </Link>
+                    </Button>
+
+                    <Separator className="w-full" />
+
+                    <Button
+                      variant="ghost"
+                      onClick={logout}
+                      className="cursor-pointer justify-start! rounded-xs"
+                    >
+                      Log out
+                    </Button>
+                  </>
+                ) : (
                   <Button
                     asChild
                     variant="ghost"
                     className="cursor-pointer rounded-xs"
                   >
-                    <Link to="/profile" className="justify-start">
-                      Your profile
+                    <Link to="/auth/login" className="justify-start">
+                      Login
                     </Link>
                   </Button>
-                ) : (
-                  ""
                 )}
-                <Separator className="w-full" />
-
-                <Button
-                  variant="ghost"
-                  onClick={logout}
-                  className="cursor-pointer justify-start! rounded-xs"
-                >
-                  Log out
-                </Button>
               </div>
             </PopoverContent>
           </Popover>

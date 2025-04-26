@@ -15,6 +15,7 @@ import UserAvatar from "../app/userAvatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useAuthContext } from "@/contexts/AuthContext";
 import CommentDialog from "./CommentDialog";
+import { Link } from "react-router-dom";
 
 export default function PostItem({ post }: { post: Post }) {
   const { user } = useAuthContext();
@@ -23,23 +24,34 @@ export default function PostItem({ post }: { post: Post }) {
     <div className="flex h-auto flex-col rounded-2xl bg-white p-2 shadow-lg">
       <div className="flex items-center justify-between p-2">
         <div className="flex items-center space-x-2">
-          <UserAvatar user={post.user} className="h-10 w-10" />
+          <Link to={`/profile/${post.user.id}`}>
+            <UserAvatar user={post.user} className="h-10 w-10" />
+          </Link>
           <div>
-            <p className="font-semibold">{post.user.fullName}</p>
+            <Link to={`/profile/${post.user.id}`}>
+              <p className="font-semibold">{post.user.fullName}</p>
+            </Link>
             <span className="text-sm text-gray-500">16 giờ trước</span>
           </div>
         </div>
+
         {user?.id === post.user.id && (
           <Popover>
             <PopoverTrigger>
               <MoreHorizontal className="cursor-pointer text-gray-500" />
             </PopoverTrigger>
-            <PopoverContent className="w-fit p-1">
-              <Button variant="ghost" className="cursor-pointer">
+            <PopoverContent className="flex w-fit flex-col p-1">
+              <Button
+                variant="ghost"
+                className="inline-flex cursor-pointer justify-start"
+              >
                 Chỉnh sửa bài viết
               </Button>
 
-              <Button variant="ghost" className="cursor-pointer">
+              <Button
+                variant="ghost"
+                className="inline-flex cursor-pointer justify-start"
+              >
                 Xóa bài viết
               </Button>
             </PopoverContent>
@@ -52,7 +64,7 @@ export default function PostItem({ post }: { post: Post }) {
           <p>{post.content}</p>
         </div>
         {post.imageUrls && post.imageUrls.length > 0 && (
-          <Carousel className="max-w-[500px]">
+          <Carousel className="inline-flex w-full max-w-[500px] items-center justify-center">
             <CarouselContent className="w-5/6">
               {post.imageUrls.map((idx) => (
                 <CarouselItem key={idx}>
@@ -87,9 +99,10 @@ export default function PostItem({ post }: { post: Post }) {
       <div className="mt-2 flex justify-around border-t pt-2">
         <Button
           variant="ghost"
-          className="flex flex-1 cursor-pointer items-center space-x-2"
+          className="flex flex-1 cursor-pointer items-center space-x-2 text-black"
         >
-          <ThumbsUp size={20} color="gray" />
+          <ThumbsUp className="size-5!" fill="black" />
+
           <span>Thích</span>
         </Button>
 
@@ -99,7 +112,7 @@ export default function PostItem({ post }: { post: Post }) {
           variant="ghost"
           className="flex flex-1 cursor-pointer items-center space-x-2"
         >
-          <Share2 size={20} color="gray" />
+          <Share2 className="size-5!" color="gray" />
           <span>Chia sẻ</span>
         </Button>
       </div>
