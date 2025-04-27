@@ -128,7 +128,7 @@ const AppNavBar: React.FC = () => {
 
           <div className="relative w-full xl:w-fit" ref={dropdownRef}>
             {/* Ô tìm kiếm */}
-            <div className="border-input bg-muted flex h-10 w-10 items-center rounded-full text-sm xl:w-[300px] xl:pl-2">
+            <div className="border-input bg-muted flex h-10 items-center rounded-full text-sm xl:w-[300px] xl:pl-2">
               <div className="flex h-full w-10 items-center justify-center">
                 <SearchIcon className="text-muted-foreground h-[16px] w-[16px]" />
               </div>
@@ -138,7 +138,7 @@ const AppNavBar: React.FC = () => {
                 type="search"
                 onKeyDown={handleKeyDown}
                 onFocus={() => setShowDropdown(true)} // focus hiển thị dropdown
-                className="placeholder:text-muted-foreground hidden w-full p-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 xl:block"
+                className="placeholder:text-muted-foreground w-full p-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 xl:block"
                 placeholder="Search Facebook"
               />
             </div>

@@ -27,7 +27,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ users, onSelect }) => {
               className="flex cursor-pointer items-center gap-2 p-2 hover:bg-gray-100"
             >
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user.avatarUrl || ""} />
+                <AvatarImage src={user.profilePicture || ""} />
                 <AvatarFallback>{displayName[0]}</AvatarFallback>
               </Avatar>
               <span className="text-sm text-gray-700">{displayName}</span>

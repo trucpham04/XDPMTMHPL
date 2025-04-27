@@ -14,8 +14,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import lombok.Data;
 
 @Entity
+@Data
 @Table(name = "conversations")
 public class Conversation {
 
@@ -37,53 +39,4 @@ public class Conversation {
 
     @Transient
     private Message lastMessage;
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isGroupChat() {
-        return isGroupChat;
-    }
-
-    public void setGroupChat(boolean groupChat) {
-        isGroupChat = groupChat;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public List<ConversationParticipant> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(List<ConversationParticipant> participants) {
-        this.participants = participants;
-    }
-
-    public Message getLastMessage() {
-        return lastMessage;
-    }
-
-    public void setLastMessage(Message lastMessage) {
-        this.lastMessage = lastMessage;
-    }
 }

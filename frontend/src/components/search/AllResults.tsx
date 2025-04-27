@@ -29,12 +29,18 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
 
       try {
         const [usersRes, postsRes] = await Promise.all([
-          axios.get("http://localhost:8080/api/users/search/users", {
-            params: { query, currentUserId },
-          }),
-          axios.get("http://localhost:8080/api/post/search/posts", {
-            params: { query },
-          }),
+          axios.get(
+            "http://127.0.0.1:8090/search-service/api/users/search/users",
+            {
+              params: { query, currentUserId },
+            },
+          ),
+          axios.get(
+            "http://127.0.0.1:8090/search-service/api/post/search/posts",
+            {
+              params: { query },
+            },
+          ),
         ]);
 
         setUsers(usersRes.data);
@@ -52,13 +58,17 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
 
   const handleUserClick = async (user: User) => {
     try {
-      await axios.post("http://localhost:8080/api/search/history", null, {
-        params: {
-          searcherId: currentUserId, // 👈 người đang đăng nhập
-          targetUserId: user.id, // 👈 người được click vào
-          searchText: `${user.firstName} ${user.lastName}`,
+      await axios.post(
+        "http://127.0.0.1:8090/search-service/api/search/history",
+        null,
+        {
+          params: {
+            searcherId: currentUserId, // 👈 người đang đăng nhập
+            targetUserId: user.id, // 👈 người được click vào
+            searchText: `${user.firstName} ${user.lastName}`,
+          },
         },
-      });
+      );
       console.log("✅ Đã lưu lịch sử tìm kiếm:", {
         searcherId: currentUserId,
         targetUserId: user.id,
@@ -115,7 +125,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
               <li key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatarUrl || ""} />
+                    <AvatarImage src={user.profilePicture || ""} />
                     <AvatarFallback>
                       {user.firstName[0]}
                       {user.lastName[0]}
@@ -150,18 +160,18 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
                 className="rounded border bg-white p-4 shadow-sm"
               >
                 <div className="mb-2 flex items-center gap-3">
-                  {post.author?.avatarUrl && (
+                  {post.user?.profilePicture && (
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.author.avatarUrl} />
+                      <AvatarImage src={post.user.profilePicture} />
                       <AvatarFallback>
-                        {post.author.firstName[0]}
-                        {post.author.lastName[0]}
+                        {post.user.firstName[0]}
+                        {post.user.lastName[0]}
                       </AvatarFallback>
                     </Avatar>
                   )}
                   <div>
                     <p className="font-medium">
-                      {post.author?.firstName} {post.author?.lastName}
+                      {post.user?.firstName} {post.user?.lastName}
                     </p>
                     <p className="text-sm text-gray-500">
                       {new Date(post.createdAt).toLocaleString()}
@@ -169,10 +179,10 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
                   </div>
                 </div>
                 <p className="text-gray-800">{post.content}</p>
-                <div className="mt-2 text-sm text-gray-400">
+                {/* <div className="mt-2 text-sm text-gray-400">
                   Privacy: {post.privacyLevel || "unknown"} | Status:{" "}
                   {post.status || "unknown"}
-                </div>
+                </div> */}
               </li>
             ))}
           </ul>

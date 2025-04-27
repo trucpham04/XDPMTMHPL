@@ -1,21 +1,25 @@
+import { User } from "./User";
+
 export type NotificationType =
-  | "message"
-  | "comment"
-  | "like"
-  | "friend_request";
+  | "FRIEND_REQUEST"
+  | "FRIEND_ACCEPT"
+  | "POST_LIKE"
+  | "POST_COMMENT"
+  | "NEW_MESSAGE";
 
 export interface Notification {
   id: string;
   type: NotificationType;
-  content: string;
-  timestamp: string;
-  isRead: boolean;
-  sender: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  targetId?: string; // ID of the post, comment, etc.
-  targetType?: string; // Type of the target (post, comment, etc.)
-  data?: any; // Additional data specific to notification type
+  message: string;
+  createdAt: string;
+  sender: User;
+}
+
+export interface NotificationResponse {
+  notifications: Notification[];
+  currentPage: number;
+  hasNext: boolean;
+  length: number;
+  totalElements: number;
+  totalPages: number;
 }
