@@ -9,7 +9,7 @@ import useMessage from "@/hooks/useMessage";
 
 interface MessagesMainProps extends React.ComponentProps<"div"> {
   conversationId?: string | number;
-  currentUserId?: number;
+  currentUserId: number;
   websocketUrl?: string;
   initialMessages?: ChatMessage[];
 }
@@ -23,8 +23,6 @@ function MessagesMain({
 }: MessagesMainProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 
-  const websocketUrl = "ws://127.0.0.1:8090/message-service/ws/chat";
-
   const {
     messages: newMessages,
     isConnected,
@@ -32,14 +30,10 @@ function MessagesMain({
     joinConversation,
     leaveConversation,
     sendTypingNotification,
-  } = useChatWebSocket({
-    url: websocketUrl,
-    userId: currentUserId,
-  });
+  } = useChatWebSocket();
 
   const { getMessages } = useMessage();
 
-  // Join/leave websocket room
   useEffect(() => {
     if (isConnected && conversationId) {
       joinConversation(conversationId);

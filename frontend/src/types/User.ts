@@ -13,3 +13,10 @@ export interface User {
   bio?: string | null;
   cover_photo_url?: string | null;
 }
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  profilePictureUrl?: string;
+}

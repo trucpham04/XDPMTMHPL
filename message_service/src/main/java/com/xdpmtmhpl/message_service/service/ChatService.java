@@ -3,6 +3,7 @@ package com.xdpmtmhpl.message_service.service;
 import com.xdpmtmhpl.message_service.Enum.MessageStatus;
 import com.xdpmtmhpl.message_service.Enum.MessageType;
 import com.xdpmtmhpl.message_service.dto.ChatMessageDTO;
+import com.xdpmtmhpl.message_service.dto.ConversationDTO;
 import com.xdpmtmhpl.message_service.dto.UserDTO;
 import com.xdpmtmhpl.message_service.dto.WebSocketRequest;
 import com.xdpmtmhpl.message_service.models.Conversation;
@@ -11,15 +12,12 @@ import com.xdpmtmhpl.message_service.models.Message;
 import com.xdpmtmhpl.message_service.repository.ConversationParticipantRepository;
 import com.xdpmtmhpl.message_service.repository.ConversationRepository;
 import com.xdpmtmhpl.message_service.repository.MessageRepository;
+import com.xdpmtmhpl.message_service.client.UserClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -39,9 +37,6 @@ import java.util.stream.Collectors;
 public class ChatService {
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private ConversationRepository conversationRepository;
 
     @Autowired
@@ -50,17 +45,17 @@ public class ChatService {
     @Autowired
     private MessageRepository messageRepository;
 
-    @Value("${user-service.url:http://localhost:8081}")
-    private String userServiceUrl;
-
     private final Map<Long, Map<String, WebSocketSession>> conversationSessions = new ConcurrentHashMap<>();
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserClient userClient;
+
     // === CONVERSATION MANAGEMENT METHODS ===
 
-    public List<Conversation> getUserConversations(Long userId) {
+    public List<ConversationDTO> getUserConversations(Long userId) {
         List<ConversationParticipant> userParticipations = participantRepository.findByUserId(userId);
         List<Long> conversationIds = userParticipations.stream()
                 .map(participant -> participant.getConversation().getId())
@@ -68,27 +63,62 @@ public class ChatService {
 
         List<Conversation> conversations = conversationRepository.findAllById(conversationIds);
 
-        // For each conversation, get the last message
+        List<ConversationDTO> result = new ArrayList<>();
+
         for (Conversation conversation : conversations) {
+            ConversationParticipant otherParticipant = conversation.getParticipants()
+                    .stream()
+                    .filter(p -> !p.getUserId().equals(userId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (otherParticipant == null)
+                continue;
+
+            UserDTO otherUser = userClient.getUserById(otherParticipant.getUserId());
+
+            ConversationDTO dto = new ConversationDTO();
+            dto.setId(conversation.getId());
+            dto.setName(conversation.getName());
+            dto.setGroupChat(conversation.isGroupChat());
+            dto.setCreatedAt(conversation.getCreatedAt());
+            dto.setOtherUser(otherUser);
+
             List<Message> messages = messageRepository
                     .findTopByConversationIdOrderByTimestampDesc(conversation.getId());
+
             if (!messages.isEmpty()) {
-                conversation.setLastMessage(messages.get(0));
+                Message lastMessage = messages.get(0);
+                ChatMessageDTO messageDTO = new ChatMessageDTO();
+                messageDTO.setId(lastMessage.getId());
+                messageDTO.setContent(lastMessage.getContent());
+                messageDTO.setTimestamp(lastMessage.getTimestamp());
+                dto.setLastMessage(messageDTO);
             }
+
+            result.add(dto);
         }
 
-        return conversations;
+        result.sort((c1, c2) -> {
+            if (c1.getLastMessage() == null && c2.getLastMessage() == null)
+                return 0;
+            if (c1.getLastMessage() == null)
+                return 1;
+            if (c2.getLastMessage() == null)
+                return -1;
+            return c2.getLastMessage().getTimestamp().compareTo(c1.getLastMessage().getTimestamp());
+        });
+
+        return result;
     }
 
     public Conversation createConversation(String name, boolean isGroupChat, List<Long> participantIds) {
-        // Create and save the conversation
         Conversation conversation = new Conversation();
         conversation.setName(name);
         conversation.setGroupChat(isGroupChat);
         conversation.setCreatedAt(LocalDateTime.now());
         conversation = conversationRepository.save(conversation);
 
-        // Add participants
         List<ConversationParticipant> participants = new ArrayList<>();
         for (Long userId : participantIds) {
             ConversationParticipant participant = new ConversationParticipant();
@@ -100,7 +130,6 @@ public class ChatService {
 
         participantRepository.saveAll(participants);
 
-        // Fetch conversation with participants
         return conversationRepository.findById(conversation.getId()).orElse(conversation);
     }
 
@@ -124,7 +153,6 @@ public class ChatService {
                 message.setStatus(messageStatus);
                 messageRepository.save(message);
             } catch (IllegalArgumentException e) {
-                // Invalid status
                 throw new IllegalArgumentException("Invalid message status: " + status);
             }
         }
@@ -149,22 +177,16 @@ public class ChatService {
 
         message.setTimestamp(LocalDateTime.now());
 
-        if (messageDTO.getMediaUrl() != null && !messageDTO.getMediaUrl().isEmpty()) {
-            message.setMediaUrl(messageDTO.getMediaUrl());
-        }
-
         Message savedMessage = messageRepository.save(message);
         return convertToDTO(savedMessage);
     }
 
     public ChatMessageDTO sendMessage(Long conversationId, Long senderId, String content,
             MessageType messageType, String mediaUrl) {
-        // First, check if user is in the conversation
         if (!isUserInConversation(senderId, conversationId)) {
             throw new RuntimeException("User is not a participant in this conversation");
         }
 
-        // Create and save the message
         Message message = new Message();
         message.setConversationId(conversationId);
         message.setSenderId(senderId);
@@ -173,18 +195,12 @@ public class ChatService {
         message.setStatus(MessageStatus.SENT);
         message.setTimestamp(LocalDateTime.now());
 
-        if (mediaUrl != null && !mediaUrl.isEmpty()) {
-            message.setMediaUrl(mediaUrl);
-        }
-
         Message savedMessage = messageRepository.save(message);
         ChatMessageDTO messageDTO = convertToDTO(savedMessage);
 
-        // Send to conversation using WebSocket (previously a separate service method)
         try {
             sendToConversation(conversationId, messageDTO);
         } catch (Exception e) {
-            // Log error but don't fail the operation
             e.printStackTrace();
         }
 
@@ -192,52 +208,6 @@ public class ChatService {
     }
 
     // === USER DATA METHODS ===
-
-    public UserDTO getUserById(Long userId) {
-        try {
-            ResponseEntity<UserDTO> response = restTemplate.getForEntity(
-                    userServiceUrl + "/api/users/{userId}",
-                    UserDTO.class,
-                    userId);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return response.getBody();
-            }
-        } catch (Exception e) {
-            // Log the error
-        }
-
-        // Fallback to a default user if user service is unavailable
-        UserDTO defaultUser = new UserDTO();
-        defaultUser.setId(userId);
-        defaultUser.setUsername("user" + userId);
-        defaultUser.setDisplayName("User " + userId);
-
-        return defaultUser;
-    }
-
-    public UserDTO getUserByUsername(String username) {
-        try {
-            ResponseEntity<UserDTO> response = restTemplate.getForEntity(
-                    userServiceUrl + "/api/users/username/{username}",
-                    UserDTO.class,
-                    username);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return response.getBody();
-            }
-        } catch (Exception e) {
-            // Log the error
-        }
-
-        // Fallback to a default user if user service is unavailable
-        UserDTO defaultUser = new UserDTO();
-        defaultUser.setId(1L);
-        defaultUser.setUsername(username);
-        defaultUser.setDisplayName(username);
-
-        return defaultUser;
-    }
 
     private ChatMessageDTO convertToDTO(Message message) {
         ChatMessageDTO dto = new ChatMessageDTO();
@@ -248,19 +218,6 @@ public class ChatService {
         dto.setMessageType(message.getType());
         dto.setStatus(message.getStatus().toString());
         dto.setTimestamp(message.getTimestamp());
-
-        if (message.getMediaUrl() != null) {
-            dto.setMediaUrl(message.getMediaUrl());
-        }
-
-        // Fetch sender information using RestTemplate
-        try {
-            UserDTO user = getUserById(message.getSenderId());
-            dto.setSenderUsername(user.getUsername());
-        } catch (Exception e) {
-            // In case of error, set default values
-            dto.setSenderUsername("unknown");
-        }
 
         return dto;
     }
@@ -289,99 +246,6 @@ public class ChatService {
             return true;
         } catch (IOException e) {
             // Log the error
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Sends a notification message to a specific user
-     * 
-     * @param userId  The ID of the user to send the message to
-     * @param message The message to send
-     * @return true if the message was processed, false otherwise
-     */
-    public boolean sendToUser(Long userId, ChatMessageDTO message) {
-        try {
-            // Get user information
-            UserDTO user = getUserById(userId);
-
-            // Create a system notification for the user
-            // This will need to be delivered when the user connects or joins relevant
-            // conversations
-            ChatMessageDTO notification = new ChatMessageDTO();
-            notification.setSenderId(message.getSenderId());
-            notification.setSenderUsername(message.getSenderUsername());
-            notification.setContent(message.getContent());
-            notification.setMessageType(MessageType.SYSTEM);
-
-            // Store the notification for delivery
-            // saveNotification(userId, notification);
-
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Sends a typing notification for a conversation
-     *
-     * @param conversationId The conversation ID
-     * @param userId         The ID of the user who is typing
-     * @return true if successful, false otherwise
-     */
-    public boolean sendTypingNotification(Long conversationId, Long userId) {
-        try {
-            // Create typing notification request data
-            ObjectNode dataNode = objectMapper.createObjectNode();
-
-            // Create a WebSocketRequest object to simulate a typing notification
-            WebSocketRequest request = new WebSocketRequest();
-            request.setAction("TYPING");
-            request.setConversationId(conversationId);
-            request.setData(dataNode);
-
-            // Get user details
-            UserDTO user = getUserById(userId);
-
-            // Create and broadcast the typing notification
-            ChatMessageDTO typingNotification = new ChatMessageDTO();
-            typingNotification.setConversationId(conversationId);
-            typingNotification.setSenderId(userId);
-            typingNotification.setSenderUsername(user.getUsername());
-            typingNotification.setMessageType(MessageType.SYSTEM);
-            typingNotification.setContent("TYPING");
-
-            // Broadcast to the conversation
-            broadcastToConversation(conversationId, typingNotification);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Creates and sends a system message to a conversation
-     *
-     * @param conversationId The conversation ID
-     * @param content        The system message content
-     * @return true if successful, false otherwise
-     */
-    public boolean sendSystemMessage(Long conversationId, String content) {
-        try {
-            ChatMessageDTO systemMessage = new ChatMessageDTO();
-            systemMessage.setConversationId(conversationId);
-            systemMessage.setMessageType(MessageType.SYSTEM);
-            systemMessage.setContent(content);
-
-            // Save and broadcast
-            ChatMessageDTO savedMessage = saveMessage(systemMessage);
-            broadcastToConversation(conversationId, savedMessage);
-            return true;
-        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -419,7 +283,6 @@ public class ChatService {
     }
 
     public Map<String, String> extractQueryParameters(WebSocketSession session) {
-        // Extract query parameters from the URI
         Map<String, String> params = new ConcurrentHashMap<>();
 
         String uri = session.getUri().toString();
@@ -440,7 +303,6 @@ public class ChatService {
         return params;
     }
 
-    // Method to add a session to a conversation
     public void addSessionToConversation(Long conversationId, String sessionId, WebSocketSession session) {
         conversationSessions.computeIfAbsent(conversationId, k -> new ConcurrentHashMap<>())
                 .put(sessionId, session);
@@ -451,12 +313,10 @@ public class ChatService {
                 .remove(sessionId, session);
     }
 
-    // Method to remove a session from a conversation
     public void removeSessionFromConversation(Long conversationId, String sessionId) {
         if (conversationSessions.containsKey(conversationId)) {
             conversationSessions.get(conversationId).remove(sessionId);
 
-            // Clean up empty maps
             if (conversationSessions.get(conversationId).isEmpty()) {
                 conversationSessions.remove(conversationId);
             }

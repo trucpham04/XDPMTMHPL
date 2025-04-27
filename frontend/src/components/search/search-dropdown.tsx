@@ -26,7 +26,9 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     }
     try {
       console.log("🧾 ID cần xóa:", id);
-      await axios.delete(`http://localhost:8080/api/search/history/${id}`);
+      await axios.delete(
+        `http://127.0.0.1:8090/search-service/api/search/history/${id}`,
+      );
       setSearchHistory((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error("❌ Lỗi khi xóa lịch sử:", error);
@@ -37,7 +39,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     const fetchHistory = async () => {
       try {
         const response = await axios.get<SearchHistory[]>(
-          `http://localhost:8080/api/search/recent-users`,
+          `http://127.0.0.1:8090/search-service/api/search/recent-users`,
         );
 
         response.data.forEach((item, index) => {
@@ -86,7 +88,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
             : item.searchText;
 
           const avatarSrc = isTargetUser
-            ? item.targetUser?.avatarUrl || avatar
+            ? item.targetUser?.profilePicture || avatar
             : history_clock;
 
           return (

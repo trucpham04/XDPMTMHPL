@@ -28,14 +28,11 @@ public class Notification {
     @Column(nullable = false)
     private NotificationType type;
 
-    @Column(name = "reference_id")
-    private Long referenceId;
-
-    @Column(name = "is_read", nullable = false)
-    private boolean isRead;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "sender_id", nullable = false)
+    private Long senderId;
 
     @PrePersist
     protected void onCreate() {

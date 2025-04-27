@@ -1,6 +1,5 @@
-package com.xdpmtmhpl.notification_service.dto;
+package com.xdpmtmhpl.message_service.dto.notification;
 
-import com.xdpmtmhpl.notification_service.enums.NotificationType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

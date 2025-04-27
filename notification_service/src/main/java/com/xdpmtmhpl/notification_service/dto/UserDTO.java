@@ -1,4 +1,4 @@
-package com.xdpmtmhpl.message_service.dto;
+package com.xdpmtmhpl.notification_service.dto;
 
 import lombok.Data;
 
@@ -27,5 +27,5 @@ public class UserDTO {
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
 
-    private Set<String> roles; // chỉ lấy tên role thay vì full Role entity
+    private Set<String> roles;
 }

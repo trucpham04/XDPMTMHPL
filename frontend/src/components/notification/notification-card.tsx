@@ -1,9 +1,7 @@
-import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Notification, NotificationType } from "../../types/Notification";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   MessageSquare,
@@ -24,103 +22,114 @@ import {
 
 interface NotificationCardProps {
   notification: Notification;
-  onMarkAsRead: (id: string) => void;
   onDelete: (id: string) => void;
   onAcceptFriendRequest?: (id: string) => void;
   onDeclineFriendRequest?: (id: string) => void;
 }
 
+// Icon mapping for easier scalability
+const NOTIFICATION_ICONS: Record<NotificationType, React.ReactNode> = {
+  NEW_MESSAGE: <MessageSquare className="size-5 text-blue-500" />,
+  POST_LIKE: <ThumbsUp className="size-5 text-pink-500" />,
+  POST_COMMENT: <MessageCircle className="size-5 text-green-500" />,
+  FRIEND_REQUEST: <UserPlus className="size-5 text-violet-500" />,
+};
+
+const NotificationActions = ({
+  type,
+  notificationId,
+  onAccept,
+  onDecline,
+}: {
+  type: NotificationType;
+  notificationId: string;
+  onAccept?: (id: string) => void;
+  onDecline?: (id: string) => void;
+}) => {
+  if (type !== "FRIEND_REQUEST") return null;
+
+  return (
+    <div className="mt-2 flex gap-2">
+      <Button
+        size="sm"
+        className="flex items-center gap-1"
+        onClick={(e) => {
+          e.stopPropagation();
+          onAccept?.(notificationId);
+        }}
+      >
+        <Check className="h-4 w-4" />
+        Accept
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-1"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDecline?.(notificationId);
+        }}
+      >
+        <X className="h-4 w-4" />
+        Decline
+      </Button>
+    </div>
+  );
+};
+
 export function NotificationCard({
   notification,
-  onMarkAsRead,
   onDelete,
   onAcceptFriendRequest,
   onDeclineFriendRequest,
 }: NotificationCardProps) {
-  const getNotificationIcon = (type: NotificationType) => {
-    switch (type) {
-      case "message":
-        return <MessageSquare className="h-4 w-4 text-blue-500" />;
-      case "like":
-        return <ThumbsUp className="h-4 w-4 text-pink-500" />;
-      case "comment":
-        return <MessageCircle className="h-4 w-4 text-green-500" />;
-      case "friend_request":
-        return <UserPlus className="h-4 w-4 text-violet-500" />;
-      default:
-        return null;
-    }
-  };
+  const { id, sender, type, message, createdAt } = notification;
 
   return (
     <Card
       className={cn(
-        "relative mb-2 cursor-pointer p-4 transition-colors hover:bg-gray-50",
-        !notification.isRead && "border-l-4 border-blue-500 bg-blue-50/50",
+        "relative mb-2 rounded-lg p-4 shadow-sm transition-colors hover:bg-gray-50",
       )}
-      onClick={() => !notification.isRead && onMarkAsRead(notification.id)}
     >
       <div className="flex items-start gap-3">
-        <Avatar className="h-10 w-10">
-          <AvatarImage
-            src={notification.sender.avatar}
-            alt={notification.sender.name}
-          />
+        {/* Avatar */}
+        <Avatar className="size-12">
+          <AvatarImage src={sender.profilePicture} alt={sender.firstName} />
           <AvatarFallback>
-            {notification.sender.name.substring(0, 2).toUpperCase()}
+            {sender.firstName.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
+        {/* Notification Content */}
         <div className="flex-1">
-          <div className="mb-1 flex items-center gap-2">
-            {getNotificationIcon(notification.type)}
-            <span className="text-sm font-medium">
-              {notification.sender.name}
+          <div className="flex items-center gap-1">
+            {/* Notification Icon */}
+            {NOTIFICATION_ICONS[type]}
+            <span className="font-medium">
+              {sender.firstName} {sender.lastName}
             </span>
-            {!notification.isRead && (
-              <Badge variant="default" className="bg-blue-500 px-1.5 text-xs">
-                New
-              </Badge>
-            )}
+
+            {/* Message */}
+            <div className="text-gray-700">{message}</div>
           </div>
 
-          <p className="text-sm text-gray-700">{notification.content}</p>
+          {/* Actions */}
+          <NotificationActions
+            type={type}
+            notificationId={id}
+            onAccept={onAcceptFriendRequest}
+            onDecline={onDeclineFriendRequest}
+          />
 
+          {/* Timestamp */}
           <div className="mt-1 text-xs text-gray-500">
-            {formatDistanceToNow(new Date(notification.timestamp), {
-              addSuffix: true,
-            })}
+            {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
           </div>
-
-          {notification.type === "friend_request" && (
-            <div className="mt-2 flex gap-2">
-              <Button
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAcceptFriendRequest?.(notification.id);
-                }}
-              >
-                <Check className="h-3.5 w-3.5" /> Accept
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeclineFriendRequest?.(notification.id);
-                }}
-              >
-                <X className="h-3.5 w-3.5" /> Decline
-              </Button>
-            </div>
-          )}
         </div>
 
+        {/* Dropdown Menu */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <Button
               variant="ghost"
               size="icon"
@@ -132,17 +141,8 @@ export function NotificationCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {notification.isRead ? (
-              <DropdownMenuItem onClick={() => onMarkAsRead(notification.id)}>
-                Mark as unread
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem onClick={() => onMarkAsRead(notification.id)}>
-                Mark as read
-              </DropdownMenuItem>
-            )}
             <DropdownMenuItem
-              onClick={() => onDelete(notification.id)}
+              onClick={() => onDelete(id)}
               className="text-red-500"
             >
               Delete notification

@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:5173")
+
+// @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api")
 public class SearchHistoryController {
@@ -21,13 +22,12 @@ public class SearchHistoryController {
     @PostMapping("/search/history")
     public ResponseEntity<String> saveSearch(
             @RequestParam(required = false) Integer searcherId,
-            @RequestParam (required = false)Integer userId,
+            @RequestParam(required = false) Integer userId,
             @RequestParam String searchText) {
 
         searchHistoryService.saveSearchHistory(searcherId, userId, searchText);
         return ResponseEntity.ok("Search history saved");
     }
-
 
     // Endpoint để lấy danh sách 8 người tìm kiếm gần nhất
     @GetMapping("/search/recent-users")
@@ -35,6 +35,7 @@ public class SearchHistoryController {
         List<SearchHistoryResponse> recentSearches = searchHistoryService.getTop8RecentSearches();
         return ResponseEntity.ok(recentSearches);
     }
+
     // Endpoint để xóa lịch sử tìm kiếm của một người dùng
     @DeleteMapping("/search/history/user/{userId}")
     public ResponseEntity<String> deleteUserHistory(@PathVariable Integer userId) {
@@ -56,5 +57,4 @@ public class SearchHistoryController {
         return ResponseEntity.ok("All search history deleted");
     }
 
-
-    }
+}

@@ -1,16 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ChatMessage } from "../types/Message";
+import { useAuthContext } from "@/contexts/AuthContext";
 
-interface UseWebSocketProps {
-  url: string;
-  userId?: number;
-}
-
-export default function useChatWebSocket({ url, userId }: UseWebSocketProps) {
+export default function useChatWebSocket() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<WebSocket | null>(null);
   const currentConversationIdRef = useRef<string | number | null>(null);
+  const { user } = useAuthContext();
+  const userId = user?.id;
+  const url = "ws://127.0.0.1:8090/message-service/ws/chat";
 
   const connect = useCallback(() => {
     if (!userId) return;
@@ -85,9 +84,7 @@ export default function useChatWebSocket({ url, userId }: UseWebSocketProps) {
   useEffect(() => {
     connect();
 
-    // Clean up on unmount
     return () => {
-      // If we're in a conversation, leave it before closing
       if (
         currentConversationIdRef.current &&
         socketRef.current?.readyState === WebSocket.OPEN
@@ -103,7 +100,7 @@ export default function useChatWebSocket({ url, userId }: UseWebSocketProps) {
         socketRef.current.close();
       }
     };
-  }, [url, userId]); // Only depend on URL and username, not conversationId
+  }, [url, userId]);
 
   // Function to join a conversation
   const joinConversation = useCallback(

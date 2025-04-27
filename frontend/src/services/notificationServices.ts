@@ -1,4 +1,4 @@
-import { Notification } from "../types/Notification";
+import { NotificationResponse } from "../types/Notification";
 import apiClient from "./apiClient";
 
 const serviceName = "notification-service";
@@ -7,24 +7,10 @@ class NotificationService {
   /**
    * Lấy danh sách thông báo
    */
-  async getNotifications(): Promise<Notification[]> {
-    return apiClient.get<Notification[]>(`${serviceName}/api/notifications`);
-  }
-
-  /**
-   * Đánh dấu một thông báo là đã đọc
-   */
-  async markAsRead(notificationId: string): Promise<void> {
-    return apiClient.put<void>(
-      `${serviceName}/api/notifications/${notificationId}/read`,
+  async getNotifications(): Promise<NotificationResponse> {
+    return apiClient.get<NotificationResponse>(
+      `${serviceName}/api/notifications?userId=1`,
     );
-  }
-
-  /**
-   * Đánh dấu tất cả thông báo là đã đọc
-   */
-  async markAllAsRead(): Promise<void> {
-    return apiClient.put<void>(`${serviceName}/api/notifications/read-all`);
   }
 
   /**

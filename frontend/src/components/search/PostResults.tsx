@@ -33,9 +33,12 @@ const PostResults: React.FC<Props> = ({ query }) => {
 
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:8080/api/post/search/posts", {
-          params: { query },
-        });
+        const response = await axios.get(
+          "http://localhost:8090/search-service/api/post/search/posts",
+          {
+            params: { query },
+          },
+        );
         setResults(response.data);
       } catch (error) {
         console.error("Lỗi khi tìm bài post:", error);
@@ -57,25 +60,28 @@ const PostResults: React.FC<Props> = ({ query }) => {
       ) : (
         <ul className="space-y-4">
           {results.map((post) => (
-            <li key={post.id} className="rounded border p-4 shadow-sm bg-white">
-              <div className="flex items-center space-x-3 mb-2">
+            <li key={post.id} className="rounded border bg-white p-4 shadow-sm">
+              <div className="mb-2 flex items-center space-x-3">
                 {post.author?.avatarUrl && (
                   <img
                     src={post.author.avatarUrl}
                     alt={post.author.fullName}
-                    className="w-10 h-10 rounded-full object-cover"
+                    className="h-10 w-10 rounded-full object-cover"
                   />
                 )}
                 <div>
-                  <p className="font-semibold">{post.author?.fullName || "Unknown Author"}</p>
+                  <p className="font-semibold">
+                    {post.author?.fullName || "Unknown Author"}
+                  </p>
                   <p className="text-sm text-gray-500">
                     {new Date(post.createdAt).toLocaleString()}
                   </p>
                 </div>
               </div>
               <p className="text-gray-800">{post.content}</p>
-              <div className="text-sm text-gray-400 mt-2">
-                Privacy: {post.privacyLevel || "unknown"} | Status: {post.status || "unknown"}
+              <div className="mt-2 text-sm text-gray-400">
+                Privacy: {post.privacyLevel || "unknown"} | Status:{" "}
+                {post.status || "unknown"}
               </div>
             </li>
           ))}

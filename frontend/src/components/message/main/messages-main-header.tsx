@@ -45,14 +45,14 @@ function MessagesMainHeader({
           </div>
         </div>
 
-        <Button
+        {/* <Button
           className="cursor-pointer rounded-full"
           variant={"secondary"}
           onClick={toggleSidebar}
           size={"icon"}
         >
           <Info className="size-5!" />
-        </Button>
+        </Button> */}
       </div>
     </>
   );

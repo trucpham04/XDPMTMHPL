@@ -28,12 +28,15 @@ const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const response = await axios.get<User[]>("http://localhost:8080/api/users/search/users", {
-          params: {
-            query: query.trim(),
-            currentUserId,
+        const response = await axios.get<User[]>(
+          "http://localhost:8090/search-service/api/users/search/users",
+          {
+            params: {
+              query: query.trim(),
+              currentUserId,
+            },
           },
-        });
+        );
         setResults(response.data);
       } catch (error) {
         console.error("Lỗi khi tìm kiếm người dùng:", error);
@@ -52,28 +55,47 @@ const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
         userId: user.id,
         searchText: `${user.firstName} ${user.lastName}`,
       };
-  
+
       await axios.post("http://localhost:8080/api/search/history", null, {
         params,
       });
-  
-      console.log("✅ Đã lưu lịch sử tìm kiếm cho:", user.firstName, user.lastName);
+
+      console.log(
+        "✅ Đã lưu lịch sử tìm kiếm cho:",
+        user.firstName,
+        user.lastName,
+      );
     } catch (error) {
       console.error("❌ Lỗi khi lưu lịch sử người dùng:", error);
     }
   };
-  
-  
+
   const renderButton = (status: User["relationStatus"]) => {
     switch (status) {
       case "FRIEND":
-        return <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">Message</button>;
+        return (
+          <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
+            Message
+          </button>
+        );
       case "NOT_FRIEND":
-        return <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">Add Friend</button>;
+        return (
+          <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">
+            Add Friend
+          </button>
+        );
       case "REQUEST_SENT":
-        return <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">Cancel Request</button>;
+        return (
+          <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">
+            Cancel Request
+          </button>
+        );
       case "REQUEST_RECEIVED":
-        return <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">Accept</button>;
+        return (
+          <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">
+            Accept
+          </button>
+        );
       default:
         return null;
     }
@@ -93,11 +115,16 @@ const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={user.avatarUrl || ""} />
-                  <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
+                  <AvatarFallback>
+                    {user.firstName[0]}
+                    {user.lastName[0]}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium hover:underline cursor-pointer"
-                  onClick={() => handleUserClick(user)}>
+                  <p
+                    className="cursor-pointer font-medium hover:underline"
+                    onClick={() => handleUserClick(user)}
+                  >
                     {user.firstName} {user.lastName}
                   </p>
                   <p className="text-sm text-gray-500">
