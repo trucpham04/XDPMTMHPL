@@ -1,67 +1,52 @@
 package com.xdpmtmhpl.post_service.controller;
 
-import com.xdpmtmhpl.post_service.models.User;
-import com.xdpmtmhpl.post_service.models.Comment;
-import com.xdpmtmhpl.post_service.services.CommentService;
-import com.xdpmtmhpl.post_service.payload.request.CommentRequest;
+import com.xdpmtmhpl.post_service.model.Comment;
+import com.xdpmtmhpl.post_service.model.Post;
+import com.xdpmtmhpl.post_service.request.CommentRequest;
+import com.xdpmtmhpl.post_service.response.CommentResponse;
+import com.xdpmtmhpl.post_service.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
-
     @Autowired
     private CommentService commentService;
 
-    // Lấy tất cả cmt
-    @GetMapping
-    public ResponseEntity<List<Comment>> getAllComments() {
-        List<Comment> comments = commentService.getAllComments();
-        return ResponseEntity.ok(comments);
+    @PostMapping("/{postId}")
+    public ResponseEntity<CommentResponse> addComment(
+            @PathVariable Integer postId,
+            @RequestBody CommentRequest commentRequest
+    ) {
+        Comment comment = new Comment();
+        comment.setUserId(commentRequest.getUserId());
+        comment.setContent(commentRequest.getContent());
+        comment.setCreatedAt(LocalDateTime.now());
+        comment.setUpdatedAt(LocalDateTime.now());
+
+        // Gán post để mapping id trong response
+        Post post = new Post();
+        post.setPostId(postId);
+        comment.setPost(post);
+
+        CommentResponse savedComment = commentService.addComment(postId, comment);
+        return ResponseEntity.ok(savedComment);
     }
 
-    // Lấy cmt theo ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Comment> getCommentById(@PathVariable Long id) {
-        Comment comment = commentService.getCommentById(id)
-                .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
-        return ResponseEntity.ok(comment);
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
+        return ResponseEntity.noContent().build();
     }
 
-    // Lấy tất cả cmt của 1 post
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable Long postId) {
-        List<Comment> comments = commentService.getCommentsByPostId(postId);
+    public ResponseEntity<List<CommentResponse>> getCommentsByPostId(@PathVariable Integer postId) {
+        List<CommentResponse> comments = commentService.getCommentsByPostId(postId);
         return ResponseEntity.ok(comments);
-    }
-
-    // Tạo cmt mới
-    @PostMapping("/post/{postId}")
-    public ResponseEntity<Comment> createComment(@PathVariable Long postId,
-            @RequestBody CommentRequest commentRequest,
-            @AuthenticationPrincipal User userDetails) {
-        User user = (User) userDetails;
-        Comment comment = commentService.createComment(commentRequest.getContent(), postId, user.getId());
-        return ResponseEntity.ok(comment);
-    }
-
-    // Xóa cmt
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long id,
-            @AuthenticationPrincipal User userDetails) {
-        Comment comment = commentService.getCommentById(id)
-                .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
-        User user = (User) userDetails;
-        if (!comment.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not authorized to delete this comment");
-        }
-        commentService.deleteComment(id);
-        return ResponseEntity.ok().build();
     }
 }

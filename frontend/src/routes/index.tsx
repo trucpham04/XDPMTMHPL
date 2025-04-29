@@ -16,7 +16,7 @@ import MessagesPage from "@/pages/main/MessagesPage";
 import Notifications from "@/pages/main/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
-import Profile from "@/pages/profile/Profile";
+// import Profile from "@/pages/profile/Profile";
 import SearchPage from "@/pages/main/SearchPage";
 =======
 import MessagesPage from "@/features/messages/pages/MessagesPage";
@@ -52,7 +52,7 @@ const routes: React.FC = () => {
           </Route>
           <Route path="notifications" element={<Notifications />} />
           <Route path="search" element={<SearchPage />} />
-          <Route path="profile/:user_id" element={<Profile />} />
+          {/* <Route path="profile/:user_id" element={<Profile />} /> */}
         </Route>
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
