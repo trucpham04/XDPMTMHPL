@@ -34,20 +34,25 @@ public class FriendRequestService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private String getAuthToken(){
-        ServletRequestAttributes attributes= (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes != null){
-            String authHeader= attributes.getRequest().getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer")){
-                return authHeader.substring(7);
+    private String getAuthToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            if (request.getCookies() != null) {
+                for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                    if ("jwt".equals(cookie.getName())) {
+                        return cookie.getValue();
+                    }
+                }
             }
         }
-        throw new IllegalStateException("No Authorization token found in request.");
+        throw new IllegalStateException("No JWT token found in cookie.");
     }
+
 
     private Integer getCurrentUserId() {
         String token = getAuthToken();
-        String userServiceUrl = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/me";
+        String userServiceUrl = "http://api-gateway:8090/api/auth/me";
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
 
@@ -73,7 +78,7 @@ public class FriendRequestService {
         Integer receiverId= getCurrentUserId();
         List <FriendRequest> friends= friendRequestRepository.findByReceiverId(receiverId);
         Function<FriendRequest, FriendDTO> toUserDTO = friendRequest -> {
-            String userServiceUrl = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/" + friendRequest.getSenderId() + "/basic";
+            String userServiceUrl = "http://api-gateway:8090/api/auth/users/" + friendRequest.getSenderId();
             return restTemplate.getForObject(userServiceUrl, FriendDTO.class);
         };
         return friends.stream()
@@ -86,7 +91,7 @@ public class FriendRequestService {
         List <FriendRequest> friends= friendRequestRepository.findBySenderId(senderId);
         Function<FriendRequest, FriendDTO> toUserDTO = friendRequest -> {
             
-            String userServiceUrl = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/" + friendRequest.getReceiverId() + "/basic";
+            String userServiceUrl = "http://api-gateway:8090/api/auth/users/" + friendRequest.getReceiverId();
             return restTemplate.getForObject(userServiceUrl, FriendDTO.class);
         };
         return friends.stream()
@@ -116,7 +121,7 @@ public class FriendRequestService {
     public FriendRequest SendRequest(Integer receiverId){
         try {
             Integer senderId= getCurrentUserId();
-            String receiverUrl = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/" + receiverId + "/basic";
+            String receiverUrl = "http://api-gateway:8090/api/auth/users/" + receiverId;
             FriendDTO receiver= restTemplate.getForObject(receiverUrl, FriendDTO.class);
             if (receiver == null) {
                 throw new IllegalArgumentException("User with ID " + receiverId + " does not exist.");
@@ -146,7 +151,7 @@ public class FriendRequestService {
 
     public void removeRequest (Integer senderId){
         Integer receiverId= getCurrentUserId();
-        String senderUrl= "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/" + senderId + "/basic";
+        String senderUrl= "http://api-gateway:8090/api/auth/users/" + senderId;
         try {
             FriendDTO sender = restTemplate.getForObject(senderUrl, FriendDTO.class);
             if (sender == null) {
