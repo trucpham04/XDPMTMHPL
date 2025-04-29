@@ -1,33 +1,18 @@
+
 package com.example.searchbackend.model;
 
+
 public class SearchHistoryResponse {
-    private Integer id;
     private String searchText;
-    private User targetUser;   // Người bị click
+    private TargetUserDTO targetUser;  // Người bị click
     private Integer searcherId; // Người đang đăng nhập
 
-    public SearchHistoryResponse(SearchHistory history, User targetUser) {
-        this.id = history.getId();
-        this.searchText = history.getSearchText();
-        this.searcherId = history.getSearcherId();
+    public SearchHistoryResponse() {}
 
-        if (targetUser != null) {
-            this.targetUser = new User(
-                    targetUser.getId(),
-                    targetUser.getFirstName(),
-                    targetUser.getLastName(),
-                    targetUser.getAvatarUrl()
-            );
-        }
-    }
-
-    // Getters & Setters
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
+    public SearchHistoryResponse(String searchText, TargetUserDTO targetUser, Integer searcherId) {
+        this.searchText = searchText;
+        this.targetUser = targetUser;
+        this.searcherId = searcherId;
     }
 
     public String getSearchText() {
@@ -38,11 +23,11 @@ public class SearchHistoryResponse {
         this.searchText = searchText;
     }
 
-    public User getTargetUser() {
+    public TargetUserDTO getTargetUser() {
         return targetUser;
     }
 
-    public void setTargetUser(User targetUser) {
+    public void setTargetUser(TargetUserDTO targetUser) {
         this.targetUser = targetUser;
     }
 

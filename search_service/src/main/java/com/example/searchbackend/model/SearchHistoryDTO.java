@@ -1,37 +1,26 @@
 package com.example.searchbackend.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class SearchHistoryDTO {
-    private Integer id;
+
     private String searchText;
     private LocalDateTime createdAt;
+    private Integer targetUserId;
+    private TargetUserDTO targetUserDTO;  // Khai báo targetUserDTO
+    private List<Post> posts;  // Khai báo posts
 
-    private Integer userId;
-    private String userName;
-    private String avatar;
-
-    public SearchHistoryDTO() {
-    }
-
-    public SearchHistoryDTO(Integer id, String searchText, LocalDateTime createdAt,
-                            Integer userId, String userName, String avatar) {
-        this.id = id;
+    // Constructor
+    public SearchHistoryDTO(String searchText, LocalDateTime createdAt, Integer targetUserId, TargetUserDTO targetUserDTO, List<Post> posts) {
         this.searchText = searchText;
         this.createdAt = createdAt;
-        this.userId = userId;
-        this.userName = userName;
-        this.avatar = avatar;
+        this.targetUserId = targetUserId;
+        this.targetUserDTO = targetUserDTO;
+        this.posts = posts;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
+    // Getter và Setter
     public String getSearchText() {
         return searchText;
     }
@@ -48,27 +37,27 @@ public class SearchHistoryDTO {
         this.createdAt = createdAt;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public Integer getTargetUserId() {
+        return targetUserId;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setTargetUserId(Integer targetUserId) {
+        this.targetUserId = targetUserId;
     }
 
-    public String getUserName() {
-        return userName;
+    public TargetUserDTO getTargetUserDTO() {
+        return targetUserDTO;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setTargetUserDTO(TargetUserDTO targetUserDTO) {
+        this.targetUserDTO = targetUserDTO;
     }
 
-    public String getAvatar() {
-        return avatar;
+    public List<Post> getPosts() {
+        return posts;
     }
 
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
     }
 }

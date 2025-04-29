@@ -261,3 +261,30 @@ volumes:
   message-db-data:
   notification-db-data:
   rabbitmq-data:
+# services:
+#   search-db:
+#     image: "mysql:lts"
+#     container_name: "search-service-mysql"
+#     environment:
+#       - "MYSQL_DATABASE=search_service"
+#       - "MYSQL_ROOT_PASSWORD=root"
+#       - "MYSQL_USER=search_service"
+#       - "MYSQL_PASSWORD=root"
+#     ports:
+#       - "3307:3306"
+#     networks:
+#       - "database-network"
+
+#   phpmyadmin:
+#     image: "phpmyadmin:latest"
+#     container_name: "phpmyadmin"
+#     environment:
+#       - "PMA_ARBITRARY=1"
+#     ports:
+#       - "8081:8081"
+#     networks:
+#       - "database-network"
+
+# networks:
+#   database-network:
+#     driver: "bridge"
