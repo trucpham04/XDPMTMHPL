@@ -8,7 +8,7 @@ const DefaultLayout: React.FC = () => {
     location.pathname === "/friends" ||
     location.pathname.startsWith("/friends/");
   return (
-    <div className="bg-muted">
+    <div className="bg-muted overflow-scroll">
       <AppSidebar />
 
       <main className="mt-14 flex items-center justify-center">

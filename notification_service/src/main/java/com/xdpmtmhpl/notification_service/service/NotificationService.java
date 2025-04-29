@@ -17,13 +17,7 @@ public interface NotificationService {
 
     NotificationDTO getNotification(Long id);
 
-    void markAsRead(Long id);
-
-    void markAllAsRead(Long userId);
-
     void deleteNotification(Long id);
-
-    long getUnreadCount(Long userId);
 
     Map<String, String> extractQueryParameters(WebSocketSession session);
 
@@ -36,6 +30,8 @@ public interface NotificationService {
     void sendNotificationToUser(Long userId, Notification notification);
 
     void sendNotificationToUser(Long userId, String message);
+
+    NotificationDTO convertToDTO(Notification notification);
 
     Notification createAndSendNotification(NotificationRequest request);
 }

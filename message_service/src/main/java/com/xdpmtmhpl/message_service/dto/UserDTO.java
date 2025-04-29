@@ -1,42 +1,31 @@
 package com.xdpmtmhpl.message_service.dto;
 
+import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Set;
+
+@Data
 public class UserDTO {
+
     private Long id;
     private String username;
-    private String displayName;
-    private String avatarUrl;
+    private String email;
+    private String phoneNumber;
 
-    // Getters and Setters
+    private String firstName;
+    private String lastName;
+    private LocalDate dateOfBirth;
+    private String gender;
+    private String bio;
+    private String profilePictureUrl;
+    private String coverPhotoUrl;
+    private Boolean isVerified;
+    private Boolean isActive;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime lastLoginAt;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
+    private Set<String> roles; // chỉ lấy tên role thay vì full Role entity
 }

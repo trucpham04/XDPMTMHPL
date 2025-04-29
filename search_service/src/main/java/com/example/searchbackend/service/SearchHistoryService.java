@@ -4,7 +4,7 @@
     import com.example.searchbackend.model.SearchHistory;
     import com.example.searchbackend.model.SearchHistoryDTO;
     import com.example.searchbackend.model.TargetUserDTO;
-    import com.example.searchbackend.model.Post;
+    import com.example.searchbackend.model.PostResponseDTO;
     import com.example.searchbackend.repository.SearchHistoryRepository;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.data.domain.PageRequest;
@@ -34,8 +34,7 @@ import org.springframework.core.ParameterizedTypeReference;
         // Hàm này chuyển đổi SearchHistory thành SearchHistoryDTO, và lấy thông tin user từ UserService
         private SearchHistoryDTO convertToDTO(SearchHistory history) {
             TargetUserDTO targetUserDTO = null;
-            
-            // Lấy thông tin từ UserService nếu có targetUserId
+        
             if (history.getTargetUserId() != null) {
                 String userUrl = userServiceBaseUrl + history.getTargetUserId();
                 try {
@@ -47,27 +46,32 @@ import org.springframework.core.ParameterizedTypeReference;
                     targetUserDTO.setUserId(history.getTargetUserId());
                 }
             }
-
-            // Lấy bài viết từ PostService
-            List<Post> posts = getPostsByUserId(history.getTargetUserId());
-
+        
+            List<PostResponseDTO> posts = getPostsByUserId(history.getTargetUserId());
+        
+            // ✳️ Nếu DTO SearchHistoryDTO có constructor phù hợp, dùng constructor
             return new SearchHistoryDTO(history.getSearchText(), history.getCreatedAt(), history.getTargetUserId(), targetUserDTO, posts);
         }
+        
 
         // Lấy các bài viết của người dùng từ PostService
-        private List<Post> getPostsByUserId(Integer userId) {
-            String url = postServiceBaseUrl + "?userId=" + userId;  // Giả sử PostService hỗ trợ lọc theo userId
-
+        private List<PostResponseDTO> getPostsByUserId(Integer userId) {
+            String url = postServiceBaseUrl + "?userId=" + userId;
+        
             try {
-                ResponseEntity<List<Post>> response = restTemplate.exchange(
-                        url, HttpMethod.GET, null, new ParameterizedTypeReference<List<Post>>() {});
+                ResponseEntity<List<PostResponseDTO>> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<List<PostResponseDTO>>() {}
+                );
                 return response.getBody();
             } catch (Exception e) {
                 e.printStackTrace();
                 return Collections.emptyList();
             }
         }
-
+        
         // Lưu lịch sử tìm kiếm
         public void saveSearchHistory(Integer searcherId, Integer targetUserId, String searchText) {
             if (searcherId != null) {

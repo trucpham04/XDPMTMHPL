@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class NotificationRequest {
     private Long userId;
     private NotificationType type;
-    private Long referenceId;
+    private Long senderId;
 }

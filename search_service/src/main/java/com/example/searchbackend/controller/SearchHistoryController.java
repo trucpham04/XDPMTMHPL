@@ -42,12 +42,17 @@ public class SearchHistoryController {
     @DeleteMapping("/{historyId}")
     public ResponseEntity<String> deleteHistoryByIdAndSearcherId(
             @PathVariable Integer historyId,
-            @RequestParam Integer searcherId) {
-
+            @RequestParam(required = false, defaultValue = "0") Integer searcherId) {
+    
+        // Kiểm tra trường hợp `searcherId` mặc định không hợp lệ
+        if (searcherId == 0) {
+            return ResponseEntity.badRequest().body("Invalid 'searcherId' value");
+        }
+    
         searchHistoryService.deleteSearchHistoryByIdAndSearcherId(historyId, searcherId);
         return ResponseEntity.ok("Search history with ID " + historyId + " deleted.");
     }
-
+    
     // ✅ Xóa lịch sử của 1 người dùng
     @DeleteMapping("/user/{userId}")
     public ResponseEntity<String> deleteUserHistory(@PathVariable Integer userId) {

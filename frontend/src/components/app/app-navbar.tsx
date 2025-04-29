@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   NavigationMenu,
@@ -16,14 +15,15 @@ import {
 import { HomeIcon, Users, MessageCircle, Bell, SearchIcon } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import FacebookLogo from "@/assets/logos/facebook_logo.png";
-// import { getAllUsers } from "@/API/UserService";
-import { User } from "@/API/UserServiceInterface";
+import { User } from "@/types/User";
 import SearchDropdown from "@/components/search/search-dropdown";
 import SearchResults from "@/components/search/search-results";
-// import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
 import { Button } from "../ui/button";
-import { RootState } from "../../features/messages/store/store";
 import axios from "axios";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Separator } from "../ui/separator";
+import UserAvatar from "./userAvatar";
 
 const navItems = [
   {
@@ -54,22 +54,19 @@ const AppNavBar: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<User[]>([]);
-
-  const currentUser = useSelector((state: RootState) => state.user.user);
-  const currentUserId = currentUser?.id ?? 4;
+  const { user, logout } = useAuthContext();
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchQuery.trim() !== "") {
       try {
-        await axios.post("http://localhost:8080/api/search/history", null, {
-          params: {
-            searcherId: currentUserId,
-            userId: null,
-            searchText: searchQuery.trim(),
-          },
-        });
+        // await axios.post("http://localhost:8080/api/search/history", null, {
+        //   params: {
+        //     searcherId: currentUserId,
+        //     userId: null,
+        //     searchText: searchQuery.trim(),
+        //   },
+        // });
         navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-
         console.log("✅ Đã lưu tìm kiếm text");
       } catch (error) {
         console.error("❌ Lỗi khi lưu lịch sử:", error);
@@ -77,30 +74,32 @@ const AppNavBar: React.FC = () => {
     }
   };
 
+  useEffect(() => {}, [user]);
+
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (searchQuery.trim() === "") {
         setSuggestions([]);
         return;
       }
-      try {
-        const response = await axios.get<User[]>(
-          `http://localhost:8080/api/users/search/users`,
-          {
-            params: {
-              query: searchQuery,
-              currentUserId: currentUser?.id ?? 0,
-            },
-          },
-        );
-        setSuggestions(response.data);
-      } catch (error) {
-        console.error("Lỗi khi tìm kiếm:", error);
-      }
+      // try {
+      //   const response = await axios.get<User[]>(
+      //     `http://localhost:8080/api/users/search/users`,
+      //     {
+      //       params: {
+      //         query: searchQuery,
+      //         currentUserId: currentUser?.id ?? 0,
+      //       },
+      //     },
+      //   );
+      //   setSuggestions(response.data);
+      // } catch (error) {
+      //   console.error("Lỗi khi tìm kiếm:", error);
+      // }
     };
 
     fetchSuggestions();
-  }, [searchQuery]); // <== gọi lại mỗi khi searchQuery thay đổi
+  }, [searchQuery]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -115,7 +114,7 @@ const AppNavBar: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  console.log("👤 currentUser từ Redux:", currentUser);
+  // console.log("👤 currentUser từ Redux:", currentUser);
   return (
     <>
       <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
@@ -129,7 +128,7 @@ const AppNavBar: React.FC = () => {
 
           <div className="relative w-full xl:w-fit" ref={dropdownRef}>
             {/* Ô tìm kiếm */}
-            <div className="border-input bg-muted flex h-10 w-10 items-center rounded-full text-sm xl:w-[300px] xl:pl-2">
+            <div className="border-input bg-muted flex h-10 items-center rounded-full text-sm xl:w-[300px] xl:pl-2">
               <div className="flex h-full w-10 items-center justify-center">
                 <SearchIcon className="text-muted-foreground h-[16px] w-[16px]" />
               </div>
@@ -139,7 +138,7 @@ const AppNavBar: React.FC = () => {
                 type="search"
                 onKeyDown={handleKeyDown}
                 onFocus={() => setShowDropdown(true)} // focus hiển thị dropdown
-                className="placeholder:text-muted-foreground hidden w-full p-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 xl:block"
+                className="placeholder:text-muted-foreground w-full p-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 xl:block"
                 placeholder="Search Facebook"
               />
             </div>
@@ -150,7 +149,7 @@ const AppNavBar: React.FC = () => {
                 {/* Nếu input rỗng → hiện lịch sử tìm kiếm */}
                 {searchQuery.trim() === "" ? (
                   <SearchDropdown
-                    userId={currentUser?.id ?? null}
+                    userId={user?.id ?? null}
                     onSelect={async (history) => {
                       const name = history.user
                         ? `${history.user.firstName} ${history.user.lastName}`
@@ -165,7 +164,7 @@ const AppNavBar: React.FC = () => {
                           null,
                           {
                             params: {
-                              searcherId: currentUserId,
+                              searcherId: user,
                               userId: history?.targetUser?.id,
                               searchText: name,
                             },
@@ -200,7 +199,7 @@ const AppNavBar: React.FC = () => {
                             null,
                             {
                               params: {
-                                searcherId: currentUserId,
+                                searcherId: user,
                                 userId: user.id,
                                 searchText: name,
                               },
@@ -269,14 +268,51 @@ const AppNavBar: React.FC = () => {
         </nav>
 
         <div className="user flex gap-3 pr-4">
-          <Link to="/profile">
-            <Button asChild className="cursor-pointer">
-              <Avatar className="h-10 w-10 rounded-full p-0 shadow-sm">
-                <AvatarImage src={FacebookLogo} />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-            </Button>
-          </Link>
+          <Popover>
+            <PopoverTrigger className="size-10 cursor-pointer">
+              <UserAvatar user={user} />
+            </PopoverTrigger>
+            <PopoverContent className="w-40 rounded-sm p-1">
+              <div className="grid gap-1">
+                {user ? (
+                  <>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className="cursor-pointer rounded-xs"
+                    >
+                      <Link
+                        to={`/profile/${user.id}`}
+                        className="justify-start"
+                      >
+                        Your profile
+                      </Link>
+                    </Button>
+
+                    <Separator className="w-full" />
+
+                    <Button
+                      variant="ghost"
+                      onClick={logout}
+                      className="cursor-pointer justify-start! rounded-xs"
+                    >
+                      Log out
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="cursor-pointer rounded-xs"
+                  >
+                    <Link to="/auth/login" className="justify-start">
+                      Login
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </>

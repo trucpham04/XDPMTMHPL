@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xdpmtmhpl.message_service.Enum.MessageType;
 import com.xdpmtmhpl.message_service.dto.ChatMessageDTO;
-import com.xdpmtmhpl.message_service.dto.UserDTO;
 import com.xdpmtmhpl.message_service.dto.WebSocketRequest;
 import com.xdpmtmhpl.message_service.service.ChatService;
 
@@ -22,35 +21,25 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ChatWebSocketController extends TextWebSocketHandler {
 
-    // Use @Lazy to break the circular dependency
     @Autowired
     private ChatService chatService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    public ChatWebSocketController(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper; // This will use the configured ObjectMapper bean with JavaTimeModule
-    }
-
-    // Session tracking
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final Map<String, Long> sessionUserIds = new ConcurrentHashMap<>();
     private final Map<Long, Map<String, WebSocketSession>> conversationSessions = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        // Store the session
         sessions.put(session.getId(), session);
 
-        // User information will be extracted from authentication or query parameters
         Map<String, String> params = chatService.extractQueryParameters(session);
 
-        // Get username from query parameter or use default
-        String userIdStr = params.getOrDefault("user_id", "0"); // Provide a default value
+        String userIdStr = params.getOrDefault("user_id", "0");
         Long userId = Long.parseLong(userIdStr);
 
-        // Store the user ID associated with this session
         sessionUserIds.put(session.getId(), userId);
     }
 
@@ -66,7 +55,6 @@ public class ChatWebSocketController extends TextWebSocketHandler {
 
         Long userId = sessionUserIds.get(session.getId());
 
-        // Process the request based on the action
         switch (request.getAction()) {
             case "SEND_MESSAGE":
                 handleSendMessage(session, userId, request);
@@ -77,9 +65,6 @@ public class ChatWebSocketController extends TextWebSocketHandler {
             case "LEAVE_CONVERSATION":
                 handleLeaveConversation(session, userId, request);
                 break;
-            case "TYPING":
-                handleTypingNotification(userId, request);
-                break;
             default:
                 chatService.sendError(session, "Unknown action: " + request.getAction());
         }
@@ -87,15 +72,12 @@ public class ChatWebSocketController extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        // Remove the session from tracking
         sessions.remove(session.getId());
 
-        // Get the user ID associated with this session
         Long userId = sessionUserIds.get(session.getId());
         if (userId != null) {
             sessionUserIds.remove(session.getId());
 
-            // Remove user from all conversation sessions
             for (Map<String, WebSocketSession> conversationMap : conversationSessions.values()) {
                 conversationMap.remove(session.getId());
             }
@@ -120,11 +102,10 @@ public class ChatWebSocketController extends TextWebSocketHandler {
                 try {
                     messageType = MessageType.valueOf(data.get("messageType").asText());
                 } catch (IllegalArgumentException e) {
-                    // Default to TEXT if invalid
+                    messageType = MessageType.TEXT;
                 }
             }
 
-            // Save and broadcast the message
             ChatMessageDTO sentMessage = chatService.sendMessage(
                     conversationId,
                     userId,
@@ -132,9 +113,7 @@ public class ChatWebSocketController extends TextWebSocketHandler {
                     messageType,
                     mediaUrl);
 
-            // Since we're not using STOMP anymore, manually broadcast to conversation
-            // participants
-            // chatService.broadcastToConversation(conversationId, sentMessage);
+            chatService.broadcastToConversation(conversationId, sentMessage);
 
         } catch (Exception e) {
             try {
@@ -154,19 +133,13 @@ public class ChatWebSocketController extends TextWebSocketHandler {
                 return;
             }
 
-            // Check if user can access this conversation
             if (!chatService.isUserInConversation(userId, conversationId)) {
                 chatService.sendError(session, "Not authorized to join this conversation");
                 return;
             }
 
-            // Add the session to the conversation sessions map
             chatService.addSessionToConversation(conversationId, session.getId(), session);
 
-            // Get user info to include in the join notification
-            UserDTO user = chatService.getUserById(userId);
-
-            // Send confirmation to the client
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(
                     Map.of("type", "JOIN_CONFIRMATION", "conversationId", conversationId))));
 
@@ -187,49 +160,19 @@ public class ChatWebSocketController extends TextWebSocketHandler {
                 return;
             }
 
-            // Remove all user's sessions from the conversation
             if (conversationSessions.containsKey(conversationId)) {
                 Map<String, WebSocketSession> convSessions = conversationSessions.get(conversationId);
 
-                // Find all sessions for this user in this conversation
                 for (String sessionId : sessionUserIds.keySet()) {
                     if (sessionUserIds.get(sessionId).equals(userId)) {
                         convSessions.remove(sessionId);
                     }
                 }
 
-                // If no sessions left, remove the conversation entry
                 if (convSessions.isEmpty()) {
                     chatService.removeSessionFromConversation(conversationId, session.getId(), session);
                 }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void handleTypingNotification(Long userId, WebSocketRequest request) {
-        try {
-            Long conversationId = request.getConversationId();
-
-            if (conversationId == null) {
-                return;
-            }
-
-            // Get user info
-            UserDTO user = chatService.getUserById(userId);
-
-            // Create typing notification (not saved to database)
-            ChatMessageDTO typingNotification = new ChatMessageDTO();
-            typingNotification.setConversationId(conversationId);
-            typingNotification.setSenderId(userId);
-            typingNotification.setSenderUsername(user.getUsername());
-            typingNotification.setMessageType(MessageType.SYSTEM);
-            typingNotification.setContent("TYPING");
-
-            // Broadcast typing notification
-            chatService.broadcastToConversation(conversationId, typingNotification);
 
         } catch (Exception e) {
             e.printStackTrace();

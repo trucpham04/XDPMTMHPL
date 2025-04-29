@@ -16,8 +16,8 @@ public class NotificationDTO {
     private Long id;
     private Long userId;
     private NotificationType type;
-    private Long referenceId;
-    private boolean isRead;
+    private Long senderId;
+    private UserDTO sender;
     private LocalDateTime createdAt;
-    private String message; // Tin nhắn hiển thị cho người dùng
+    private String message;
 }

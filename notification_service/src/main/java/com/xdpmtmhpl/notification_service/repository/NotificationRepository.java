@@ -9,17 +9,13 @@ import com.xdpmtmhpl.notification_service.enums.NotificationType;
 import com.xdpmtmhpl.notification_service.models.Notification;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     Page<Notification> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    List<Notification> findByUserIdAndIsReadFalse(Long userId);
-
     Page<Notification> findByUserIdAndType(Long userId, NotificationType type, Pageable pageable);
 
     Page<Notification> findByUserIdAndCreatedAtAfter(Long userId, LocalDateTime time, Pageable pageable);
 
-    long countByUserIdAndIsReadFalse(Long userId);
 }

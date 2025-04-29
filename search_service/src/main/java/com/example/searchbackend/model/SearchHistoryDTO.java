@@ -8,11 +8,11 @@ public class SearchHistoryDTO {
     private String searchText;
     private LocalDateTime createdAt;
     private Integer targetUserId;
-    private TargetUserDTO targetUserDTO;  // Khai báo targetUserDTO
-    private List<Post> posts;  // Khai báo posts
+    private TargetUserDTO targetUserDTO;
+    private List<PostResponseDTO> posts; 
 
     // Constructor
-    public SearchHistoryDTO(String searchText, LocalDateTime createdAt, Integer targetUserId, TargetUserDTO targetUserDTO, List<Post> posts) {
+    public SearchHistoryDTO(String searchText, LocalDateTime createdAt, Integer targetUserId, TargetUserDTO targetUserDTO, List<PostResponseDTO> posts) {
         this.searchText = searchText;
         this.createdAt = createdAt;
         this.targetUserId = targetUserId;
@@ -53,11 +53,11 @@ public class SearchHistoryDTO {
         this.targetUserDTO = targetUserDTO;
     }
 
-    public List<Post> getPosts() {
+    public List<PostResponseDTO> getPosts() {
         return posts;
     }
 
-    public void setPosts(List<Post> posts) {
+    public void setPosts(List<PostResponseDTO> posts) {
         this.posts = posts;
     }
 }
