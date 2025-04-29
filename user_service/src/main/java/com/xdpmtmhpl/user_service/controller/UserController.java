@@ -14,7 +14,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+<<<<<<< Updated upstream
 // @CrossOrigin(origins = "http://localhost:5173", maxAge = 3600, allowCredentials = "true")
+=======
+@CrossOrigin(origins = "all", maxAge = 3600, allowCredentials = "true")
+>>>>>>> Stashed changes
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -65,7 +69,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+<<<<<<< Updated upstream
     // @PreAuthorize("hasRole('ADMIN')") // Chỉ admin mới có thể truy cập
+=======
+    @PreAuthorize("hasRole('ADMIN')") // Chỉ admin mới có thể truy cập
+>>>>>>> Stashed changes
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
