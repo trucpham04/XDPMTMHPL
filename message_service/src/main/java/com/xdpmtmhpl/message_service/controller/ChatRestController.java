@@ -11,6 +11,9 @@ import com.xdpmtmhpl.message_service.models.Conversation;
 import com.xdpmtmhpl.message_service.models.Message;
 import com.xdpmtmhpl.message_service.repository.MessageRepository;
 import com.xdpmtmhpl.message_service.service.ChatService;
+import com.xdpmtmhpl.message_service.utils.TokenExtractor;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +30,17 @@ public class ChatRestController {
     private MessageRepository messageRepository;
 
     @GetMapping("/conversations/{userId}")
-    public ResponseEntity<List<ConversationDTO>> getUserConversations(@PathVariable Long userId) {
+    public ResponseEntity<List<ConversationDTO>> getUserConversations(@PathVariable Long userId,
+            HttpServletRequest request) {
+
+        String token = TokenExtractor.getTokenFromCookie(request);
+
+        if (token != null) {
+            System.out.println("Token: " + token);
+        } else {
+            System.out.println("Token not found in cookies.");
+        }
+
         List<ConversationDTO> conversations = chatService.getUserConversations(userId);
 
         return ResponseEntity.ok(conversations);
