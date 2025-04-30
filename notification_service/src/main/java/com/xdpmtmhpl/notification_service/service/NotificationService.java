@@ -17,19 +17,8 @@ public interface NotificationService {
 
     NotificationDTO getNotification(Long id);
 
-<<<<<<< Updated upstream
     void deleteNotification(Long id);
 
-=======
-    void markAsRead(Long id);
-
-    void markAllAsRead(Long userId);
-
-    void deleteNotification(Long id);
-
-    long getUnreadCount(Long userId);
-
->>>>>>> Stashed changes
     Map<String, String> extractQueryParameters(WebSocketSession session);
 
     NotificationResponse getNotificationsByType(Long userId, NotificationType type, int page, int size);
@@ -42,10 +31,7 @@ public interface NotificationService {
 
     void sendNotificationToUser(Long userId, String message);
 
-<<<<<<< Updated upstream
     NotificationDTO convertToDTO(Notification notification);
 
-=======
->>>>>>> Stashed changes
     Notification createAndSendNotification(NotificationRequest request);
 }

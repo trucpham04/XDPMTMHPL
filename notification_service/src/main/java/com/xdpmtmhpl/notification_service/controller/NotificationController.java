@@ -32,14 +32,6 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getNotification(id));
     }
 
-<<<<<<< Updated upstream
-=======
-    @GetMapping("/unread/count")
-    public ResponseEntity<Long> getUnreadCount(@RequestParam Long userId) {
-        return ResponseEntity.ok(notificationService.getUnreadCount(userId));
-    }
-
->>>>>>> Stashed changes
     @GetMapping("/type/{type}")
     public ResponseEntity<NotificationResponse> getNotificationsByType(
             @RequestParam Long userId,
@@ -54,21 +46,6 @@ public class NotificationController {
         return new ResponseEntity<>(notificationService.createNotification(request), HttpStatus.CREATED);
     }
 
-<<<<<<< Updated upstream
-=======
-    @PutMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
-        notificationService.markAsRead(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/read/all")
-    public ResponseEntity<Void> markAllAsRead(@RequestParam Long userId) {
-        notificationService.markAllAsRead(userId);
-        return ResponseEntity.ok().build();
-    }
-
->>>>>>> Stashed changes
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);

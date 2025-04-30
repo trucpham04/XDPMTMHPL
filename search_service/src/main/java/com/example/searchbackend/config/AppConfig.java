@@ -1,4 +1,4 @@
-package main.java.com.example.searchbackend.config;
+package com.example.searchbackend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

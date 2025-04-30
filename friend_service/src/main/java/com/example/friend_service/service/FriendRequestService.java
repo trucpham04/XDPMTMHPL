@@ -18,9 +18,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.friend_service.DTO.FriendDTO;
 import com.example.friend_service.Entity.FriendRequest;
-import com.example.friend_service.Repository.FriendRepository;
 import com.example.friend_service.Repository.FriendRequestRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -49,7 +49,6 @@ public class FriendRequestService {
         throw new IllegalStateException("No JWT token found in cookie.");
     }
 
-
     private Integer getCurrentUserId() {
         String token = getAuthToken();
         String userServiceUrl = "http://api-gateway:8090/api/auth/me";
@@ -62,8 +61,7 @@ public class FriendRequestService {
                     userServiceUrl,
                     HttpMethod.GET,
                     entity,
-                    FriendDTO.class
-            );
+                    FriendDTO.class);
             FriendDTO currentUser = response.getBody();
             if (currentUser != null) {
                 return currentUser.getId();
@@ -74,9 +72,9 @@ public class FriendRequestService {
         }
     }
 
-    public List<FriendDTO> getAllFriendRequests(){
-        Integer receiverId= getCurrentUserId();
-        List <FriendRequest> friends= friendRequestRepository.findByReceiverId(receiverId);
+    public List<FriendDTO> getAllFriendRequests() {
+        Integer receiverId = getCurrentUserId();
+        List<FriendRequest> friends = friendRequestRepository.findByReceiverId(receiverId);
         Function<FriendRequest, FriendDTO> toUserDTO = friendRequest -> {
             String userServiceUrl = "http://api-gateway:8090/api/auth/users/" + friendRequest.getSenderId();
             return restTemplate.getForObject(userServiceUrl, FriendDTO.class);
@@ -86,11 +84,11 @@ public class FriendRequestService {
                 .collect(Collectors.toList());
     }
 
-    public List<FriendDTO> getAllRequestSent(){
-        Integer senderId= getCurrentUserId();
-        List <FriendRequest> friends= friendRequestRepository.findBySenderId(senderId);
+    public List<FriendDTO> getAllRequestSent() {
+        Integer senderId = getCurrentUserId();
+        List<FriendRequest> friends = friendRequestRepository.findBySenderId(senderId);
         Function<FriendRequest, FriendDTO> toUserDTO = friendRequest -> {
-            
+
             String userServiceUrl = "http://api-gateway:8090/api/auth/users/" + friendRequest.getReceiverId();
             return restTemplate.getForObject(userServiceUrl, FriendDTO.class);
         };
@@ -108,8 +106,8 @@ public class FriendRequestService {
             if (friendRequest == null) {
                 throw new IllegalArgumentException("Friend request not found");
             }
-            friendService.addFriend(senderId);  
-            removeRequest(senderId);  
+            friendService.addFriend(senderId);
+            removeRequest(senderId);
         } catch (DataAccessException e) {
             System.err.println("Database error while saving friend: " + e.getMessage());
             throw new RuntimeException("Database error: " + e.getMessage(), e);
@@ -118,20 +116,21 @@ public class FriendRequestService {
             throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
         }
     }
-    public FriendRequest SendRequest(Integer receiverId){
+
+    public FriendRequest SendRequest(Integer receiverId) {
         try {
-            Integer senderId= getCurrentUserId();
+            Integer senderId = getCurrentUserId();
             String receiverUrl = "http://api-gateway:8090/api/auth/users/" + receiverId;
-            FriendDTO receiver= restTemplate.getForObject(receiverUrl, FriendDTO.class);
+            FriendDTO receiver = restTemplate.getForObject(receiverUrl, FriendDTO.class);
             if (receiver == null) {
                 throw new IllegalArgumentException("User with ID " + receiverId + " does not exist.");
-            }           
-            boolean alreadyFriendRequest = friendRequestRepository.existsBySenderIdAndReceiverId(senderId, receiverId); 
+            }
+            boolean alreadyFriendRequest = friendRequestRepository.existsBySenderIdAndReceiverId(senderId, receiverId);
             if (alreadyFriendRequest) {
                 throw new IllegalStateException("You are request friends with user " + receiverId + ".");
             }
 
-            FriendRequest friendRequest=new FriendRequest();
+            FriendRequest friendRequest = new FriendRequest();
             friendRequest.setSenderId(senderId);
             friendRequest.setReceiverId(receiverId);
             friendRequest.setTime(LocalDate.now());
@@ -147,11 +146,9 @@ public class FriendRequestService {
         }
     }
 
-    
-
-    public void removeRequest (Integer senderId){
-        Integer receiverId= getCurrentUserId();
-        String senderUrl= "http://api-gateway:8090/api/auth/users/" + senderId;
+    public void removeRequest(Integer senderId) {
+        Integer receiverId = getCurrentUserId();
+        String senderUrl = "http://api-gateway:8090/api/auth/users/" + senderId;
         try {
             FriendDTO sender = restTemplate.getForObject(senderUrl, FriendDTO.class);
             if (sender == null) {
@@ -162,12 +159,12 @@ public class FriendRequestService {
         }
 
         FriendRequest friendRequest = friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId);
-        
+
         if (friendRequest == null) {
             throw new IllegalStateException("You are not friends request from user " + senderId + ".");
         }
 
-        if (friendRequest != null ){
+        if (friendRequest != null) {
             friendRequestRepository.delete(friendRequest);
         }
     }

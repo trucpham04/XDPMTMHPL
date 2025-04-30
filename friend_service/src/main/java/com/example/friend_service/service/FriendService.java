@@ -1,21 +1,19 @@
 package com.example.friend_service.service;
+
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.friend_service.Repository.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 import com.example.friend_service.Entity.*;
 import com.example.friend_service.DTO.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,7 +30,6 @@ public class FriendService {
     @Autowired
     private FriendRepository friendRepository;
 
-    
     @Autowired
     private RestTemplate restTemplate;
 
@@ -51,7 +48,6 @@ public class FriendService {
         throw new IllegalStateException("No JWT token found in cookie.");
     }
 
-
     private Integer getCurrentUserId() {
         String token = getAuthToken();
         String userServiceUrl = "http://api-gateway:8090/api/auth/me";
@@ -64,8 +60,7 @@ public class FriendService {
                     userServiceUrl,
                     HttpMethod.GET,
                     entity,
-                    FriendDTO.class
-            );
+                    FriendDTO.class);
             FriendDTO currentUser = response.getBody();
             if (currentUser != null) {
                 return currentUser.getId();
@@ -75,7 +70,6 @@ public class FriendService {
             throw new IllegalStateException("Error retrieving current user: " + e.getMessage());
         }
     }
-
 
     public List<FriendDTO> getAllFriends() {
         Integer user1Id = getCurrentUserId();
@@ -98,9 +92,9 @@ public class FriendService {
             FriendDTO user2 = restTemplate.getForObject(user2Url, FriendDTO.class);
             if (user2 == null) {
                 throw new IllegalArgumentException("User with ID " + user2Id + " does not exist.");
-            }           
+            }
             boolean alreadyFriends = friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id) ||
-                                    friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
+                    friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
             if (alreadyFriends) {
                 throw new IllegalStateException("You are already friends with user " + user2Id + ".");
             }
@@ -126,7 +120,6 @@ public class FriendService {
             throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
         }
     }
-
 
     public void removeFriend(Integer user2Id) {
         Integer user1Id = getCurrentUserId();
@@ -155,28 +148,30 @@ public class FriendService {
         }
     }
 
-    
-    // private int calculateMutualFriends(Integer userId, Integer friendId, Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
-    //     Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId, new HashSet<>());
-    //     Set<Integer> mutualFriends = new HashSet<>(friendOfFriendIds);
-    //     mutualFriends.retainAll(userFriends);
-    //     mutualFriends.remove(userId);
-    //     mutualFriends.remove(friendId);
+    // private int calculateMutualFriends(Integer userId, Integer friendId,
+    // Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
+    // Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId,
+    // new HashSet<>());
+    // Set<Integer> mutualFriends = new HashSet<>(friendOfFriendIds);
+    // mutualFriends.retainAll(userFriends);
+    // mutualFriends.remove(userId);
+    // mutualFriends.remove(friendId);
 
-    //     return mutualFriends.size();
+    // return mutualFriends.size();
     // }
 
-    // private Map<Integer, Set<Integer>> getFriendsOfFriendsMap(List<Integer> userIds) {
-    //     if (userIds.isEmpty()) {
-    //         return new HashMap<>();
-    //     }
-    //     List<Friend> friendsOfFriends = friendRepository.findByUser1IdIn(userIds);
-
-    //     return friendsOfFriends.stream()
-    //         .collect(Collectors.groupingBy(
-    //             Friend::getUser1Id,
-    //             Collectors.mapping(Friend::getUser2Id, Collectors.toSet())
-    //         ));
+    // private Map<Integer, Set<Integer>> getFriendsOfFriendsMap(List<Integer>
+    // userIds) {
+    // if (userIds.isEmpty()) {
+    // return new HashMap<>();
     // }
-    
+    // List<Friend> friendsOfFriends = friendRepository.findByUser1IdIn(userIds);
+
+    // return friendsOfFriends.stream()
+    // .collect(Collectors.groupingBy(
+    // Friend::getUser1Id,
+    // Collectors.mapping(Friend::getUser2Id, Collectors.toSet())
+    // ));
+    // }
+
 }

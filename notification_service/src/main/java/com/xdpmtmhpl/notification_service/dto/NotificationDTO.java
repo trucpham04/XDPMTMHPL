@@ -16,15 +16,8 @@ public class NotificationDTO {
     private Long id;
     private Long userId;
     private NotificationType type;
-<<<<<<< Updated upstream
     private Long senderId;
     private UserDTO sender;
     private LocalDateTime createdAt;
     private String message;
-=======
-    private Long referenceId;
-    private boolean isRead;
-    private LocalDateTime createdAt;
-    private String message; // Tin nhắn hiển thị cho người dùng
->>>>>>> Stashed changes
 }

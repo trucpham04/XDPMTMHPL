@@ -55,7 +55,6 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
-<<<<<<< Updated upstream
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -65,51 +64,27 @@ public class AuthController {
         String jwt = jwtUtils.generateJwtToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
 
-=======
-    
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    
-        // Sử dụng userDetails thay vì authentication
-        String jwt = jwtUtils.generateJwtToken(userDetails);
-        String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
-    
->>>>>>> Stashed changes
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(jwt);
         ResponseCookie refreshCookie = jwtUtils.generateRefreshJwtCookie(refreshToken);
-    
+
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-<<<<<<< Updated upstream
 
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .or(() -> userRepository.findByEmail(loginRequest.getIdentifier()))
                 .orElseThrow(
                         () -> new RuntimeException("User not found with identifier: " + loginRequest.getIdentifier()));
 
-=======
-    
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .or(() -> userRepository.findByEmail(loginRequest.getIdentifier()))
-                .orElseThrow(() -> new RuntimeException("User not found with identifier: " + loginRequest.getIdentifier()));
-    
->>>>>>> Stashed changes
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
-    
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(new JwtResponse(
-<<<<<<< Updated upstream
                         jwt, // token
                         "Bearer", // type
-=======
-                        jwt,              // token
-                        "Bearer",         // type
->>>>>>> Stashed changes
                         user.getId(),
                         user.getUsername(),
                         user.getEmail(),
@@ -182,12 +157,8 @@ public class AuthController {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
-<<<<<<< Updated upstream
             String newAccessToken = jwtUtils.generateTokenFromUsername(username,
                     jwtUtils.getJwtProperties().expirationMs());
-=======
-            String newAccessToken = jwtUtils.generateTokenFromUsername(username, jwtUtils.getJwtProperties().expirationMs());
->>>>>>> Stashed changes
             ResponseCookie accessCookie = jwtUtils.generateJwtCookie(newAccessToken);
 
             List<String> roles = user.getRoles().stream()
@@ -197,13 +168,8 @@ public class AuthController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                     .body(new JwtResponse(
-<<<<<<< Updated upstream
                             newAccessToken, // token
                             "Bearer", // type
-=======
-                            newAccessToken,   // token
-                            "Bearer",         // type
->>>>>>> Stashed changes
                             user.getId(),
                             user.getUsername(),
                             user.getEmail(),
@@ -229,12 +195,8 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-<<<<<<< Updated upstream
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal() instanceof String) {
-=======
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() instanceof String) {
->>>>>>> Stashed changes
             return ResponseEntity.status(401).build();
         }
 
@@ -270,12 +232,8 @@ public class AuthController {
     }
 
     @PutMapping("/users/{id}")
-<<<<<<< Updated upstream
     public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id,
             @RequestBody UserUpdateRequest updateRequest) {
-=======
-    public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest updateRequest) {
->>>>>>> Stashed changes
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body(new MessageResponse("Unauthorized"));
@@ -290,7 +248,6 @@ public class AuthController {
         }
 
         // Cập nhật thông tin
-<<<<<<< Updated upstream
         if (updateRequest.getFirstName() != null)
             user.setFirstName(updateRequest.getFirstName());
         if (updateRequest.getLastName() != null)
@@ -301,13 +258,6 @@ public class AuthController {
             user.setBio(updateRequest.getBio());
         if (updateRequest.getProfilePictureUrl() != null)
             user.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
-=======
-        if (updateRequest.getFirstName() != null) user.setFirstName(updateRequest.getFirstName());
-        if (updateRequest.getLastName() != null) user.setLastName(updateRequest.getLastName());
-        if (updateRequest.getEmail() != null) user.setEmail(updateRequest.getEmail());
-        if (updateRequest.getBio() != null) user.setBio(updateRequest.getBio());
-        if (updateRequest.getProfilePictureUrl() != null) user.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
->>>>>>> Stashed changes
 
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("User updated successfully"));
@@ -321,7 +271,6 @@ class UserUpdateRequest {
     private String bio;
     private String profilePictureUrl;
 
-<<<<<<< Updated upstream
     public String getFirstName() {
         return firstName;
     }
@@ -361,16 +310,4 @@ class UserUpdateRequest {
     public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
     }
-=======
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
-    public String getProfilePictureUrl() { return profilePictureUrl; }
-    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
->>>>>>> Stashed changes
 }

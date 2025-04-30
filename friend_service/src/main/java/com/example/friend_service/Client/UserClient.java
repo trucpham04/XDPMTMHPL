@@ -1,8 +1,10 @@
-package main.java.com.example.friend_service.Client;
+package com.example.friend_service.Client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.xdpmtmhpl.friend_service.dto.UserDTO;
+import com.example.friend_service.DTO.FriendDTO;
+import com.example.friend_service.DTO.UserDTO;
+
 import lombok.RequiredArgsConstructor;
 
 import java.util.Set;

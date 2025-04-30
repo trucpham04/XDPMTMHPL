@@ -1,4 +1,4 @@
-package main.java.com.example.friend_service.Config;
+package com.example.friend_service.Config;
 
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
