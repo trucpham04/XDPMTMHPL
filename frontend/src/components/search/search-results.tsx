@@ -17,9 +17,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({ users, onSelect }) => {
         </div>
       ) : (
         users.map((user) => {
+<<<<<<< Updated upstream
           const displayName =
             `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
             "Unknown";
+=======
+          const displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || "Unknown";
+>>>>>>> Stashed changes
           return (
             <div
               key={user.id}

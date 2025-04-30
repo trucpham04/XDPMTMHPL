@@ -95,3 +95,81 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
+
+
+
+// chạy thử Home mới: đóng comment src\components\post\CommentDialog.tsx, 
+//  đóng comment src\pages\profile\Profile.tsx,  đóng comment nửa Home trên, 
+// mở comment Home dưới này
+
+// import React, { useState } from "react";
+// import { PostList } from "@/components/post_new/PostList";
+// import { NewPostDialog } from "@/components/post_new/NewPostDialog";
+// import { CommentDialog } from "@/components/post_new/CommentDialog";
+// import { Post, FeedItem } from "@/types/Post_new";
+
+// const Home: React.FC = () => {
+//   const [openCommentIndex, setOpenCommentIndex] = useState<number | null>(null);
+//   const [feed, setFeed] = useState<FeedItem[]>([]); // cập nhật feed
+
+//   const handleImageClick = (postIndex: number, imageIndex: number) => {
+//     console.log(`Clicked image ${imageIndex} in post ${postIndex}`);
+//     // Mở lightbox hoặc modal nếu có
+//   };
+
+//   const handleLikeClick = (postIndex: number) => {
+//     console.log(`Liked post ${postIndex}`);
+//     // Gửi like tới server hoặc cập nhật trạng thái
+//   };
+
+//   const handleCommentClick = (postIndex: number) => {
+//     setOpenCommentIndex(postIndex);
+//   };
+
+//   const handleShareClick = (postIndex: number) => {
+//     console.log(`Shared post ${postIndex}`);
+//     // Mở dialog hoặc gửi share tới server
+//   };
+
+//   const handleCloseComment = () => {
+//     setOpenCommentIndex(null);
+//   };
+
+//   const handleSubmitComment = (commentText: string) => {
+//     console.log("Gửi bình luận:", commentText);
+//     // Gửi comment lên server
+//   };
+
+//   return (
+//     <div className="flex w-full flex-col items-center justify-center">
+//       <NewPostDialog />
+
+//       <div className="mt-6 w-full max-w-2xl px-2">
+//         <PostList
+//           userId={1}
+//           onImageClick={handleImageClick}
+//           onLikeClick={handleLikeClick}
+//           onCommentClick={handleCommentClick}
+//           onShareClick={handleShareClick}
+//         />
+//       </div>
+
+//       {/* Hiển thị CommentDialog nếu có post được mở */}
+//       {openCommentIndex !== null && feed.length > openCommentIndex && feed[openCommentIndex].type === "post" && (
+//         <CommentDialog
+//           post={feed[openCommentIndex].data as Post}
+//           postIndex={openCommentIndex}
+//           isOpen={true}
+//           onClose={handleCloseComment}
+//           onLikeClick={() => handleLikeClick(openCommentIndex)}
+//           onCommentClick={() => {}}
+//           onImageClick={handleImageClick}
+//           onSubmitComment={handleSubmitComment}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default Home;

@@ -1,11 +1,10 @@
-
 package com.example.searchbackend.model;
 
-
 public class SearchHistoryResponse {
+    private Integer id;
     private String searchText;
-    private TargetUserDTO targetUser;  // Người bị click
-    private Integer searcherId; // Người đang đăng nhập
+    private TargetUserDTO targetUser;
+    private Integer searcherId;
 
     public SearchHistoryResponse() {}
 
@@ -13,6 +12,22 @@ public class SearchHistoryResponse {
         this.searchText = searchText;
         this.targetUser = targetUser;
         this.searcherId = searcherId;
+    }
+
+    public SearchHistoryResponse(SearchHistory history, TargetUserDTO targetUserDto) {
+        this.id = history.getId();
+        this.searchText = history.getSearchText();
+        this.searcherId = history.getSearcherId();
+        this.targetUser = targetUserDto;
+    }
+
+    // Getters & Setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getSearchText() {

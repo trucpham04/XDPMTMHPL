@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   NavigationMenu,
@@ -18,12 +19,19 @@ import FacebookLogo from "@/assets/logos/facebook_logo.png";
 import { User } from "@/types/User";
 import SearchDropdown from "@/components/search/search-dropdown";
 import SearchResults from "@/components/search/search-results";
+<<<<<<< Updated upstream
 import { Button } from "../ui/button";
 import axios from "axios";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import UserAvatar from "./userAvatar";
+=======
+// import { getAllUsers } from "@/API/UserServiceMock"; //  dùng mock
+import { Button } from "../ui/button";
+import { RootState } from "../../features/messages/store/store";
+import axios from "axios";
+>>>>>>> Stashed changes
 
 const navItems = [
   {
@@ -54,6 +62,7 @@ const AppNavBar: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<User[]>([]);
+<<<<<<< Updated upstream
   const { user, logout } = useAuthContext();
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -67,6 +76,24 @@ const AppNavBar: React.FC = () => {
         //   },
         // });
         navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+=======
+
+  const currentUser = useSelector((state: RootState) => state.user.user);
+  const currentUserId = currentUser?.id ?? 4;
+
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim() !== "") {
+      try {
+        await axios.post("http://localhost:8080/api/search/history", null, {
+          params: {
+            searcherId: currentUserId,
+            userId: null,
+            searchText: searchQuery.trim(),
+          },
+        });
+        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+
+>>>>>>> Stashed changes
         console.log("✅ Đã lưu tìm kiếm text");
       } catch (error) {
         console.error("❌ Lỗi khi lưu lịch sử:", error);
@@ -74,14 +101,18 @@ const AppNavBar: React.FC = () => {
     }
   };
 
+<<<<<<< Updated upstream
   useEffect(() => {}, [user]);
 
+=======
+>>>>>>> Stashed changes
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (searchQuery.trim() === "") {
         setSuggestions([]);
         return;
       }
+<<<<<<< Updated upstream
       // try {
       //   const response = await axios.get<User[]>(
       //     `http://localhost:8080/api/users/search/users`,
@@ -100,6 +131,26 @@ const AppNavBar: React.FC = () => {
 
     fetchSuggestions();
   }, [searchQuery]);
+=======
+      try {
+        const response = await axios.get<User[]>(
+          `http://localhost:8080/api/users/search/users`,
+          {
+            params: {
+              query: searchQuery,
+              currentUserId: currentUser?.id ?? 0,
+            },
+          },
+        );
+        setSuggestions(response.data);
+      } catch (error) {
+        console.error("Lỗi khi tìm kiếm:", error);
+      }
+    };
+
+    fetchSuggestions();
+  }, [searchQuery]); // <== gọi lại mỗi khi searchQuery thay đổi
+>>>>>>> Stashed changes
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -114,7 +165,11 @@ const AppNavBar: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+<<<<<<< Updated upstream
   // console.log("👤 currentUser từ Redux:", currentUser);
+=======
+  console.log("👤 currentUser từ Redux:", currentUser);
+>>>>>>> Stashed changes
   return (
     <>
       <div className="fixed top-0 left-0 z-50 flex h-14 w-dvw items-center justify-between bg-[#FFFFFE] shadow-sm">
@@ -149,7 +204,11 @@ const AppNavBar: React.FC = () => {
                 {/* Nếu input rỗng → hiện lịch sử tìm kiếm */}
                 {searchQuery.trim() === "" ? (
                   <SearchDropdown
+<<<<<<< Updated upstream
                     userId={user?.id ?? null}
+=======
+                    userId={currentUser?.id ?? null}
+>>>>>>> Stashed changes
                     onSelect={async (history) => {
                       const name = history.user
                         ? `${history.user.firstName} ${history.user.lastName}`
@@ -164,7 +223,11 @@ const AppNavBar: React.FC = () => {
                           null,
                           {
                             params: {
+<<<<<<< Updated upstream
                               searcherId: user,
+=======
+                              searcherId: currentUserId,
+>>>>>>> Stashed changes
                               userId: history?.targetUser?.id,
                               searchText: name,
                             },
@@ -199,7 +262,11 @@ const AppNavBar: React.FC = () => {
                             null,
                             {
                               params: {
+<<<<<<< Updated upstream
                                 searcherId: user,
+=======
+                                searcherId: currentUserId,
+>>>>>>> Stashed changes
                                 userId: user.id,
                                 searchText: name,
                               },

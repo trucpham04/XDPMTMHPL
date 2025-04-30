@@ -36,20 +36,25 @@ public class FriendService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private String getAuthToken(){
-        ServletRequestAttributes attributes= (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes != null){
-            String authHeader= attributes.getRequest().getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer")){
-                return authHeader.substring(7);
+    private String getAuthToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            if (request.getCookies() != null) {
+                for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                    if ("jwt".equals(cookie.getName())) {
+                        return cookie.getValue();
+                    }
+                }
             }
         }
-        throw new IllegalStateException("No Authorization token found in request.");
+        throw new IllegalStateException("No JWT token found in cookie.");
     }
+
 
     private Integer getCurrentUserId() {
         String token = getAuthToken();
-        String userServiceUrl = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/me";
+        String userServiceUrl = "http://api-gateway:8090/api/auth/me";
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
 
@@ -76,7 +81,7 @@ public class FriendService {
         Integer user1Id = getCurrentUserId();
         List<Friend> friends = friendRepository.findByUser1Id(user1Id);
         Function<Friend, FriendDTO> toUserDTO = friend -> {
-            String userServiceUrl = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/" + friend.getUser2Id() + "/basic";
+            String userServiceUrl = "http://api-gateway:8090/api/auth/users/" + friend.getUser2Id();
             return restTemplate.getForObject(userServiceUrl, FriendDTO.class);
         };
         return friends.stream()
@@ -85,10 +90,11 @@ public class FriendService {
     }
 
     @Transactional(rollbackOn = Exception.class)
+
     public Friend addFriend(Integer user2Id) {
         try {
             Integer user1Id = getCurrentUserId();
-            String user2Url = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/" + user2Id + "/basic";
+            String user2Url = "http://api-gateway:8090/api/auth/users/" + user2Id;
             FriendDTO user2 = restTemplate.getForObject(user2Url, FriendDTO.class);
             if (user2 == null) {
                 throw new IllegalArgumentException("User with ID " + user2Id + " does not exist.");
@@ -124,7 +130,7 @@ public class FriendService {
 
     public void removeFriend(Integer user2Id) {
         Integer user1Id = getCurrentUserId();
-        String user2Url = "https://30d3d25d-e531-436a-a0eb-8c0129d2c599.mock.pstmn.io/api/users/" + user2Id + "/basic";
+        String user2Url = "http://api-gateway:8090/api/auth/users/" + user2Id;
         try {
             FriendDTO user2 = restTemplate.getForObject(user2Url, FriendDTO.class);
             if (user2 == null) {

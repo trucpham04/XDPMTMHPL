@@ -20,6 +20,7 @@ const SearchPage: React.FC = () => {
       <div className="flex flex-1 justify-center px-4">
         <div className="w-full max-w-2xl">
           <div className="rounded-lg border bg-white p-4">
+<<<<<<< Updated upstream:frontend/src/pages/main/SearchPage.tsx
             {type === "all" && (
               <AllResults query={query} currentUserId={currentUserId} />
             )}
@@ -27,6 +28,12 @@ const SearchPage: React.FC = () => {
             {type === "people" && (
               <PeopleResults query={query} currentUserId={currentUserId} />
             )}
+=======
+          {type === "all" && <AllResults query={query} currentUserId={currentUserId}/>}
+
+
+            {type === "people" && <PeopleResults query={query} currentUserId={currentUserId}/>}
+>>>>>>> Stashed changes:frontend/src/pages/main/search/SearchPage.tsx
             {type === "posts" && <PostResults query={query} />}
 
             {type !== "people" && type !== "posts" && type !== "all" && (

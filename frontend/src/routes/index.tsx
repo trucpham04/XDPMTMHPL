@@ -8,7 +8,6 @@ import Home from "@/pages/main/Home";
 import FriendLayout from "@/components/layouts/FriendLayout";
 import FriendHome from "@/pages/main/friends/FriendHome";
 import FriendRequest from "@/pages/main/friends/FriendRequest";
-import FriendSuggest from "@/pages/main/friends/FriendSuggest";
 import AllFriend from "@/pages/main/friends/AllFriend";
 import FriendBirthday from "@/pages/main/friends/FriendBirthday";
 import FriendCustomList from "@/pages/main/friends/FriendCustomList";
@@ -16,7 +15,7 @@ import MessagesPage from "@/pages/main/MessagesPage";
 import Notifications from "@/pages/main/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
-import Profile from "@/pages/profile/Profile";
+// import Profile from "@/pages/profile/Profile";
 import SearchPage from "@/pages/main/SearchPage";
 
 const routes: React.FC = () => {
@@ -27,16 +26,15 @@ const routes: React.FC = () => {
           <Route index element={<Home />} />
           <Route path="friends/*" element={<FriendLayout />}>
             <Route index element={<FriendHome />} />
-            <Route path="requests" element={<FriendRequest />} />
-            {/* <Route path="sentRequest" element={<AllSentRequest />} /> */}
-            <Route path="suggestions" element={<FriendSuggest />} />
-            <Route path="all" element={<AllFriend />} />
-            <Route path="birthdays" element={<FriendBirthday />} />
-            <Route path="custom-list" element={<FriendCustomList />} />
+             <Route path="requests" element={<FriendRequest />} />
+              {/* <Route path="sentRequest" element={<AllSentRequest />} /> */}
+             <Route path="all" element={<AllFriend />} />
+             <Route path="birthdays" element={<FriendBirthday />} />
+              <Route path="custom-list" element={<FriendCustomList />} />    
           </Route>
           <Route path="notifications" element={<Notifications />} />
           <Route path="search" element={<SearchPage />} />
-          <Route path="profile/:user_id" element={<Profile />} />
+          {/* <Route path="profile/:user_id" element={<Profile />} /> */}
         </Route>
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
