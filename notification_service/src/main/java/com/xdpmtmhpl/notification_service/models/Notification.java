@@ -28,12 +28,24 @@ public class Notification {
     @Column(nullable = false)
     private NotificationType type;
 
+<<<<<<< Updated upstream
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "sender_id", nullable = false)
     private Long senderId;
 
+=======
+    @Column(name = "reference_id")
+    private Long referenceId;
+
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+>>>>>>> Stashed changes
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

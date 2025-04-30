@@ -1,6 +1,6 @@
+
 package com.example.searchbackend.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -16,11 +16,6 @@ public class SearchHistory {
 
     @Column(name = "target_user_id")
     private Integer targetUserId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_user_id", insertable = false, updatable = false)
-    @JsonProperty("user") // ✨ đặt alias để JSON trả về là "user" thay vì "targetUser"
-    private User targetUser;
 
     @Column(name = "search_text")
     private String searchText;

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
 import axios from "axios";
 
+
 type FriendRequest = {
   id: number;
   name: string;
@@ -12,6 +13,7 @@ type FriendRequest = {
   time: string;
 };
 
+axios.defaults.withCredentials = true;
 const FriendRequests: React.FC = () => {
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
@@ -21,24 +23,21 @@ const FriendRequests: React.FC = () => {
     const requestDate = new Date(date);
     const now = new Date();
     const diffInMs = now.getTime() - requestDate.getTime();
-
+  
     const years = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
     if (years > 0) return `${years} năm`;
-
+  
     const weeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
     if (weeks > 0) return `${weeks} tuần`;
-
+  
     const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     return `${days} ngày`;
+    
   };
 
   const fetchFriendRequests = () => {
     axios
-      .get("http://localhost:8090/friend-service/api/friends/requests", {
-        headers: {
-          Authorization: "Bearer fake-token",
-        },
-      })
+      .get("http://localhost:8082/api/friends/requests")
       .then((response) => {
         const fetchedRequests = response.data.map((req: any) => ({
           id: req.id,
@@ -47,15 +46,13 @@ const FriendRequests: React.FC = () => {
           avatar: req.avatar,
           time: calculateTimeSince(req.time),
         }));
-
+        
         setRequests(fetchedRequests);
         setError(null);
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách lời mời kết bạn:", error);
-        setError(
-          "Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.",
-        );
+        setError("Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.");
       });
   };
 
@@ -66,46 +63,28 @@ const FriendRequests: React.FC = () => {
   const handleAccept = (id: number) => {
     console.log("Accepting friend request with id:", id);
     axios
-      .post(
-        `http://localhost:8090/friend-service/api/friends/requests/accept/${id}`,
-        null,
-        {
-          headers: {
-            Authorization: "Bearer fake-token",
-          },
-        },
-      )
+      .post(`http://localhost:8082/api/friends/requests/accept/${id}`, null)
       .then(() => {
-        fetchFriendRequests();
+        fetchFriendRequests(); 
         setError(null);
       })
       .catch((error) => {
         console.error("Lỗi khi chấp nhận lời mời:", error);
-        const errorMessage =
-          error.response?.data ||
-          "Không thể chấp nhận lời mời. Vui lòng thử lại.";
+        const errorMessage = error.response?.data || "Không thể chấp nhận lời mời. Vui lòng thử lại.";
         setError(errorMessage);
       });
   };
 
   const handleDelete = (id: number) => {
     axios
-      .delete(
-        `http://localhost:8090/friend-service/api/friends/requests/delete/${id}`,
-        {
-          headers: {
-            Authorization: "Bearer fake-token",
-          },
-        },
-      )
+      .delete(`http://localhost:8082/api/friends/requests/delete/${id}`)
       .then(() => {
-        fetchFriendRequests();
+        fetchFriendRequests(); 
         setError(null);
       })
       .catch((error) => {
         console.error("Lỗi khi xóa lời mời:", error);
-        const errorMessage =
-          error.response?.data || "Không thể xóa lời mời. Vui lòng thử lại.";
+        const errorMessage = error.response?.data || "Không thể xóa lời mời. Vui lòng thử lại.";
         setError(errorMessage);
       });
   };
@@ -113,15 +92,15 @@ const FriendRequests: React.FC = () => {
   const navigate = useNavigate();
   return (
     <>
-      <div className="fixed left-0 h-screen w-90 bg-white shadow-sm">
+      <div className="w-90 fixed left-0 bg-white shadow-sm h-screen">
         <div className="p-2">
-          <div className="mb-4 items-center justify-between">
+          <div className=" items-center justify-between mb-4">
             <button onClick={() => navigate("/friends")} className="p-2">
-              <ArrowLeft size={24} className="cursor-pointer text-gray-500" />
+              <ArrowLeft size={24} className="text-gray-500 cursor-pointer" />
             </button>
-            <h2 className="flex items-center text-2xl font-bold">
+            <h2 className="text-2xl font-bold flex items-center">
               Lời mời kết bạn{" "}
-              <span className="ml-2 rounded-full bg-gray-200 px-2 py-1 text-sm font-semibold text-gray-700">
+              <span className="ml-2 bg-gray-200 text-gray-700 text-sm font-semibold px-2 py-1 rounded-full">
                 {requests.length}
               </span>
             </h2>
@@ -130,65 +109,59 @@ const FriendRequests: React.FC = () => {
             </a>
           </div>
 
-          {requests.length > 0 ? (
-            requests.map((request) => (
-              <div
-                key={request.id}
-                className="flex w-full flex-col rounded-lg px-2 py-3 hover:bg-gray-200"
+        
+            {requests.length > 0 ? (
+              requests.map((request) => (
+                <div key={request.id} className="w-full  py-3 px-2 flex flex-col hover:bg-gray-200 rounded-lg"
                 onClick={() => {
                   if (selectedFriend !== request.id) {
                     setSelectedFriend(request.id);
                   }
                 }}
-              >
-                <div className="flex w-full">
-                  <div className="mr-4 h-12 w-12 rounded-full bg-gray-300"></div>
-                  <div className="flex-1">
-                    <p className="font-semibold">{request.name}</p>
-                    <p className="flex justify-between text-sm text-gray-500">
-                      <span>{request.mutualFriends} bạn chung</span>
-                      <span>{request.time}</span>
-                    </p>
+                >
+                  <div className="flex w-full">
+                    <div className="w-12 h-12 bg-gray-300 rounded-full mr-4"></div>
+                    <div className="flex-1">
+                      <p className="font-semibold">{request.name}</p>
+                      <p className="text-sm text-gray-500 flex justify-between">
+                        <span>{request.mutualFriends} bạn chung</span>
+                        <span>{request.time}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-1 ml-auto space-x-2 mt-1">
+                    <button
+                      className="bg-blue-500 text-white w-30 px-4 py-1 rounded hover:bg-blue-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                         handleAccept(request.id)}}
+                    >
+                      Xác nhận
+                    </button>
+                    <button
+                      className="bg-gray-300 px-4 py-1  w-30 rounded hover:bg-gray-400"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                         handleDelete(request.id)}}
+                    >
+                      Xóa
+                    </button>
                   </div>
                 </div>
-                <div className="mt-1 ml-auto flex-1 space-x-2">
-                  <button
-                    className="w-30 rounded bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAccept(request.id);
-                    }}
-                  >
-                    Xác nhận
-                  </button>
-                  <button
-                    className="w-30 rounded bg-gray-300 px-4 py-1 hover:bg-gray-400"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(request.id);
-                    }}
-                  >
-                    Xóa
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="py-4 text-center text-gray-500">
-              Không có lời mời kết bạn nào
-            </p>
-          )}
+              ))
+            ) : (
+              <p className="text-gray-500 text-center py-4">Không có lời mời kết bạn nào</p>
+            )}
+          
         </div>
       </div>
       {selectedFriend !== null && (
         <div className="flex-1">
-          <FriendProfile
-            friendId={selectedFriend}
-            onClose={() => setSelectedFriend(null)}
-          />
+          <FriendProfile friendId={selectedFriend} onClose={() => setSelectedFriend(null)} />
         </div>
       )}
     </>
+    
   );
 };
 

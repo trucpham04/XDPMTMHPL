@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 
@@ -23,5 +24,9 @@ public class WebConfig implements WebMvcConfigurer {
         String uploadPath = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:" + uploadPath);
+    }
+    @Bean
+    public RestTemplate restTemplate() {
+    return new RestTemplate();
     }
 }

@@ -76,6 +76,7 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
+<<<<<<< Updated upstream
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -87,6 +88,8 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+=======
+>>>>>>> Stashed changes
 	</dependencies>
 
 

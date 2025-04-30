@@ -61,5 +61,4 @@ public class GatewayConfig {
                                                 .uri("http://notification-service:8085"))
                                 .build();
         }
-
 }
