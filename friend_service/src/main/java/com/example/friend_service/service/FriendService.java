@@ -155,6 +155,12 @@ public class FriendService {
         }
     }
 
+    public boolean checkFriendShip (Integer userID1, Integer userID2){
+        boolean friendsForward = friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id);
+        boolean friendsBackward = friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
+        return friendsForward || friendsBackward;
+    }
+
     
     // private int calculateMutualFriends(Integer userId, Integer friendId, Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
     //     Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId, new HashSet<>());
