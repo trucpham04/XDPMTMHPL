@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.friend_service.DTO.FriendDTO;
+import com.example.friend_service.DTO.UserDTO;
 import com.example.friend_service.Entity.FriendRequest;
 import com.example.friend_service.service.FriendRequestService;
 
@@ -22,10 +22,10 @@ public class FriendRequestController {
     @Autowired
     private FriendRequestService friendRequestService;
 
-    @GetMapping
-    public ResponseEntity<List<FriendDTO>> getAllFriendRequests(){
+    @GetMapping("")
+    public ResponseEntity<List<UserDTO>> getAllFriendRequests() {
         try {
-            List<FriendDTO> friendRequests= friendRequestService.getAllFriendRequests();
+            List<UserDTO> friendRequests = friendRequestService.getAllFriendRequests();
             return ResponseEntity.ok(friendRequests);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -34,9 +34,9 @@ public class FriendRequestController {
     }
 
     @GetMapping("/allsent")
-    public ResponseEntity<List<FriendDTO>> getAllRequestsSent(){
+    public ResponseEntity<List<UserDTO>> getAllRequestsSent() {
         try {
-            List<FriendDTO> requestSents= friendRequestService.getAllRequestSent();
+            List<UserDTO> requestSents = friendRequestService.getAllRequestSent();
             return ResponseEntity.ok(requestSents);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -81,5 +81,5 @@ public class FriendRequestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
 }

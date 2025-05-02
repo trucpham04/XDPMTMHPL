@@ -1,3 +1,4 @@
+
 package com.xdpmtmhpl.user_service.config;
 
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;

@@ -80,10 +80,10 @@ function MessagesMain({
 
   return (
     <div className={cn("flex h-full w-full flex-col", className)} {...props}>
-      <MessagesMainHeader
+      {/* <MessagesMainHeader
         isConnected={isConnected}
         conversationId={conversationId}
-      />
+      /> */}
       <div className="flex-1 overflow-auto">
         <MessagesSection messages={messages} currentUserId={currentUserId} />
       </div>

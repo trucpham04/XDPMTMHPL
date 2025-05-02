@@ -1,5 +1,6 @@
 import { User } from "@/types/User";
 import { apiClient } from "./apiClient";
+import { MessageResponse } from "@/types/Response";
 
 const serviceName = "user-service";
 
@@ -18,6 +19,8 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
+  gender: string;
+  dateOfBirth: string;
   roles: string[];
 }
 
@@ -60,7 +63,21 @@ class AuthService {
    * Get current user
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<User>(serviceName + "/api/auth/me");
+    const response = await apiClient.get<User>(serviceName + "/api/users/me");
+    return response;
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(
+    userData: Partial<User>,
+    userId: number,
+  ): Promise<MessageResponse> {
+    const response = await apiClient.put<MessageResponse>(
+      serviceName + `/api/auth/users/${userId}`,
+      userData,
+    );
     return response;
   }
 }

@@ -3,18 +3,18 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { NavLink } from "react-router-dom";
-import { Conversation } from "../../types";
+import { Conversation } from "@/types/Message";
 
 function MessagesSidebarItem({
   className,
-  conservation,
+  conversation,
   ...props
-}: React.ComponentProps<"div"> & { conservation: Conversation }) {
+}: React.ComponentProps<"div"> & { conversation: Conversation }) {
   return (
     <>
       <div {...props}>
         <NavLink
-          to={`/messages/${conservation.id}`}
+          to={`/messages/${conversation.id}`}
           className={({ isActive }) =>
             cn(
               "flex items-center space-x-2 rounded-lg p-2 pr-3 hover:bg-gray-100",
@@ -24,16 +24,25 @@ function MessagesSidebarItem({
           }
         >
           <Avatar className="h-14 w-14 border">
-            <AvatarImage />
+            <AvatarImage src={conversation.otherUser.profilePictureUrl} />
             <AvatarFallback>
-              {/* {conservation.name.slice(0, 2).toUpperCase()} */}
+              {conversation.otherUser.firstName.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
           <div className="hidden w-full sm:block">
-            <div className="flex items-center justify-between">
-              <div>{conservation.name}</div>
-              <div className={cn("text-sm font-normal")}></div>
+            <div className="flex flex-col justify-center">
+              <div className="">
+                {conversation.otherUser.firstName}{" "}
+                {conversation.otherUser.lastName}
+              </div>
+              {conversation.lastMessage && (
+                <div
+                  className={cn("text-muted-foreground text-sm font-normal")}
+                >
+                  {conversation.lastMessage.content}
+                </div>
+              )}
             </div>
           </div>
         </NavLink>

@@ -6,25 +6,23 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-<<<<<<< Updated upstream
 import com.xdpmtmhpl.notification_service.client.UserClient;
 import com.xdpmtmhpl.notification_service.dto.NotificationDTO;
 import com.xdpmtmhpl.notification_service.dto.NotificationRequest;
 import com.xdpmtmhpl.notification_service.dto.NotificationResponse;
 import com.xdpmtmhpl.notification_service.dto.UserDTO;
-=======
-import com.xdpmtmhpl.notification_service.dto.NotificationDTO;
-import com.xdpmtmhpl.notification_service.dto.NotificationRequest;
-import com.xdpmtmhpl.notification_service.dto.NotificationResponse;
->>>>>>> Stashed changes
 import com.xdpmtmhpl.notification_service.enums.NotificationType;
 import com.xdpmtmhpl.notification_service.exception.ResourceNotFoundException;
 import com.xdpmtmhpl.notification_service.models.Notification;
 import com.xdpmtmhpl.notification_service.repository.NotificationRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,10 +38,35 @@ public class NotificationServiceImpl implements NotificationService {
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final Map<String, Long> sessionUserIds = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
-<<<<<<< Updated upstream
     private final UserClient userClient;
-=======
->>>>>>> Stashed changes
+
+    private String getAuthToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            if (request.getCookies() != null) {
+                for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                    if ("jwt".equals(cookie.getName())) {
+                        return cookie.getValue();
+                    }
+                }
+            }
+        }
+        throw new IllegalStateException("No JWT token found in cookie.");
+    }
+
+    private Long getCurrentUserId() {
+        String token = getAuthToken();
+        try {
+            UserDTO currentUser = userClient.getUserByToken(token);
+            if (currentUser != null) {
+                return currentUser.getId();
+            }
+            throw new IllegalStateException("Could not retrieve current user information.");
+        } catch (Exception e) {
+            throw new IllegalStateException("Error retrieving current user: " + e.getMessage());
+        }
+    }
 
     @Override
     @Transactional
@@ -51,19 +74,15 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .userId(request.getUserId())
                 .type(request.getType())
-<<<<<<< Updated upstream
                 .senderId(request.getSenderId())
-=======
-                .referenceId(request.getReferenceId())
-                .isRead(false)
->>>>>>> Stashed changes
                 .build();
 
         return notificationRepository.save(notification);
     }
 
     @Override
-    public NotificationResponse getUserNotifications(Long userId, int page, int size) {
+    public NotificationResponse getUserNotifications(int page, int size) {
+        Long userId = getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notificationsPage = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, pageable);
@@ -92,41 +111,13 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-<<<<<<< Updated upstream
-=======
-    public void markAsRead(Long id) {
-        Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + id));
-
-        notification.setRead(true);
-        notificationRepository.save(notification);
-    }
-
-    @Override
-    @Transactional
-    public void markAllAsRead(Long userId) {
-        List<Notification> unreadNotifications = notificationRepository.findByUserIdAndIsReadFalse(userId);
-        unreadNotifications.forEach(notification -> notification.setRead(true));
-        notificationRepository.saveAll(unreadNotifications);
-    }
-
-    @Override
-    @Transactional
->>>>>>> Stashed changes
     public void deleteNotification(Long id) {
         notificationRepository.deleteById(id);
     }
 
     @Override
-<<<<<<< Updated upstream
-=======
-    public long getUnreadCount(Long userId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(userId);
-    }
-
-    @Override
->>>>>>> Stashed changes
-    public NotificationResponse getNotificationsByType(Long userId, NotificationType type, int page, int size) {
+    public NotificationResponse getNotificationsByType(NotificationType type, int page, int size) {
+        Long userId = getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notificationsPage = notificationRepository
                 .findByUserIdAndType(userId, type, pageable);
@@ -145,7 +136,6 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
     }
 
-<<<<<<< Updated upstream
     public NotificationDTO convertToDTO(Notification notification) {
         NotificationDTO notificationDTO = NotificationDTO.builder()
                 .id(notification.getId())
@@ -164,18 +154,6 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         return notificationDTO;
-=======
-    private NotificationDTO convertToDTO(Notification notification) {
-        return NotificationDTO.builder()
-                .id(notification.getId())
-                .userId(notification.getUserId())
-                .type(notification.getType())
-                .referenceId(notification.getReferenceId())
-                .isRead(notification.isRead())
-                .createdAt(notification.getCreatedAt())
-                .message(generateMessage(notification))
-                .build();
->>>>>>> Stashed changes
     }
 
     private String generateMessage(Notification notification) {
@@ -183,7 +161,6 @@ public class NotificationServiceImpl implements NotificationService {
         // Trong thực tế, bạn cần truy vấn thêm dữ liệu liên quan từ các bảng khác
         switch (notification.getType()) {
             case FRIEND_REQUEST:
-<<<<<<< Updated upstream
                 return "đã gửi cho bạn một lời mời kết bạn";
             case FRIEND_ACCEPT:
                 return "đã chấp nhận lời mời kết bạn của bạn";
@@ -199,21 +176,6 @@ public class NotificationServiceImpl implements NotificationService {
                 return "đã nhắc đến bạn";
             case NEW_MESSAGE:
                 return "đã gửi cho bạn một tin nhắn mới";
-=======
-                return "Bạn có một lời mời kết bạn mới";
-            case FRIEND_ACCEPT:
-                return "Ai đó đã chấp nhận lời mời kết bạn của bạn";
-            case POST_LIKE:
-                return "Ai đó đã thích bài viết của bạn";
-            case COMMENT_LIKE:
-                return "Ai đó đã thích bình luận của bạn";
-            case POST_COMMENT:
-                return "Ai đó đã bình luận về bài viết của bạn";
-            case COMMENT_REPLY:
-                return "Ai đó đã trả lời bình luận của bạn";
-            case MENTION:
-                return "Ai đó đã nhắc đến bạn";
->>>>>>> Stashed changes
             default:
                 return "Bạn có một thông báo mới";
         }
@@ -234,15 +196,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendNotificationToUser(Long userId, Notification notification) {
         try {
-<<<<<<< Updated upstream
             String notificationJson = objectMapper.writeValueAsString(convertToDTO(notification));
 
-=======
-            // Chuyển đổi đối tượng Notification thành JSON string
-            String notificationJson = objectMapper.writeValueAsString(convertToDTO(notification));
-
-            // Gửi thông báo đến tất cả phiên của userId
->>>>>>> Stashed changes
             sessions.entrySet().stream()
                     .filter(entry -> userId.equals(sessionUserIds.get(entry.getKey())))
                     .forEach(entry -> {
@@ -284,10 +239,6 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     public Map<String, String> extractQueryParameters(WebSocketSession session) {
-<<<<<<< Updated upstream
-=======
-        // Extract query parameters from the URI
->>>>>>> Stashed changes
         Map<String, String> params = new ConcurrentHashMap<>();
 
         String uri = session.getUri().toString();

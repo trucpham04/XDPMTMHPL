@@ -1,4 +1,4 @@
-package main.java.com.example.friend_service.Config;
+package com.example.friend_service.Config;
 
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -34,6 +34,8 @@ public class RabbitMQConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory factory = new CachingConnectionFactory(host, port);
+        factory.setHost(host);
+        factory.setPort(port);
         factory.setUsername(username);
         factory.setPassword(password);
         return factory;

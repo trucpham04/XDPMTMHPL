@@ -15,8 +15,11 @@ import MessagesPage from "@/pages/main/MessagesPage";
 import Notifications from "@/pages/main/Notifications";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
-// import Profile from "@/pages/profile/Profile";
+import Profile from "@/pages/profile/Profile";
 import SearchPage from "@/pages/main/SearchPage";
+import AdminLayout from "@/components/layouts/AdminLayout";
+import AdminUser from "@/pages/admin/user";
+import AdminPost from "@/pages/admin/post";
 
 const routes: React.FC = () => {
   return (
@@ -26,15 +29,19 @@ const routes: React.FC = () => {
           <Route index element={<Home />} />
           <Route path="friends/*" element={<FriendLayout />}>
             <Route index element={<FriendHome />} />
-             <Route path="requests" element={<FriendRequest />} />
-              {/* <Route path="sentRequest" element={<AllSentRequest />} /> */}
-             <Route path="all" element={<AllFriend />} />
-             <Route path="birthdays" element={<FriendBirthday />} />
-              <Route path="custom-list" element={<FriendCustomList />} />    
+            <Route path="requests" element={<FriendRequest />} />
+            {/* <Route path="sentRequest" element={<AllSentRequest />} /> */}
+            <Route path="all" element={<AllFriend />} />
+            <Route path="birthdays" element={<FriendBirthday />} />
+            <Route path="custom-list" element={<FriendCustomList />} />
+          </Route>
+          <Route path="admin" element={<AdminLayout />}>
+            <Route path="user" element={<AdminUser />} />
+            <Route path="post" element={<AdminPost />} />
           </Route>
           <Route path="notifications" element={<Notifications />} />
           <Route path="search" element={<SearchPage />} />
-          {/* <Route path="profile/:user_id" element={<Profile />} /> */}
+          <Route path="profile/:user_id" element={<Profile />} />
         </Route>
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
@@ -44,6 +51,7 @@ const routes: React.FC = () => {
           <Route index element={<MessagesPage />} />
           <Route path=":id" element={<MessagesPage />} />
         </Route>
+
         <Route path="*" element={<h1>404 Not Found</h1>} />
       </Routes>
     </Router>

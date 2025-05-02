@@ -1,24 +1,27 @@
 package com.xdpmtmhpl.user_service.controller;
 
 import com.xdpmtmhpl.user_service.dto.UpdateUserRequest;
+import com.xdpmtmhpl.user_service.dto.UserDTO;
 import com.xdpmtmhpl.user_service.models.User;
 import com.xdpmtmhpl.user_service.payload.response.MessageResponse;
 import com.xdpmtmhpl.user_service.repository.UserRepository;
+import com.xdpmtmhpl.user_service.service.UserService;
 
 import jakarta.validation.Valid;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-<<<<<<< Updated upstream
-// @CrossOrigin(origins = "http://localhost:5173", maxAge = 3600, allowCredentials = "true")
-=======
-@CrossOrigin(origins = "all", maxAge = 3600, allowCredentials = "true")
->>>>>>> Stashed changes
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -26,17 +29,56 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    // 1. Cập nhật thông tin user hiện tại
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/all")
+    public ResponseEntity<Page<UserDTO>> getAllUsers(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<UserDTO> userDTOs = userService.getAllUsers(page, size);
+
+        return ResponseEntity.ok(userDTOs);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(@RequestParam String query) {
+        List<User> usersByName = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query,
+                query);
+
+        if (usersByName.isEmpty()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        List<UserDTO> userDTOs = usersByName.stream()
+                .map(user -> {
+                    UserDTO userDTO = new UserDTO();
+                    userDTO.setId(user.getId());
+                    userDTO.setUsername(user.getUsername());
+                    userDTO.setEmail(user.getEmail());
+                    userDTO.setPhoneNumber(user.getPhoneNumber());
+                    userDTO.setFirstName(user.getFirstName());
+                    userDTO.setLastName(user.getLastName());
+                    userDTO.setDateOfBirth(user.getDateOfBirth());
+                    userDTO.setGender(user.getGender());
+                    userDTO.setBio(user.getBio());
+                    userDTO.setProfilePictureUrl(user.getProfilePictureUrl());
+                    userDTO.setCoverPhotoUrl(user.getCoverPhotoUrl());
+                    return userDTO;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(userDTOs);
+    }
+
     @PutMapping("/me")
     public ResponseEntity<?> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
-        // Lấy thông tin user hiện tại từ SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
 
-        // Cập nhật thông tin
         if (updateUserRequest.getFirstName() != null) {
             user.setFirstName(updateUserRequest.getFirstName());
         }
@@ -57,11 +99,9 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser() {
-        // Lấy thông tin user từ SecurityContext (dựa trên accessToken)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName(); // Lấy username từ token
+        String username = authentication.getName();
 
-        // Tìm user trong database
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -69,11 +109,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-<<<<<<< Updated upstream
-    // @PreAuthorize("hasRole('ADMIN')") // Chỉ admin mới có thể truy cập
-=======
-    @PreAuthorize("hasRole('ADMIN')") // Chỉ admin mới có thể truy cập
->>>>>>> Stashed changes
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));

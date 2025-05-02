@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
+import { User } from "@/types/User";
+import { Link } from "react-router-dom";
 
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  avatarUrl: string;
-  relationStatus: "FRIEND" | "NOT_FRIEND" | "REQUEST_SENT" | "REQUEST_RECEIVED";
-}
+// interface User {
+//   id: number;
+//   firstName: string;
+//   lastName: string;
+//   avatarUrl: string;
+//   relationStatus: "FRIEND" | "NOT_FRIEND" | "REQUEST_SENT" | "REQUEST_RECEIVED";
+// }
 
 interface Props {
   query: string;
@@ -28,16 +30,14 @@ const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const response = await axios.get<User[]>(
-          "http://localhost:8090/search-service/api/users/search/users",
-          {
+        await axios
+          .get<User[]>("http://127.0.0.1:8090/user-service/api/users/search", {
             params: {
               query: query.trim(),
               currentUserId,
             },
-          },
-        );
-        setResults(response.data);
+          })
+          .then((res) => setResults(res.data));
       } catch (error) {
         console.error("Lỗi khi tìm kiếm người dùng:", error);
       } finally {
@@ -56,9 +56,13 @@ const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
         searchText: `${user.firstName} ${user.lastName}`,
       };
 
-      await axios.post("http://localhost:8080/api/search/history", null, {
-        params,
-      });
+      await axios.post(
+        "http://localhost:8090/search-service/api/search/history",
+        null,
+        {
+          params,
+        },
+      );
 
       console.log(
         "✅ Đã lưu lịch sử tìm kiếm cho:",
@@ -70,43 +74,12 @@ const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
     }
   };
 
-  const renderButton = (status: User["relationStatus"]) => {
-    switch (status) {
-      case "FRIEND":
-        return (
-          <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
-            Message
-          </button>
-        );
-      case "NOT_FRIEND":
-        return (
-          <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">
-            Add Friend
-          </button>
-        );
-      case "REQUEST_SENT":
-        return (
-          <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">
-            Cancel Request
-          </button>
-        );
-      case "REQUEST_RECEIVED":
-        return (
-          <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">
-            Accept
-          </button>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <>
       <h2 className="mb-4 text-xl font-bold">People</h2>
       {loading ? (
         <p className="text-gray-500">Đang tìm kiếm...</p>
-      ) : results.length === 0 ? (
+      ) : results.length == 0 ? (
         <p className="text-gray-500">Không tìm thấy kết quả.</p>
       ) : (
         <ul className="space-y-4">
@@ -114,25 +87,23 @@ const PeopleResults: React.FC<Props> = ({ query, currentUserId }) => {
             <li key={user.id} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={user.avatarUrl || ""} />
+                  <AvatarImage src={user.profilePictureUrl || ""} />
                   <AvatarFallback>
                     {user.firstName[0]}
                     {user.lastName[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p
-                    className="cursor-pointer font-medium hover:underline"
-                    onClick={() => handleUserClick(user)}
-                  >
-                    {user.firstName} {user.lastName}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {user.relationStatus === "FRIEND" ? "Friend" : ""}
-                  </p>
+                  <Link to={`/profile/${user.id}`}>
+                    <p
+                      className="cursor-pointer font-medium hover:underline"
+                      onClick={() => handleUserClick(user)}
+                    >
+                      {user.firstName} {user.lastName}
+                    </p>
+                  </Link>
                 </div>
               </div>
-              {renderButton(user.relationStatus)}
             </li>
           ))}
         </ul>

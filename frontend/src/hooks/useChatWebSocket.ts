@@ -42,14 +42,6 @@ export default function useChatWebSocket() {
         }
 
         if (messageData.conversationId == currentConversationIdRef.current) {
-          if (
-            messageData.content === "TYPING" &&
-            messageData.messageType === "SYSTEM"
-          ) {
-            console.log(`User ${messageData.senderUsername} is typing...`);
-            return;
-          }
-
           const formattedMessage: ChatMessage = {
             id: messageData.id || `server-${Date.now()}`,
             senderId: messageData.senderId,

@@ -7,12 +7,17 @@ const DefaultLayout: React.FC = () => {
   const isFriendsPage =
     location.pathname === "/friends" ||
     location.pathname.startsWith("/friends/");
+  const isAdminPage = location.pathname.startsWith("/admin");
   return (
     <div className="bg-muted overflow-scroll">
       <AppSidebar />
 
       <main className="mt-14 flex items-center justify-center">
-        <div className={isFriendsPage ? "w-full" : "w-3xl max-w-3xl"}>
+        <div
+          className={
+            isFriendsPage || isAdminPage ? "w-full" : "w-3xl max-w-3xl"
+          }
+        >
           <Outlet />
         </div>
       </main>

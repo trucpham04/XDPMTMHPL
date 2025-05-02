@@ -13,7 +13,6 @@ const NotificationsPage: React.FC = () => {
   const { getNotifications, deleteNotification, loading, notifications } =
     useNotification();
 
-  // Combine stored and live notifications, remove duplicates
   const allNotifications = [...liveNotifications, ...notifications]
     .filter(
       (notification, index, self) =>
@@ -39,54 +38,6 @@ const NotificationsPage: React.FC = () => {
     }
   };
 
-  const handleAcceptFriendRequest = async (id: string) => {
-    try {
-      // Assuming there's an API endpoint for accepting friend requests
-      const response = await fetch(`/api/friend-requests/${id}/accept`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to accept friend request");
-      }
-
-      toast.success("Friend request accepted", {
-        description: "You are now friends!",
-      });
-    } catch (error) {
-      toast.error("Error accepting friend request", {
-        description: "Please try again later",
-      });
-      console.log("Error accepting friend request:", error);
-    }
-  };
-
-  // Handle declining a friend request
-  const handleDeclineFriendRequest = async (id: string) => {
-    try {
-      // Assuming there's an API endpoint for declining friend requests
-      const response = await fetch(`/api/friend-requests/${id}/decline`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to decline friend request");
-      }
-
-      // Mark the notification as read and potentially delete it
-      await handleDeleteNotification(id);
-
-      toast("Friend request declined");
-    } catch (error) {
-      toast.error("Error declining friend request", {
-        description: "Please try again later",
-      });
-      console.log("Error declining friend request:", error);
-    }
-  };
-
   useEffect(() => {
     if (isConnected) {
       toast.success("Connected to notifications", {
@@ -102,8 +53,6 @@ const NotificationsPage: React.FC = () => {
       <NotificationsList
         notifications={allNotifications}
         onDeleteNotification={handleDeleteNotification}
-        onAcceptFriendRequest={handleAcceptFriendRequest}
-        onDeclineFriendRequest={handleDeclineFriendRequest}
         isLoading={loading}
       />
     </div>

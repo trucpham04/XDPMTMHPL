@@ -13,7 +13,7 @@ export default function UserAvatar({
   return (
     <>
       <Avatar className={cn("h-10 w-10", className)}>
-        <AvatarImage src={user?.profilePicture} />
+        <AvatarImage src={user?.profilePictureUrl} />
         <AvatarFallback>
           <UserIcon className="h-6 w-6" />
         </AvatarFallback>

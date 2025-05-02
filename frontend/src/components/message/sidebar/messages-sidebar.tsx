@@ -15,7 +15,7 @@ function MessagesSidebar({
         <MessageSidebarHeader className="" />
         <div className="flex max-h-[calc(100vh-56px-56px)] flex-col space-y-2 overflow-auto">
           {conversations.map((item) => (
-            <MessageSidebarItem key={item.id} conservation={item} />
+            <MessageSidebarItem key={item.id} conversation={item} />
           ))}
         </div>
       </div>

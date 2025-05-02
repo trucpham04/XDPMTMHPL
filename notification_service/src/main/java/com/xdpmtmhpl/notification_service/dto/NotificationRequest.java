@@ -13,9 +13,5 @@ import lombok.NoArgsConstructor;
 public class NotificationRequest {
     private Long userId;
     private NotificationType type;
-<<<<<<< Updated upstream
     private Long senderId;
-=======
-    private Long referenceId;
->>>>>>> Stashed changes
 }

@@ -39,4 +39,27 @@ public class UserClient {
             throw new RuntimeException("Failed to fetch UserDTO from User Service", e);
         }
     }
+
+    public UserDTO getUserByToken(String token) {
+        rabbitTemplate.setReplyTimeout(3000);
+
+        ObjectNode requestMap = objectMapper.createObjectNode();
+        requestMap.put("type", "get_user_by_token");
+        requestMap.put("token", token);
+
+        try {
+            String requestJson = objectMapper.writeValueAsString(requestMap);
+
+            String responseJson = (String) rabbitTemplate.convertSendAndReceive(QUEUE_NAME, requestJson);
+
+            if (responseJson == null) {
+                return null;
+            }
+
+            return objectMapper.readValue(responseJson, UserDTO.class);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch UserDTO from User Service", e);
+        }
+    }
 }

@@ -26,9 +26,10 @@ public class ChatRestController {
     @Autowired
     private MessageRepository messageRepository;
 
-    @GetMapping("/conversations/{userId}")
-    public ResponseEntity<List<ConversationDTO>> getUserConversations(@PathVariable Long userId) {
-        List<ConversationDTO> conversations = chatService.getUserConversations(userId);
+    @GetMapping("/conversations")
+    public ResponseEntity<List<ConversationDTO>> getUserConversations() {
+
+        List<ConversationDTO> conversations = chatService.getUserConversations();
 
         return ResponseEntity.ok(conversations);
     }

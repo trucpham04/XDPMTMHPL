@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.friend_service.DTO.FriendDTO;
+import com.example.friend_service.DTO.UserDTO;
 import com.example.friend_service.Entity.Friend;
 import com.example.friend_service.service.FriendService;
 
@@ -23,16 +23,15 @@ public class FriendController {
     private FriendService friendService;
 
     @GetMapping
-    public ResponseEntity<List<FriendDTO>> getAllFriends() {
+    public ResponseEntity<List<UserDTO>> getAllFriends() {
         try {
-            
-            List<FriendDTO> friends = friendService.getAllFriends();
+
+            List<UserDTO> friends = friendService.getAllFriends();
             return ResponseEntity.ok(friends);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
 
     @PostMapping("/{user2Id}")
     public ResponseEntity<Friend> addFriend(@PathVariable("user2Id") Integer user2Id) {

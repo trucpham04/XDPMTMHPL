@@ -13,8 +13,6 @@ interface NotificationsListProps {
 export function NotificationsList({
   notifications,
   onDeleteNotification,
-  onAcceptFriendRequest,
-  onDeclineFriendRequest,
   isLoading,
 }: NotificationsListProps) {
   return (
@@ -32,8 +30,6 @@ export function NotificationsList({
               key={notification.id}
               notification={notification}
               onDelete={onDeleteNotification}
-              onAcceptFriendRequest={onAcceptFriendRequest}
-              onDeclineFriendRequest={onDeclineFriendRequest}
             />
           ))}
         </>
