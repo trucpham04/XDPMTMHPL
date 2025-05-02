@@ -59,8 +59,8 @@ public class FriendController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<Boolean> checkFriendship(@RequestParam Long user1Id, @RequestParam Long user2Id) {
-        boolean areFriends = friendService.areFriends(user1Id, user2Id);
+    public ResponseEntity<Boolean> checkFriendship(@RequestParam Integer user1Id, @RequestParam Integer user2Id) {
+        boolean areFriends = friendService.checkFriendShip(user1Id, user2Id);
         return ResponseEntity.ok(areFriends);
     }
 }
