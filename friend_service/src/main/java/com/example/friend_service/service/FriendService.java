@@ -131,7 +131,7 @@ public class FriendService {
         }
     }
 
-    public boolean checkFriendShip (Integer userID1, Integer userID2){
+    public boolean checkFriendShip (Integer user1Id, Integer user2Id){
         boolean friendsForward = friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id);
         boolean friendsBackward = friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
         return friendsForward || friendsBackward;
