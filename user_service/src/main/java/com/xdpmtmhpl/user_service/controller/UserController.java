@@ -71,4 +71,6 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         return ResponseEntity.ok(user);
     }
+
+
 }

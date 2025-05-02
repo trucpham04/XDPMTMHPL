@@ -1,7 +1,16 @@
 package com.xdpmtmhpl.user_service.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateUserRequest {
     @Size(max = 50)
     private String firstName;
@@ -9,42 +18,13 @@ public class UpdateUserRequest {
     @Size(max = 50)
     private String lastName;
 
+    @Email
+    @Size(max = 100)
+    private String email;
+
     @Size(max = 255)
     private String bio;
 
     @Size(max = 255)
     private String profilePictureUrl;
-
-    // Getters và setters
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getProfilePictureUrl() {
-        return profilePictureUrl;
-    }
-
-    public void setProfilePictureUrl(String profilePictureUrl) {
-        this.profilePictureUrl = profilePictureUrl;
-    }
 }

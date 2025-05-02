@@ -1,5 +1,6 @@
 package com.xdpmtmhpl.user_service.controller;
 
+import com.xdpmtmhpl.user_service.dto.UpdateUserRequest;
 import com.xdpmtmhpl.user_service.models.Role;
 import com.xdpmtmhpl.user_service.models.User;
 import com.xdpmtmhpl.user_service.payload.request.LoginRequest;
@@ -14,6 +15,7 @@ import com.xdpmtmhpl.user_service.security.services.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -231,83 +236,178 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    // @PutMapping("/users/{id}")
+    // public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id,
+    //         @RequestBody UserUpdateRequest updateRequest) {
+    //     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //     if (authentication == null || !authentication.isAuthenticated()) {
+    //         return ResponseEntity.status(401).body(new MessageResponse("Unauthorized"));
+    //     }
+
+    //     User user = userRepository.findById(id)
+    //             .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+    //     // Kiểm tra quyền: Chỉ cho phép người dùng cập nhật thông tin của chính họ
+    //     if (!user.getUsername().equals(authentication.getName())) {
+    //         return ResponseEntity.status(403).body(new MessageResponse("You can only update your own profile"));
+    //     }
+
+    //     // Cập nhật thông tin
+    //     if (updateRequest.getFirstName() != null)
+    //         user.setFirstName(updateRequest.getFirstName());
+    //     if (updateRequest.getLastName() != null)
+    //         user.setLastName(updateRequest.getLastName());
+    //     if (updateRequest.getEmail() != null)
+    //         user.setEmail(updateRequest.getEmail());
+    //     if (updateRequest.getBio() != null)
+    //         user.setBio(updateRequest.getBio());
+    //     if (updateRequest.getProfilePictureUrl() != null)
+    //         user.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
+
+    //     userRepository.save(user);
+    //     return ResponseEntity.ok(new MessageResponse("User updated successfully"));
+    // }
+
     @PutMapping("/users/{id}")
-    public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id,
-            @RequestBody UserUpdateRequest updateRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body(new MessageResponse("Unauthorized"));
-        }
-
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-
-        // Kiểm tra quyền: Chỉ cho phép người dùng cập nhật thông tin của chính họ
-        if (!user.getUsername().equals(authentication.getName())) {
-            return ResponseEntity.status(403).body(new MessageResponse("You can only update your own profile"));
-        }
-
-        // Cập nhật thông tin
-        if (updateRequest.getFirstName() != null)
-            user.setFirstName(updateRequest.getFirstName());
-        if (updateRequest.getLastName() != null)
-            user.setLastName(updateRequest.getLastName());
-        if (updateRequest.getEmail() != null)
-            user.setEmail(updateRequest.getEmail());
-        if (updateRequest.getBio() != null)
-            user.setBio(updateRequest.getBio());
-        if (updateRequest.getProfilePictureUrl() != null)
-            user.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
-
-        userRepository.save(user);
-        return ResponseEntity.ok(new MessageResponse("User updated successfully"));
+public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id,
+        @RequestBody UpdateUserRequest updateRequest) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(401).body(new MessageResponse("Không được phép"));
     }
+
+    User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với id: " + id));
+
+    // Kiểm tra quyền: Chỉ cho phép người dùng cập nhật thông tin của chính họ
+    if (!user.getUsername().equals(authentication.getName())) {
+        return ResponseEntity.status(403).body(new MessageResponse("Bạn chỉ có thể cập nhật hồ sơ của chính mình"));
+    }
+
+    // Cập nhật thông tin
+    if (updateRequest.getFirstName() != null)
+        user.setFirstName(updateRequest.getFirstName());
+    if (updateRequest.getLastName() != null)
+        user.setLastName(updateRequest.getLastName());
+    if (updateRequest.getBio() != null)
+        user.setBio(updateRequest.getBio());
+    if (updateRequest.getProfilePictureUrl() != null)
+        user.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
+
+    userRepository.save(user);
+    return ResponseEntity.ok(new MessageResponse("Cập nhật người dùng thành công"));
 }
 
-class UserUpdateRequest {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String bio;
-    private String profilePictureUrl;
 
-    public String getFirstName() {
-        return firstName;
+// @GetMapping("/users/search")
+// public ResponseEntity<List<UserProfileResponse>> searchUsers(@RequestParam String name) {
+//     if (name == null || name.trim().isEmpty()) {
+//         return ResponseEntity.badRequest().body(null);
+//     }
+
+//     // Tìm kiếm người dùng theo tên, họ hoặc tên đăng nhập (không phân biệt hoa thường)
+//     List<User> users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrUsernameContainingIgnoreCase(
+//             name, name, name);
+
+//     // Chuyển đổi sang UserProfileResponse
+//     List<UserProfileResponse> response = users.stream().map(user -> {
+//         UserProfileResponse profile = new UserProfileResponse();
+//         profile.setId(user.getId());
+//         profile.setUsername(user.getUsername());
+//         profile.setEmail(user.getEmail());
+//         profile.setFullName(user.getFirstName() + " " + user.getLastName());
+//         profile.setProfilePicture(user.getProfilePictureUrl());
+//         profile.setBio(user.getBio());
+//         return profile;
+//     }).collect(Collectors.toList());
+
+//     return ResponseEntity.ok(response);
+// }
+
+@GetMapping("/users/search")
+    public ResponseEntity<?> searchUsers(
+            @RequestParam String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (name == null || name.trim().isEmpty()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Lỗi: Từ khóa tìm kiếm không được để trống"));
+        }
+
+        if (name.length() < 2) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Lỗi: Từ khóa tìm kiếm phải có ít nhất 2 ký tự"));
+        }
+
+        // Tạo đối tượng Pageable
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Tìm kiếm với phân trang
+        Page<User> userPage = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrUsernameContainingIgnoreCase(
+                name, name, name, pageable);
+
+        // Chuyển đổi sang UserProfileResponse
+        List<UserProfileResponse> response = userPage.getContent().stream().map(user -> {
+            UserProfileResponse profile = new UserProfileResponse();
+            profile.setId(user.getId());
+            profile.setUsername(user.getUsername());
+            profile.setEmail(user.getEmail());
+            profile.setFullName(user.getFirstName() + " " + user.getLastName());
+            profile.setProfilePicture(user.getProfilePictureUrl());
+            profile.setBio(user.getBio());
+            return profile;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+// class UserUpdateRequest {
+//     private String firstName;
+//     private String lastName;
+//     private String email;
+//     private String bio;
+//     private String profilePictureUrl;
 
-    public String getLastName() {
-        return lastName;
-    }
+//     public String getFirstName() {
+//         return firstName;
+//     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+//     public void setFirstName(String firstName) {
+//         this.firstName = firstName;
+//     }
 
-    public String getEmail() {
-        return email;
-    }
+//     public String getLastName() {
+//         return lastName;
+//     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+//     public void setLastName(String lastName) {
+//         this.lastName = lastName;
+//     }
 
-    public String getBio() {
-        return bio;
-    }
+//     public String getEmail() {
+//         return email;
+//     }
 
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
+//     public void setEmail(String email) {
+//         this.email = email;
+//     }
 
-    public String getProfilePictureUrl() {
-        return profilePictureUrl;
-    }
+//     public String getBio() {
+//         return bio;
+//     }
 
-    public void setProfilePictureUrl(String profilePictureUrl) {
-        this.profilePictureUrl = profilePictureUrl;
-    }
+//     public void setBio(String bio) {
+//         this.bio = bio;
+//     }
+
+//     public String getProfilePictureUrl() {
+//         return profilePictureUrl;
+//     }
+
+//     public void setProfilePictureUrl(String profilePictureUrl) {
+//         this.profilePictureUrl = profilePictureUrl;
+//     }
+//     }
 }
