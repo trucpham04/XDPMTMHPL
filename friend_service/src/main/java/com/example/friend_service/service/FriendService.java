@@ -161,7 +161,7 @@ public class FriendService {
     //         ));
     // }
   
-- [ ] Nhắn thằng kia coi MNM có được chưa
+
 }
 
 // private int calculateMutualFriends(Integer userId, Integer friendId,
