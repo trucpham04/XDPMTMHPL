@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@shadcn/ui": "^0.0.4",
+    "react-modal": "^3.16.3"
+  }
+}

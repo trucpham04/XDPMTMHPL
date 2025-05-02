@@ -1,129 +1,200 @@
-import { ChevronDown   } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { User } from "@/types/User";
 
-const friendRequestData=[
-    { id: 1, name: "Hưng Thịnh", mutualFriends: 5, avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
-    { id: 2, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 3, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 4, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 5, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 6, name: "Hưng Thịnh", mutualFriends: 5, avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
-    { id: 7, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 8, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 9, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 10, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 11, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 12, name: "Hưng Thịnh", mutualFriends: 5, avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
-    { id: 13, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 14, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 15, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 16, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
+type FriendRequest = {
+  id: number;
+  name: string;
+  mutualFriends: number;
+  avatar: string;
+  time: string;
+};
 
-];
+const calculateTimeSince = (date: string): string => {
+  const requestDate = new Date(date);
+  const now = new Date();
+  const diffInMs = now.getTime() - requestDate.getTime();
 
-const friendSuggestData=[
-    { id: 1, name: "Hưng Thịnh", mutualFriends: 5, avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
-    { id: 2, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 3, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 4, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 5, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 6, name: "Hưng Thịnh", mutualFriends: 5, avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
-    { id: 7, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 8, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 9, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 10, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 11, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 12, name: "Hưng Thịnh", mutualFriends: 5, avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
-    { id: 13, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 14, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-    { id: 15, name: "Lê Văn Mẫn", mutualFriends: 3, avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-    { id: 16, name: "Thanh Truyền", mutualFriends: 8, avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
+  const years = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
+  if (years > 0) return `${years} năm`;
 
-];
+  const weeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
+  if (weeks > 0) return `${weeks} tuần`;
 
+  const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  return `${days} ngày`;
+};
 
+// Default placeholder image as a data URI or you can use an external URL
+const DEFAULT_AVATAR = "https://placehold.co/150?text=No+Image";
 
-const FriendList: React.FC = ()=>{
-    const [visibleCount1, setVisibleCount1] = useState(10); 
+const FriendList: React.FC = () => {
+  const navigate = useNavigate();
+  const [visibleCount1, setVisibleCount1] = useState(10);
+  const [requests1, setRequests1] = useState<User[]>([]);
+  const [error1, setError1] = useState<string | null>(null);
 
-    const handleShowMore1 = () => {
-        setVisibleCount1((prev) => prev + 10); 
-    };
+  const handleShowMore1 = () => {
+    setVisibleCount1((prev) => prev + 10);
+  };
 
-    const [visibleCount2, setVisibleCount2] = useState(10);
+  const fetchFriendRequests = () => {
+    axios
+      .get("http://127.0.0.1:8090/friend-service/api/friends/requests", {
+        headers: {
+          Authorization: "Bearer fake-token",
+        },
+      })
+      .then((response) => {
+        // const fetchedRequests = response.data.map((req: any) => ({
+        //   id: req.id,
+        //   name: req.firstName + " " + req.lastName,
+        //   mutualFriends: req.mutualFriends,
+        //   avatar: req.avatar,
+        //   time: calculateTimeSince(req.requestDate),
+        // }));
+        setRequests1(response.data);
+        setError1(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách lời mời kết bạn:", error);
+        setError1(
+          "Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.",
+        );
+      });
+  };
 
-    const handleShowMore2 = () => {
-        setVisibleCount2((prev) => prev + 10); 
-    };
+  useEffect(() => {
+    fetchFriendRequests();
+  }, []);
 
-   
-    return (
-        <div className=" m-8 ">
-            <div className="flex">
-                <h2 className="text-black text-xl font-bold mb-4">Lời mời kết bạn</h2>
-                <a className="text-base ml-auto mr-2 text-blue-500">Xem tất cả</a>
-            </div>
-            
-            <div className="grid grid-cols-5 gap-2">
-                {friendRequestData.slice(0,visibleCount1).map((friend) =>
-                    <div key={friend.id} className="bg-white rounded-lg text-white overflow-hidden shadow-md">
-                    <img src={friend.avatar} alt={friend.name} className="w-full " />
-                    <div className="m-2">
-                        <p className="text-black font-medium">{friend.name}</p>
-                        <p className="text-base text-gray-500">{friend.mutualFriends} Bạn chung</p>
-                        <div className="flex flex-col justify-center space-y-2 mt-2 font-bold">
-                            <button className="bg-blue-500  py-1.5 rounded-md text-base hover:bg-blue-600">Xác nhận</button>
-                            <button className="bg-gray-200  py-1.5 rounded-md text-base text-black hover:bg-gray-300">Xóa</button>
-                        </div>
-                    </div>
-                    
-                </div>)}
-            </div>
-            {visibleCount1 < friendRequestData.length && (
-            <div className="flex justify-center mt-2 py-2 hover:bg-gray-200">
-                <div className="flex items-center ">
-                    <a onClick={handleShowMore1} className="text-base">Xem thêm</a>
-                    <ChevronDown className="text-base text-blue-500" />
+  const handleAccept1 = (id: number) => {
+    console.log("Accepting friend request with id:", id);
+    axios
+      .post(
+        `http://127.0.0.1:8090/friend-service/api/friends/requests/accept/${id}`,
+        null,
+        {
+          headers: {
+            Authorization: "Bearer fake-token",
+          },
+        },
+      )
+      .then(() => {
+        fetchFriendRequests();
+        setError1(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi chấp nhận lời mời:", error);
+        const errorMessage =
+          error.response?.data ||
+          "Không thể chấp nhận lời mời. Vui lòng thử lại.";
+        setError1(errorMessage);
+      });
+  };
+
+  const handleDelete1 = (id: number) => {
+    console.log("Deleting friend request with id:", id);
+    axios
+      .delete(
+        `http://127.0.0.1:8090/friend-service/api/friends/requests/delete/${id}`,
+        {
+          headers: {
+            Authorization: "Bearer fake-token",
+          },
+        },
+      )
+      .then(() => {
+        fetchFriendRequests();
+        setError1(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi xóa lời mời:", error);
+        const errorMessage =
+          error.response?.data || "Không thể xóa lời mời. Vui lòng thử lại.";
+        setError1(errorMessage);
+      });
+  };
+
+  return (
+    <div className="m-8">
+      <div className="flex">
+        <h2 className="mb-4 text-xl font-bold text-black">Lời mời kết bạn</h2>
+        <a
+          className="mr-2 ml-auto text-base text-blue-500"
+          onClick={() => navigate("/friends/requests")}
+        >
+          Xem tất cả
+        </a>
+      </div>
+      {requests1.length > 0 ? (
+        <div className="grid grid-cols-5 gap-2">
+          {requests1.slice(0, visibleCount1).map((friend) => (
+            <div
+              key={friend.id}
+              className="cursor-pointer overflow-hidden rounded-lg bg-white text-white shadow-md"
+              onClick={() => navigate("/profile/" + friend.id)}
+            >
+              <img
+                src={friend.profilePictureUrl || DEFAULT_AVATAR}
+                alt={`${friend.firstName} ${friend.lastName}`}
+                className="h-40 w-full object-cover"
+                onError={(e) => {
+                  // Fallback if the image fails to load
+                  (e.target as HTMLImageElement).src = DEFAULT_AVATAR;
+                }}
+              />
+              <div className="m-2">
+                <p className="font-medium text-black">
+                  {friend.firstName} {friend.lastName}
+                </p>
+                {/* <p className="text-base text-gray-500">
+                  {friend.mutualFriends} Bạn chung
+                </p> */}
+                <div className="mt-2 flex flex-col justify-center space-y-2 font-bold">
+                  <button
+                    className="rounded-md bg-blue-500 py-1.5 text-base hover:bg-blue-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAccept1(friend.id);
+                    }}
+                  >
+                    Xác nhận
+                  </button>
+                  <button
+                    className="rounded-md bg-gray-200 py-1.5 text-base text-black hover:bg-gray-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete1(friend.id);
+                    }}
+                  >
+                    Xóa
+                  </button>
                 </div>
+              </div>
             </div>
-            )}
-            <hr className="my-4 border-t-2 border-gray-300 font-bold" />
-
-            {/* Bạn có thể quen */}
-            <div className="flex">
-                <h2 className="text-black text-xl font-bold mb-4">Lời mời kết bạn</h2>
-                <a className="text-base ml-auto mr-2 text-blue-500">Xem tất cả</a>
-            </div>
-            
-            <div className="grid grid-cols-5 gap-2">
-                {friendSuggestData.slice(0,visibleCount2).map((friend) =>
-                    <div key={friend.id} className="bg-white rounded-lg text-white overflow-hidden shadow-md">
-                    <img src={friend.avatar} alt={friend.name} className="w-full " />
-                    <div className="m-2">
-                        <p className="text-black font-medium">{friend.name}</p>
-                        <p className="text-base text-gray-500">{friend.mutualFriends} Bạn chung</p>
-                        <div className="flex flex-col justify-center space-y-2 mt-2 font-bold">
-                            <button className="bg-blue-500  py-1.5 rounded-md text-base hover:bg-blue-600">Xác nhận</button>
-                            <button className="bg-gray-200  py-1.5 rounded-md text-base text-black hover:bg-gray-300">Xóa</button>
-                        </div>
-                    </div>
-                    
-                </div>)}
-            </div>
-            {visibleCount2 < friendSuggestData.length && (
-            <div className="flex justify-center mt-2 py-2 hover:bg-gray-200">
-                <div className="flex items-center ">
-                    <a onClick={handleShowMore2} className="text-base">Xem thêm</a>
-                    <ChevronDown className="text-base text-blue-500" />
-                </div>
-            </div>
-            )}
-           
+          ))}
         </div>
-        
-    )
-        
-    
+      ) : (
+        <p className="py-4 text-center text-gray-500">
+          Không có lời mời kết bạn nào
+        </p>
+      )}
+
+      {visibleCount1 < requests1.length && (
+        <div className="mt-2 flex justify-center py-2 hover:bg-gray-200">
+          <div className="flex items-center">
+            <a onClick={handleShowMore1} className="text-base">
+              Xem thêm
+            </a>
+            <ChevronDown className="text-base text-blue-500" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default FriendList;
