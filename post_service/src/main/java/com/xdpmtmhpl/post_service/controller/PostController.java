@@ -1,10 +1,39 @@
+// package com.xdpmtmhpl.post_service.controller;
+
+// import com.xdpmtmhpl.post_service.models.Post;
+// import com.xdpmtmhpl.post_service.repository.PostRepository;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.web.bind.annotation.*;
+
+// import java.util.List;
+
+// @RestController
+// @RequestMapping("/posts")
+// public class PostController {
+
+//     @Autowired
+//     private PostRepository postRepository;
+
+//     @GetMapping
+//     public List<Post> getAllPosts() {
+//         return postRepository.findAll();
+//     }
+
+//     @PostMapping
+//     public Post createPost(@RequestBody Post post) {
+//         return postRepository.save(post);
+//     }
+// }
 package com.xdpmtmhpl.post_service.controller;
 
-import com.xdpmtmhpl.post_service.model.Post;
-import com.xdpmtmhpl.post_service.request.PostRequest;
-import com.xdpmtmhpl.post_service.response.PostResponse;
-import com.xdpmtmhpl.post_service.service.PostService;
+import com.xdpmtmhpl.post_service.dto.CommentDTO;
+import com.xdpmtmhpl.post_service.dto.LikeDTO;
+import com.xdpmtmhpl.post_service.services.CommentService;
+import com.xdpmtmhpl.post_service.services.LikeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,39 +42,70 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api")
 public class PostController {
 
     @Autowired
-    private PostService postService;
+    private CommentService commentService;
 
-    @PostMapping
-    public ResponseEntity<PostResponse> createPost(@RequestBody PostRequest postRequest) {
-        Post post = new Post();
-        post.setUserId(postRequest.getUserId());
-        post.setContent(postRequest.getContent());
-        post.setCreatedAt(postRequest.getCreatedAt());
-        post.setUpdatedAt(postRequest.getUpdatedAt());
-        post.setViewer(postRequest.getViewer());
-        post.setMultiFile(postRequest.getMultiFile());
-        Post createdPost = postService.createPost(post);
-        return ResponseEntity.ok(toResponse(createdPost));
+    @Autowired
+    private LikeService likeService;
+
+    // Comment APIs
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<Page<CommentDTO>> getComments(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<CommentDTO> comments = commentService.getCommentsByPostId(postId, PageRequest.of(page, size));
+        return ResponseEntity.ok(comments);
     }
 
-
-    @GetMapping("/{postId}")
-    public ResponseEntity<PostResponse> getPost(@PathVariable Integer postId) {
-        Post post = postService.getPostById(postId);
-        return ResponseEntity.ok(toResponse(post));
+    @PostMapping("/posts/{postId}/comments")
+    public ResponseEntity<CommentDTO> createComment(
+            @PathVariable Long postId,
+            @Valid @RequestBody CommentDTO commentDTO) {
+        CommentDTO createdComment = commentService.createComment(postId, commentDTO);
+        return ResponseEntity.ok(createdComment);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PostResponse>> getPostsByUserId(@PathVariable Integer userId) {
-        List<Post> posts = postService.getPostsByUserId(userId);
-        List<PostResponse> responseList = posts.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responseList);
+    @PutMapping("/comments/{commentId}")
+    public ResponseEntity<CommentDTO> updateComment(
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentDTO commentDTO) {
+        CommentDTO updatedComment = commentService.updateComment(commentId, commentDTO);
+        return ResponseEntity.ok(updatedComment);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable Long commentId,
+            @RequestParam Long userId) {
+        commentService.deleteComment(commentId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Like APIs
+    @GetMapping("/posts/{postId}/likes")
+    public ResponseEntity<List<LikeDTO>> getLikes(@PathVariable Long postId) {
+        List<LikeDTO> likes = likeService.getLikesByPostId(postId);
+        return ResponseEntity.ok(likes);
+    }
+
+    @PostMapping("/posts/{postId}/likes")
+    public ResponseEntity<Void> likePost(
+            @PathVariable Long postId,
+            @RequestBody Long userId) {
+        likeService.likePost(postId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/posts/{postId}/likes/{userId}")
+    public ResponseEntity<Void> unlikePost(
+            @PathVariable Long postId,
+            @PathVariable Long userId) {
+        likeService.unlikePost(postId, userId);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{postId}")

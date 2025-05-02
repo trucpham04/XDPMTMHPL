@@ -1,9 +1,10 @@
-package com.xdpmtmhpl.post_service.model;
+package com.xdpmtmhpl.post_service.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,46 +18,16 @@ public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "like_id")
-    private Integer likeId;
+    private Integer id;
 
-    @Column(name = "post_id", nullable = false)
-    private Integer postId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 
     @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    private Long userId;
 
-    @Column(name = "created_at", columnDefinition = "datetime default CURRENT_TIMESTAMP")
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    public Integer getLikeId() {
-        return likeId;
-    }
-
-    public void setLikeId(Integer likeId) {
-        this.likeId = likeId;
-    }
-
-    public Integer getPostId() {
-        return postId;
-    }
-
-    public void setPostId(Integer postId) {
-        this.postId = postId;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }

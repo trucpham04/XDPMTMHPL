@@ -1,52 +1,118 @@
-package com.xdpmtmhpl.post_service.controller;
+// // package com.xdpmtmhpl.post_service.controller;
 
-import com.xdpmtmhpl.post_service.model.Comment;
-import com.xdpmtmhpl.post_service.model.Post;
-import com.xdpmtmhpl.post_service.request.CommentRequest;
-import com.xdpmtmhpl.post_service.response.CommentResponse;
-import com.xdpmtmhpl.post_service.service.CommentService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+// // import com.xdpmtmhpl.post_service.models.User;
+// // import com.xdpmtmhpl.post_service.models.Comment;
+// // import com.xdpmtmhpl.post_service.services.CommentService;
+// // import com.xdpmtmhpl.post_service.payload.request.CommentRequest;
+// // import org.springframework.beans.factory.annotation.Autowired;
+// // import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDateTime;
-import java.util.List;
+// // import org.springframework.web.bind.annotation.*;
+// // import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-@RestController
-@RequestMapping("/api/comments")
-public class CommentController {
-    @Autowired
-    private CommentService commentService;
+// // import java.util.List;
 
-    @PostMapping("/{postId}")
-    public ResponseEntity<CommentResponse> addComment(
-            @PathVariable Integer postId,
-            @RequestBody CommentRequest commentRequest
-    ) {
-        Comment comment = new Comment();
-        comment.setUserId(commentRequest.getUserId());
-        comment.setContent(commentRequest.getContent());
-        comment.setCreatedAt(LocalDateTime.now());
-        comment.setUpdatedAt(LocalDateTime.now());
+// // @RestController
+// // @RequestMapping("/api/comments")
+// // public class CommentController {
 
-        // Gán post để mapping id trong response
-        Post post = new Post();
-        post.setPostId(postId);
-        comment.setPost(post);
+// //     @Autowired
+// //     private CommentService commentService;
 
-        CommentResponse savedComment = commentService.addComment(postId, comment);
-        return ResponseEntity.ok(savedComment);
-    }
+// //     // Lấy tất cả cmt
+// //     @GetMapping
+// //     public ResponseEntity<List<Comment>> getAllComments() {
+// //         List<Comment> comments = commentService.getAllComments();
+// //         return ResponseEntity.ok(comments);
+// //     }
 
-    @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
-        commentService.deleteComment(commentId);
-        return ResponseEntity.noContent().build();
-    }
+// //     // Lấy cmt theo ID
+// //     @GetMapping("/{id}")
+// //     public ResponseEntity<Comment> getCommentById(@PathVariable Long id) {
+// //         Comment comment = commentService.getCommentById(id)
+// //                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
+// //         return ResponseEntity.ok(comment);
+// //     }
 
-    @GetMapping("/post/{postId}")
-    public ResponseEntity<List<CommentResponse>> getCommentsByPostId(@PathVariable Integer postId) {
-        List<CommentResponse> comments = commentService.getCommentsByPostId(postId);
-        return ResponseEntity.ok(comments);
-    }
-}
+// //     // Lấy tất cả cmt của 1 post
+// //     @GetMapping("/post/{postId}")
+// //     public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable Long postId) {
+// //         List<Comment> comments = commentService.getCommentsByPostId(postId);
+// //         return ResponseEntity.ok(comments);
+// //     }
+
+// //     // Tạo cmt mới
+// //     @PostMapping("/post/{postId}")
+// //     public ResponseEntity<Comment> createComment(@PathVariable Long postId,
+// //             @RequestBody CommentRequest commentRequest,
+// //             @AuthenticationPrincipal User userDetails) {
+// //         User user = (User) userDetails;
+// //         Comment comment = commentService.createComment(commentRequest.getContent(), postId, user.getId());
+// //         return ResponseEntity.ok(comment);
+// //     }
+
+// //     // Xóa cmt
+// //     @DeleteMapping("/{id}")
+// //     public ResponseEntity<Void> deleteComment(@PathVariable Long id,
+// //             @AuthenticationPrincipal User userDetails) {
+// //         Comment comment = commentService.getCommentById(id)
+// //                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
+// //         User user = (User) userDetails;
+// //         if (!comment.getUser().getId().equals(user.getId())) {
+// //             throw new RuntimeException("You are not authorized to delete this comment");
+// //         }
+// //         commentService.deleteComment(id);
+// //         return ResponseEntity.ok().build();
+// //     }
+// // }
+// package com.xdpmtmhpl.post_service.controller;
+
+// import com.xdpmtmhpl.post_service.dto.CommentDTO;
+// import com.xdpmtmhpl.post_service.services.CommentService;
+// import jakarta.validation.Valid;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.data.domain.Page;
+// import org.springframework.data.domain.PageRequest;
+// import org.springframework.http.ResponseEntity;
+// import org.springframework.web.bind.annotation.*;
+
+// @RestController
+// @RequestMapping("/api/comments")
+// public class CommentController {
+
+//     @Autowired
+//     private CommentService commentService;
+
+//     @GetMapping("/posts/{postId}")
+//     public ResponseEntity<Page<CommentDTO>> getCommentsByPostId(
+//             @PathVariable Long postId,
+//             @RequestParam(defaultValue = "0") int page,
+//             @RequestParam(defaultValue = "10") int size) {
+//         Page<CommentDTO> comments = commentService.getCommentsByPostId(postId, PageRequest.of(page, size));
+//         return ResponseEntity.ok(comments);
+//     }
+
+//     @PostMapping("/posts/{postId}")
+//     public ResponseEntity<CommentDTO> createComment(
+//             @PathVariable Long postId,
+//             @Valid @RequestBody CommentDTO commentDTO) {
+//         CommentDTO createdComment = commentService.createComment(postId, commentDTO);
+//         return ResponseEntity.ok(createdComment);
+//     }    
+
+//     @PutMapping("/{commentId}")
+//     public ResponseEntity<CommentDTO> updateComment(
+//             @PathVariable Long commentId,
+//             @Valid @RequestBody CommentDTO commentDTO) {
+//         CommentDTO updatedComment = commentService.updateComment(commentId, commentDTO);
+//         return ResponseEntity.ok(updatedComment);
+//     }
+
+//     @DeleteMapping("/{commentId}")
+//     public ResponseEntity<Void> deleteComment(
+//             @PathVariable Long commentId,
+//             @RequestParam Long userId) {
+//         commentService.deleteComment(commentId, userId);
+//         return ResponseEntity.noContent().build();
+//     }
+// }
