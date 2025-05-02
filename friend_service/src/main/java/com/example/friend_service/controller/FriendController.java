@@ -57,4 +57,10 @@ public class FriendController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/check")
+    public ResponseEntity<Boolean> checkFriendship(@RequestParam Long user1Id, @RequestParam Long user2Id) {
+        boolean areFriends = friendService.areFriends(user1Id, user2Id);
+        return ResponseEntity.ok(areFriends);
+    }
 }
