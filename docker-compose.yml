@@ -1,16 +1,238 @@
 services:
-  mysql:
+  api-gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    volumes:
+      - ./api_gateway/src:/app/src
+    depends_on:
+      - message-service
+    networks:
+      - service_network
+
+  user-service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    image: user-service:latest
+    container_name: user-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://user-db:3306/user_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: user_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./user_service/src:/app/src
+    depends_on:
+      - user-db
+      - rabbitmq
+    networks:
+      - database_network
+      - service_network
+
+  user-db:
     image: "mysql:lts"
-    container_name: "user-service-mysql"
     environment:
       - "MYSQL_DATABASE=user_service"
-      - "MYSQL_ROOT_PASSWORD=root"
       - "MYSQL_USER=user_service"
+      - "MYSQL_ROOT_PASSWORD=root"
       - "MYSQL_PASSWORD=root"
+      - "MYSQL_ROOT_HOST=%"
     ports:
       - "3306:3306"
+    volumes:
+      - user-db-data:/var/lib/mysql
     networks:
-      - "database-network"
+      - database_network
+
+  search-service:
+    build:
+      context: ./search_service
+      dockerfile: Dockerfile
+    image: search-service:latest
+    container_name: search-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://search-db:3306/search_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: search_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./search_service/src:/app/src
+    depends_on:
+      - search-db
+      - rabbitmq
+    networks:
+      - database_network
+      - service_network
+
+  search-db:
+    image: "mysql:lts"
+    environment:
+      - "MYSQL_DATABASE=search_service"
+      - "MYSQL_USER=search_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3307:3306"
+    volumes:
+      - search-db-data:/var/lib/mysql
+    networks:
+      - database_network
+
+  friend-service:
+    build:
+      context: ./friend_service
+      dockerfile: Dockerfile
+    image: friend-service:latest
+    container_name: friend-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://friend-db:3306/friend_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: friend_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./friend_service/src:/app/src
+    depends_on:
+      - friend-db
+      - rabbitmq
+    networks:
+      - database_network
+      - service_network
+
+  friend-db:
+    image: mysql:lts
+    environment:
+      - "MYSQL_DATABASE=friend_service"
+      - "MYSQL_USER=friend_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3308:3306"
+    volumes:
+      - friend-db-data:/var/lib/mysql
+    networks:
+      - database_network
+
+  post-service:
+    build:
+      context: ./post_service
+      dockerfile: Dockerfile
+    image: post-service:latest
+    container_name: "post-service"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://post-db:3306/post_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: post_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./post_service/src:/app/src
+    depends_on:
+      - post-db
+      - rabbitmq
+    networks:
+      - database_network
+      - service_network
+
+  post-db:
+    image: mysql:lts
+    environment:
+      - "MYSQL_DATABASE=post_service"
+      - "MYSQL_USER=post_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3309:3306"
+    volumes:
+      - post-db-data:/var/lib/mysql
+    networks:
+      - database_network
+
+  message-service:
+    build:
+      context: ./message_service
+      dockerfile: Dockerfile
+    image: message-service:latest
+    container_name: message-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://message-db:3306/message_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: message_service
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./message_service/src:/app/src
+    depends_on:
+      - message-db
+      - rabbitmq
+      # - notification-service
+    networks:
+      - database_network
+      - service_network
+
+  message-db:
+    image: "mysql:lts"
+    environment:
+      - "MYSQL_DATABASE=message_service"
+      - "MYSQL_USER=message_service"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_PASSWORD=root"
+    ports:
+      - "3310:3306"
+    volumes:
+      - message-db-data:/var/lib/mysql
+    networks:
+      - database_network
+
+  # notification-service:
+  #   build:
+  #     context: ./notification_service
+  #     dockerfile: Dockerfile
+  #   image: notification-service:latest
+  #   container_name: notification-service
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notification_service
+  #     SPRING_DATASOURCE_USERNAME: notification_service
+  #     SPRING_DATASOURCE_PASSWORD: root
+  #     SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  #   ports:
+  #     - "8085:8085"
+  #   volumes:
+  #     - ./notification_service/src:/app/src
+  #   depends_on:
+  #     - notification-db
+  #     - rabbitmq
+  #   networks:
+  #     - database_network
+  #     - service_network
+
+  # notification-db:
+  #   image: postgres:latest
+  #   container_name: "notification-service-db"
+  #   environment:
+  #     POSTGRES_DB: notification_service
+  #     POSTGRES_USER: notification_service
+  #     POSTGRES_PASSWORD: root
+  #   ports:
+  #     - "3311:5432"
+  #   volumes:
+  #     - notification-db-data:/var/lib/postgresql/data
+  #   networks:
+  #     - database_network
 
   phpmyadmin:
     image: "phpmyadmin:latest"
@@ -19,11 +241,35 @@ services:
       - "PMA_ARBITRARY=1"
     ports:
       - "80:80"
-    depends_on:
-      - "mysql"
     networks:
-      - "database-network"
+      - database_network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: "rabbitmq"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - database_network
+      - service_network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
 
 networks:
-  database-network:
-    driver: "bridge"
+  database_network:
+    driver: bridge
+  service_network:
+    driver: bridge
+
+volumes:
+  user-db-data:
+  search-db-data:
+  friend-db-data:
+  post-db-data:
+  message-db-data:
+  # notification-db-data:
+  rabbitmq-data:
