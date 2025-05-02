@@ -80,8 +80,6 @@ const NotificationActions = ({
 export function NotificationCard({
   notification,
   onDelete,
-  onAcceptFriendRequest,
-  onDeclineFriendRequest,
 }: NotificationCardProps) {
   const { id, sender, type, message, createdAt } = notification;
 
@@ -114,12 +112,7 @@ export function NotificationCard({
           </div>
 
           {/* Actions */}
-          <NotificationActions
-            type={type}
-            notificationId={id}
-            onAccept={onAcceptFriendRequest}
-            onDecline={onDeclineFriendRequest}
-          />
+          <NotificationActions type={type} notificationId={id} />
 
           {/* Timestamp */}
           <div className="mt-1 text-xs text-gray-500">

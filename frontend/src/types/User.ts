@@ -10,8 +10,14 @@ export interface User {
   gender?: string | null;
   createdAt?: string;
   profilePicture?: string;
+  profilePictureUrl?: string | null;
   bio?: string | null;
   cover_photo_url?: string | null;
+  isActive?: boolean;
+  roles: {
+    id: number;
+    name: string;
+  }[];
 }
 
 export interface UpdateUserRequest {

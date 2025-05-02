@@ -30,6 +30,8 @@ public class UserRequestListener {
             ObjectNode request = objectMapper.readValue(requestJson, ObjectNode.class);
             String type = request.get("type").asText();
 
+            System.out.println("Received request type: " + type);
+
             switch (type) {
                 case "get_user_by_id":
                     Long userId = request.get("userId").asLong();

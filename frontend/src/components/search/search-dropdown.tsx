@@ -4,11 +4,8 @@ import history_clock from "@/assets/logos/history_clock.png";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import avatar from "@/assets/logos/avatar.jpg";
-<<<<<<< Updated upstream
 import { SearchHistory } from "@/types/Search";
-=======
-import { SearchHistory } from "@/API/HistoryServiceInterface";
->>>>>>> Stashed changes
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface SearchDropdownProps {
   onSelect: (history: SearchHistory) => void;
@@ -22,6 +19,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [errorHistory, setErrorHistory] = useState<string | null>(null);
+  const { user } = useAuthContext();
 
   const handleDeleteHistory = async (id: number | undefined) => {
     if (!id) {
@@ -30,13 +28,14 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     }
     try {
       console.log("🧾 ID cần xóa:", id);
-<<<<<<< Updated upstream
       await axios.delete(
         `http://127.0.0.1:8090/search-service/api/search/history/${id}`,
+        {
+          params: {
+            searcherId: user?.id,
+          },
+        },
       );
-=======
-      await axios.delete(`http://localhost:8080/api/search/history/${id}`);
->>>>>>> Stashed changes
       setSearchHistory((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error("❌ Lỗi khi xóa lịch sử:", error);
@@ -47,11 +46,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     const fetchHistory = async () => {
       try {
         const response = await axios.get<SearchHistory[]>(
-<<<<<<< Updated upstream
-          `http://127.0.0.1:8090/search-service/api/search/recent-users`,
-=======
-          `http://localhost:8080/api/search/recent-users`,
->>>>>>> Stashed changes
+          `http://127.0.0.1:8090/search-service/api/search/history/recent?searcherId=${user?.id}`,
         );
 
         response.data.forEach((item, index) => {
@@ -87,7 +82,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     <div className="absolute z-50 mt-1 w-full rounded-xl border bg-white shadow-lg">
       <div className="flex items-center justify-between p-2 text-sm font-medium text-gray-500">
         <span>Recent</span>
-        <button className="text-sm text-blue-500 hover:underline">Edit</button>
+        {/* <button className="text-sm text-blue-500 hover:underline">Edit</button> */}
       </div>
 
       {searchHistory.length === 0 ? (
@@ -98,19 +93,11 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
           const userName = isTargetUser
             ? `${item.targetUser!.firstName} ${item.targetUser!.lastName}`
             : item.searchText;
-<<<<<<< Updated upstream
 
           const avatarSrc = isTargetUser
             ? item.targetUser?.profilePicture || avatar
             : history_clock;
 
-=======
-        
-          const avatarSrc = isTargetUser
-            ? item.targetUser?.avatarUrl || avatar
-            : history_clock;
-        
->>>>>>> Stashed changes
           return (
             <div
               key={item.id}
@@ -127,12 +114,8 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={avatarSrc} alt="avatar" />
                     <AvatarFallback>
-<<<<<<< Updated upstream
                       {item.targetUser!.firstName?.[0] ||
                         item.targetUser!.lastName?.[0]}
-=======
-                      {item.targetUser!.firstName?.[0] || item.targetUser!.lastName?.[0]}
->>>>>>> Stashed changes
                     </AvatarFallback>
                   </Avatar>
                 ) : (
@@ -142,17 +125,10 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                     className="h-6 w-6 rounded-full"
                   />
                 )}
-<<<<<<< Updated upstream
 
                 <span className="text-sm text-gray-800">{userName}</span>
               </div>
 
-=======
-        
-                <span className="text-sm text-gray-800">{userName}</span>
-              </div>
-        
->>>>>>> Stashed changes
               <button
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -165,11 +141,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
             </div>
           );
         })
-<<<<<<< Updated upstream
       )}
-=======
-      )}        
->>>>>>> Stashed changes
     </div>
   );
 };

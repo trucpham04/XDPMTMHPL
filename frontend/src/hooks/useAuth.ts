@@ -77,6 +77,34 @@ export const useAuth = () => {
     setUser(null);
   }, []);
 
+  // Update user profile
+  const updateProfile = useCallback(
+    async (
+      userData: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        bio: string;
+        profilePictureUrl: string;
+      },
+      userId: number,
+    ) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await authService.updateProfile(userData, userId);
+        await authService.getCurrentUser();
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Update failed";
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   return {
     loading,
     error,
@@ -85,6 +113,7 @@ export const useAuth = () => {
     register,
     login,
     logout,
+    updateProfile,
   };
 };
 

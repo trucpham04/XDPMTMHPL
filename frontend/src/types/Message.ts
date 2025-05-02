@@ -1,3 +1,5 @@
+import { User } from "./User";
+
 export type MessageType = "TEXT" | "IMAGE" | "VIDEO" | "FILE"; // hoặc tùy theo enum trong Java
 
 export interface ChatMessage {
@@ -24,6 +26,8 @@ export interface Conversation {
   isGroupChat: boolean;
   createdAt: string; // ISO string format
   participantIds: number[];
+  otherUser: User; // thông tin người dùng khác trong nhóm chat
+  lastMessage: ChatMessage; // tin nhắn cuối cùng trong cuộc trò chuyện
 }
 
 export interface UserDTO {

@@ -23,6 +23,7 @@ const Login: React.FC = () => {
 
     if (isLoggedIn) {
       console.log("Đăng nhập thành công");
+
       navigate("/");
     }
   };

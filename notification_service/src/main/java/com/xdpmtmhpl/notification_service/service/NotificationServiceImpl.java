@@ -6,6 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -19,6 +21,8 @@ import com.xdpmtmhpl.notification_service.enums.NotificationType;
 import com.xdpmtmhpl.notification_service.exception.ResourceNotFoundException;
 import com.xdpmtmhpl.notification_service.models.Notification;
 import com.xdpmtmhpl.notification_service.repository.NotificationRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,6 +40,34 @@ public class NotificationServiceImpl implements NotificationService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final UserClient userClient;
 
+    private String getAuthToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            if (request.getCookies() != null) {
+                for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                    if ("jwt".equals(cookie.getName())) {
+                        return cookie.getValue();
+                    }
+                }
+            }
+        }
+        throw new IllegalStateException("No JWT token found in cookie.");
+    }
+
+    private Long getCurrentUserId() {
+        String token = getAuthToken();
+        try {
+            UserDTO currentUser = userClient.getUserByToken(token);
+            if (currentUser != null) {
+                return currentUser.getId();
+            }
+            throw new IllegalStateException("Could not retrieve current user information.");
+        } catch (Exception e) {
+            throw new IllegalStateException("Error retrieving current user: " + e.getMessage());
+        }
+    }
+
     @Override
     @Transactional
     public Notification createNotification(NotificationRequest request) {
@@ -49,7 +81,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public NotificationResponse getUserNotifications(Long userId, int page, int size) {
+    public NotificationResponse getUserNotifications(int page, int size) {
+        Long userId = getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notificationsPage = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, pageable);
@@ -83,7 +116,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public NotificationResponse getNotificationsByType(Long userId, NotificationType type, int page, int size) {
+    public NotificationResponse getNotificationsByType(NotificationType type, int page, int size) {
+        Long userId = getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notificationsPage = notificationRepository
                 .findByUserIdAndType(userId, type, pageable);

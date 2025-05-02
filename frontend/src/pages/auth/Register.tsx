@@ -12,8 +12,8 @@ const Register: React.FC = () => {
     lastName: "",
     email: "",
     password: "",
-    // birthDate: "",
-    // gender: "",
+    dateOfBirth: "",
+    gender: "",
     username: "",
   });
 
@@ -25,7 +25,17 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { firstName, lastName, email, username, password } = form;
+    const {
+      firstName,
+      lastName,
+      email,
+      username,
+      password,
+      gender,
+      dateOfBirth,
+    } = form;
+
+    console.log("Form data:", form); // Log dữ liệu form để kiểm tra
 
     // Gọi API đăng ký từ context
     const isRegistered = await register({
@@ -34,6 +44,8 @@ const Register: React.FC = () => {
       password,
       firstName,
       lastName,
+      gender,
+      dateOfBirth,
       roles: ["user"],
     });
 
@@ -102,26 +114,26 @@ const Register: React.FC = () => {
             required
           />
 
-          {/* <label className="mb-2 block font-semibold text-gray-700">
+          <label className="mb-2 block font-semibold text-gray-700">
             Ngày sinh
           </label>
           <Input
-            name="birthDate"
+            name="dateOfBirth"
             type="date"
             className="mb-4 w-full p-3 text-lg"
             onChange={handleChange}
             required
-          /> */}
+          />
 
-          {/* <label className="mb-2 block font-semibold text-gray-700">
+          <label className="mb-2 block font-semibold text-gray-700">
             Giới tính
           </label>
-          <div className="mb-4 flex justify-between">
+          <div className="mb-4 flex justify-around">
             <label className="flex items-center space-x-2">
               <input
                 type="radio"
                 name="gender"
-                value="Nam"
+                value="MALE"
                 onChange={handleChange}
                 required
               />
@@ -131,23 +143,13 @@ const Register: React.FC = () => {
               <input
                 type="radio"
                 name="gender"
-                value="Nữ"
+                value="FEMALE"
                 onChange={handleChange}
                 required
               />
               <span>Nữ</span>
             </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="gender"
-                value="Khác"
-                onChange={handleChange}
-                required
-              />
-              <span>Khác</span>
-            </label>
-          </div> */}
+          </div>
 
           <Button
             type="submit"

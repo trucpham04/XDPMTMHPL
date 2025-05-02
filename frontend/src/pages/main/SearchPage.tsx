@@ -6,12 +6,14 @@ import PeopleResults from "@/components/search/PeopleResults";
 import PostResults from "@/components/search/PostResults";
 import PlaceholderResult from "@/components/search/PlaceholderResult";
 import AllResults from "@/components/search/AllResults";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const type = searchParams.get("type") || "people";
-  const currentUserId = 4;
+  const { user } = useAuthContext();
+  const currentUserId = user?.id;
   // const currentUserId = useSelector((state: RootState) => state.auth.currentUser?.id);
 
   return (
@@ -20,7 +22,6 @@ const SearchPage: React.FC = () => {
       <div className="flex flex-1 justify-center px-4">
         <div className="w-full max-w-2xl">
           <div className="rounded-lg border bg-white p-4">
-<<<<<<< Updated upstream:frontend/src/pages/main/SearchPage.tsx
             {type === "all" && (
               <AllResults query={query} currentUserId={currentUserId} />
             )}
@@ -28,12 +29,6 @@ const SearchPage: React.FC = () => {
             {type === "people" && (
               <PeopleResults query={query} currentUserId={currentUserId} />
             )}
-=======
-          {type === "all" && <AllResults query={query} currentUserId={currentUserId}/>}
-
-
-            {type === "people" && <PeopleResults query={query} currentUserId={currentUserId}/>}
->>>>>>> Stashed changes:frontend/src/pages/main/search/SearchPage.tsx
             {type === "posts" && <PostResults query={query} />}
 
             {type !== "people" && type !== "posts" && type !== "all" && (

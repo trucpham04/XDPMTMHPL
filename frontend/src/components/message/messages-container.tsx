@@ -43,7 +43,7 @@ function MessagesContainer({
           }
           defaultOpen={false}
         >
-          <MessagesMain currentUserId={1} conversationId={id} />
+          <MessagesMain currentUserId={user?.id} conversationId={id} />
           <MessagesInfo className="mt-14" />
         </SidebarProvider>
       </div>

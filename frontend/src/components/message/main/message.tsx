@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
-import { MessagesMainItemType } from "../../types/messages-sidebar-item-type";
+import { ChatMessage } from "@/types/Message";
 
 function Message({
   message,
   className,
   isCurrentUser,
   ...props
-}: React.ComponentProps<"div"> & { message: MessagesMainItemType } & {
+}: React.ComponentProps<"div"> & { message: ChatMessage } & {
   isCurrentUser: boolean;
 }) {
   return (

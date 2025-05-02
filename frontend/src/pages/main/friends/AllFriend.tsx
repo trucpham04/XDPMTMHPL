@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft}  from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
 import axios from "axios";
+import { User } from "@/types/User";
 
 type Friend = {
   id: number;
@@ -13,22 +14,22 @@ type Friend = {
 
 axios.defaults.withCredentials = true;
 const AllFriend: React.FC = () => {
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<User[]>([]);
   const navigate = useNavigate();
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchFriends = () => {
     axios
-      .get("http://localhost:8082/api/friends")
+      .get("http://127.0.0.1:8090/friend-service/api/friends")
       .then((response) => {
-        const fetchedFriends = response.data.map((friend: any) => ({
-          id: friend.id,
-          name: friend.firstName + " " + friend.lastName,
-          mutualFriends: friend.mutualFriends,
-          avatar: friend.avatar,
-        }));
-        setFriends(fetchedFriends);
+        // const fetchedFriends = response.data.map((friend: any) => ({
+        //   id: friend.id,
+        //   name: friend.firstName + " " + friend.lastName,
+        //   mutualFriends: friend.mutualFriends,
+        //   avatar: friend.avatar,
+        // }));
+        setFriends(response.data);
         setError(null);
       })
       .catch((error) => {
@@ -43,89 +44,103 @@ const AllFriend: React.FC = () => {
 
   const handleRemoveFriend = (id: number, name: string) => {
     if (!window.confirm(`Bạn có chắc muốn hủy kết bạn với ${name}?`)) {
-        return;
+      return;
     }
     axios
-        .delete(`http://localhost:8082/api/friends/${id}`)
-        .then(() => {
-            setFriends(friends.filter((friend) => friend.id !== id));
-            setError(null);
-        })
-        .catch((error) => {
-            console.error("Lỗi khi xóa bạn bè:", error); 
-            setError(`Không thể hủy kết bạn với ${name}. Vui lòng thử lại.`);
-        });
-};
+      .delete(`http://127.0.0.1:8090/friend-service/api/friends/${id}`)
+      .then(() => {
+        setFriends(friends.filter((friend) => friend.id !== id));
+        setError(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi xóa bạn bè:", error);
+        setError(`Không thể hủy kết bạn với ${name}. Vui lòng thử lại.`);
+      });
+  };
   return (
     <>
-      <div className="w-90 left-0 bg-white shadow-sm h-screen">
+      <div className="left-0 h-screen w-90 bg-white shadow-sm">
         <div className="p-2">
-            <div className=" items-center justify-between mb-4">
-                <button onClick={() => navigate("/friends")} className="p-2">
-                  <ArrowLeft size={24} className="text-gray-500 cursor-pointer" />
-                </button>
-                <h2 className="text-2xl font-bold flex items-center">
-                  Danh sách bạn bè{" "}
-                  <span className="ml-2 bg-gray-200 text-gray-700 text-sm font-semibold px-2 py-1 rounded-full">
-                    {friends.length}
-                  </span>
-                </h2>
-                
-              </div>
+          <div className="mb-4 items-center justify-between">
+            <button onClick={() => navigate("/friends")} className="p-2">
+              <ArrowLeft size={24} className="cursor-pointer text-gray-500" />
+            </button>
+            <h2 className="flex items-center text-2xl font-bold">
+              Danh sách bạn bè{" "}
+              <span className="ml-2 rounded-full bg-gray-200 px-2 py-1 text-sm font-semibold text-gray-700">
+                {friends.length}
+              </span>
+            </h2>
+          </div>
 
-              {error && <p className="text-red-500 text-center py-2">{error}</p>}
+          {error && <p className="py-2 text-center text-red-500">{error}</p>}
           {friends.length > 0 ? (
             friends.map((friend) => (
-              <div key={friend.id} className="w-full py-3 px-2 flex flex-col hover:bg-gray-200 rounded-lg"
-                  onClick={() => setSelectedFriend(friend.id)}
+              <div
+                key={friend.id}
+                className="flex w-full flex-col rounded-lg px-2 py-3 hover:bg-gray-200"
+                onClick={() => {
+                  navigate("/profile/" + friend.id);
+                  // setSelectedFriend(friend.id);
+                }}
               >
                 <div className="flex w-full">
-                  <div className="w-12 h-12 bg-gray-300 rounded-full mr-4">
+                  <div className="mr-4 h-12 w-12 rounded-full bg-gray-300">
                     <img
-                      src={friend.avatar}
-                      alt={friend.name}
-                      className="w-12 h-12 rounded-full mr-4"
+                      src={friend.profilePictureUrl}
+                      alt={friend.firstName}
+                      className="mr-4 size-14 rounded-full"
                     />
                   </div>
 
-                  
-                  <div className="flex-1">
-                    <p className="font-semibold">{friend.name}</p>
-                    <p className="text-sm text-gray-500">{friend.mutualFriends} bạn chung</p>
+                  <div className="flex flex-col">
+                    <div className="flex-1">
+                      <p className="font-semibold">{`${friend.firstName} ${friend.lastName}`}</p>
+                    </div>
+
+                    <div className="mt-1 ml-auto flex-1 space-x-2">
+                      <button
+                        className="w-30 rounded bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate("/messages");
+                        }}
+                      >
+                        Nhắn tin
+                      </button>
+                      <button
+                        className="w-30 rounded bg-gray-400 px-4 py-1 text-nowrap text-white hover:bg-gray-500"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFriend(
+                            friend.id,
+                            friend.firstName + friend.lastName,
+                          );
+                        }}
+                      >
+                        Hủy kết bạn
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1 ml-auto space-x-2 mt-1">
-                  <button className="bg-blue-500 text-white w-30 px-4 py-1 rounded hover:bg-blue-600"
-                      onClick={(e)=>{
-                        e.stopPropagation();
-                        navigate("/messages")}}
-                  >
-                    Nhắn tin
-                  </button>
-                  <button
-                    className="bg-gray-400 text-white px-4 py-1 w-30 rounded hover:bg-gray-500"
-                    onClick={(e) =>{
-                      e.stopPropagation();
-                      handleRemoveFriend(friend.id, friend.name)}}
-                  >
-                    Hủy kết bạn
-                  </button>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-gray-500 text-center py-4">Không có bạn bè nào</p>
+            <p className="py-4 text-center text-gray-500">
+              Không có bạn bè nào
+            </p>
           )}
         </div>
       </div>
       {selectedFriend !== null && (
         <div className="flex-1">
-          <FriendProfile friendId={selectedFriend} onClose={() => setSelectedFriend(null)} />
+          <FriendProfile
+            friendId={selectedFriend}
+            onClose={() => setSelectedFriend(null)}
+          />
         </div>
       )}
-
     </>
-    
   );
 };
 

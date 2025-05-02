@@ -11,7 +11,6 @@ import {
 
 const friendNavItems = [
   { name: "Trang chủ", icon: Users, link: "/friends" },
-<<<<<<< Updated upstream
   {
     name: "Lời mời kết bạn",
     icon: UserPlus,
@@ -28,12 +27,6 @@ const friendNavItems = [
   },
   // { name: "Sinh nhật", icon: Gift, link: "/friends/birthdays" },
   // { name: "Danh sách tùy chỉnh", icon: List, link: "/friends/custom-list", extraIcon: ChevronRight },
-=======
-  { name: "Lời mời kết bạn", icon: UserPlus, link: "/friends/requests", extraIcon: ChevronRight },
-  { name: "Tất cả bạn bè", icon: User, link: "/friends/all", extraIcon2: List, extraIcon: ChevronRight },
-  { name: "Sinh nhật", icon: Gift, link: "/friends/birthdays" },
-  { name: "Danh sách tùy chỉnh", icon: List, link: "/friends/custom-list", extraIcon: ChevronRight },
->>>>>>> Stashed changes
 ];
 
 const FriendNavBar: React.FC = () => {

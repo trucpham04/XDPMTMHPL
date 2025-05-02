@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { User } from "@/types/User";
 
 type FriendRequest = {
   id: number;
@@ -26,10 +27,13 @@ const calculateTimeSince = (date: string): string => {
   return `${days} ngày`;
 };
 
+// Default placeholder image as a data URI or you can use an external URL
+const DEFAULT_AVATAR = "https://placehold.co/150?text=No+Image";
+
 const FriendList: React.FC = () => {
   const navigate = useNavigate();
   const [visibleCount1, setVisibleCount1] = useState(10);
-  const [requests1, setRequests1] = useState<FriendRequest[]>([]);
+  const [requests1, setRequests1] = useState<User[]>([]);
   const [error1, setError1] = useState<string | null>(null);
 
   const handleShowMore1 = () => {
@@ -38,20 +42,20 @@ const FriendList: React.FC = () => {
 
   const fetchFriendRequests = () => {
     axios
-      .get("http://localhost:8090/friend-service/api/friends/requests", {
+      .get("http://127.0.0.1:8090/friend-service/api/friends/requests", {
         headers: {
           Authorization: "Bearer fake-token",
         },
       })
       .then((response) => {
-        const fetchedRequests = response.data.map((req: any) => ({
-          id: req.id,
-          name: req.firstName + " " + req.lastName,
-          mutualFriends: req.mutualFriends,
-          avatar: req.avatar,
-          time: calculateTimeSince(req.requestDate),
-        }));
-        setRequests1(fetchedRequests);
+        // const fetchedRequests = response.data.map((req: any) => ({
+        //   id: req.id,
+        //   name: req.firstName + " " + req.lastName,
+        //   mutualFriends: req.mutualFriends,
+        //   avatar: req.avatar,
+        //   time: calculateTimeSince(req.requestDate),
+        // }));
+        setRequests1(response.data);
         setError1(null);
       })
       .catch((error) => {
@@ -70,7 +74,7 @@ const FriendList: React.FC = () => {
     console.log("Accepting friend request with id:", id);
     axios
       .post(
-        `http://localhost:8090/friend-service/api/friends/requests/accept/${id}`,
+        `http://127.0.0.1:8090/friend-service/api/friends/requests/accept/${id}`,
         null,
         {
           headers: {
@@ -95,7 +99,7 @@ const FriendList: React.FC = () => {
     console.log("Deleting friend request with id:", id);
     axios
       .delete(
-        `http://localhost:8090/friend-service/api/friends/requests/delete/${id}`,
+        `http://127.0.0.1:8090/friend-service/api/friends/requests/delete/${id}`,
         {
           headers: {
             Authorization: "Bearer fake-token",
@@ -131,14 +135,24 @@ const FriendList: React.FC = () => {
             <div
               key={friend.id}
               className="cursor-pointer overflow-hidden rounded-lg bg-white text-white shadow-md"
-              onClick={() => navigate("/friends/profile")}
+              onClick={() => navigate("/profile/" + friend.id)}
             >
-              <img src={friend.avatar} alt={friend.name} className="w-full" />
+              <img
+                src={friend.profilePictureUrl || DEFAULT_AVATAR}
+                alt={`${friend.firstName} ${friend.lastName}`}
+                className="h-40 w-full object-cover"
+                onError={(e) => {
+                  // Fallback if the image fails to load
+                  (e.target as HTMLImageElement).src = DEFAULT_AVATAR;
+                }}
+              />
               <div className="m-2">
-                <p className="font-medium text-black">{friend.name}</p>
-                <p className="text-base text-gray-500">
-                  {friend.mutualFriends} Bạn chung
+                <p className="font-medium text-black">
+                  {friend.firstName} {friend.lastName}
                 </p>
+                {/* <p className="text-base text-gray-500">
+                  {friend.mutualFriends} Bạn chung
+                </p> */}
                 <div className="mt-2 flex flex-col justify-center space-y-2 font-bold">
                   <button
                     className="rounded-md bg-blue-500 py-1.5 text-base hover:bg-blue-600"

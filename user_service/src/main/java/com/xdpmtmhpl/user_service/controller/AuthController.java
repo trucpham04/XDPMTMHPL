@@ -25,13 +25,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// @CrossOrigin(origins = "http://localhost:5173", maxAge = 3600, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -60,7 +62,6 @@ public class AuthController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        // Sử dụng userDetails thay vì authentication
         String jwt = jwtUtils.generateJwtToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
 
@@ -83,8 +84,8 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(new JwtResponse(
-                        jwt, // token
-                        "Bearer", // type
+                        jwt,
+                        "Bearer",
                         user.getId(),
                         user.getUsername(),
                         user.getEmail(),
@@ -108,9 +109,20 @@ public class AuthController {
         User user = new User();
         user.setUsername(signUpRequest.getUsername());
         user.setEmail(signUpRequest.getEmail());
-        user.setPassword(signUpRequest.getPassword()); // Lưu mật khẩu dạng plain text
+        user.setPassword(signUpRequest.getPassword());
         user.setFirstName(signUpRequest.getFirstName());
         user.setLastName(signUpRequest.getLastName());
+        user.setGender(signUpRequest.getGender());
+        // try {
+        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // LocalDate birthDate = LocalDate.parse(signUpRequest.getDateOfBirth(),
+        // formatter);
+        // user.setDateOfBirth(birthDate);
+        // } catch (DateTimeParseException e) {
+        // return ResponseEntity.badRequest().body(new MessageResponse("Invalid date
+        // format. Use MM/dd/yyyy."));
+        // }
+        user.setDateOfBirth(LocalDate.parse(signUpRequest.getDateOfBirth()));
 
         Set<String> strRoles = signUpRequest.getRoles();
         Set<Role> roles = new HashSet<>();
@@ -168,8 +180,8 @@ public class AuthController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                     .body(new JwtResponse(
-                            newAccessToken, // token
-                            "Bearer", // type
+                            newAccessToken,
+                            "Bearer",
                             user.getId(),
                             user.getUsername(),
                             user.getEmail(),
@@ -242,12 +254,6 @@ public class AuthController {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        // Kiểm tra quyền: Chỉ cho phép người dùng cập nhật thông tin của chính họ
-        if (!user.getUsername().equals(authentication.getName())) {
-            return ResponseEntity.status(403).body(new MessageResponse("You can only update your own profile"));
-        }
-
-        // Cập nhật thông tin
         if (updateRequest.getFirstName() != null)
             user.setFirstName(updateRequest.getFirstName());
         if (updateRequest.getLastName() != null)

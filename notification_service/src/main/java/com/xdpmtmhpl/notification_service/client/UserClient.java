@@ -22,10 +22,6 @@ public class UserClient {
     private static final String QUEUE_NAME = "user_service.queue";
 
     public UserDTO getUserById(Long userId) {
-        if (userId == 2) {
-            return createMockUserDTO();
-        }
-
         rabbitTemplate.setReplyTimeout(3000);
 
         ObjectNode requestMap = objectMapper.createObjectNode();
@@ -48,26 +44,26 @@ public class UserClient {
         }
     }
 
-    private UserDTO createMockUserDTO() {
-        UserDTO mockUser = new UserDTO();
-        mockUser.setId(2L);
-        mockUser.setUsername("testUser");
-        mockUser.setEmail("testuser@example.com");
-        mockUser.setPhoneNumber("123-456-7890");
-        mockUser.setFirstName("John");
-        mockUser.setLastName("Doe");
-        mockUser.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        mockUser.setGender("Male");
-        mockUser.setBio("This is a bio.");
-        mockUser.setProfilePictureUrl("http://example.com/profile.jpg");
-        mockUser.setCoverPhotoUrl("http://example.com/cover.jpg");
-        mockUser.setIsVerified(true);
-        mockUser.setIsActive(true);
-        mockUser.setCreatedAt(LocalDateTime.now());
-        mockUser.setUpdatedAt(LocalDateTime.now());
-        mockUser.setLastLoginAt(LocalDateTime.now());
-        mockUser.setRoles(Set.of("USER", "ADMIN"));
+    public UserDTO getUserByToken(String token) {
+        rabbitTemplate.setReplyTimeout(3000);
 
-        return mockUser;
+        ObjectNode requestMap = objectMapper.createObjectNode();
+        requestMap.put("type", "get_user_by_token");
+        requestMap.put("token", token);
+
+        try {
+            String requestJson = objectMapper.writeValueAsString(requestMap);
+
+            String responseJson = (String) rabbitTemplate.convertSendAndReceive(QUEUE_NAME, requestJson);
+
+            if (responseJson == null) {
+                return null;
+            }
+
+            return objectMapper.readValue(responseJson, UserDTO.class);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch UserDTO from User Service", e);
+        }
     }
 }

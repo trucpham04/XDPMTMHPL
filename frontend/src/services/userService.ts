@@ -1,5 +1,4 @@
 import { User, UpdateUserRequest } from "@/types/User";
-import { MessageResponse } from "@/types/Response";
 import apiClient from "./apiClient";
 
 const serviceName = "user-service";
@@ -9,8 +8,8 @@ class UserService {
     return apiClient.get<User>(`${serviceName}/api/users/me`);
   }
 
-  async updateUserProfile(data: UpdateUserRequest): Promise<MessageResponse> {
-    return apiClient.put<MessageResponse>(`${serviceName}/api/users/me`, data);
+  async updateUserProfile(data: UpdateUserRequest): Promise<User> {
+    return apiClient.put<User>(`${serviceName}/api/users/me`, data);
   }
 
   async getUserById(id: number): Promise<User> {

@@ -13,7 +13,7 @@ import com.xdpmtmhpl.notification_service.models.Notification;
 public interface NotificationService {
     Notification createNotification(NotificationRequest request);
 
-    NotificationResponse getUserNotifications(Long userId, int page, int size);
+    NotificationResponse getUserNotifications(int page, int size);
 
     NotificationDTO getNotification(Long id);
 
@@ -21,7 +21,7 @@ public interface NotificationService {
 
     Map<String, String> extractQueryParameters(WebSocketSession session);
 
-    NotificationResponse getNotificationsByType(Long userId, NotificationType type, int page, int size);
+    NotificationResponse getNotificationsByType(NotificationType type, int page, int size);
 
     void registerSession(String sessionId, Long userId, WebSocketSession session);
 

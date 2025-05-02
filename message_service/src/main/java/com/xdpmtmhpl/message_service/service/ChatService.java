@@ -12,12 +12,17 @@ import com.xdpmtmhpl.message_service.models.Message;
 import com.xdpmtmhpl.message_service.repository.ConversationParticipantRepository;
 import com.xdpmtmhpl.message_service.repository.ConversationRepository;
 import com.xdpmtmhpl.message_service.repository.MessageRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.xdpmtmhpl.message_service.client.UserClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -53,9 +58,38 @@ public class ChatService {
     @Autowired
     private UserClient userClient;
 
+    private String getAuthToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            if (request.getCookies() != null) {
+                for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                    if ("jwt".equals(cookie.getName())) {
+                        return cookie.getValue();
+                    }
+                }
+            }
+        }
+        throw new IllegalStateException("No JWT token found in cookie.");
+    }
+
+    private Long getCurrentUserId() {
+        String token = getAuthToken();
+        try {
+            UserDTO currentUser = userClient.getUserByToken(token);
+            if (currentUser != null) {
+                return currentUser.getId();
+            }
+            throw new IllegalStateException("Could not retrieve current user information.");
+        } catch (Exception e) {
+            throw new IllegalStateException("Error retrieving current user: " + e.getMessage());
+        }
+    }
+
     // === CONVERSATION MANAGEMENT METHODS ===
 
-    public List<ConversationDTO> getUserConversations(Long userId) {
+    public List<ConversationDTO> getUserConversations() {
+        Long userId = getCurrentUserId();
         List<ConversationParticipant> userParticipations = participantRepository.findByUserId(userId);
         List<Long> conversationIds = userParticipations.stream()
                 .map(participant -> participant.getConversation().getId())
@@ -121,9 +155,10 @@ public class ChatService {
 
         List<ConversationParticipant> participants = new ArrayList<>();
         for (Long userId : participantIds) {
+            UserDTO user = userClient.getUserById(userId);
             ConversationParticipant participant = new ConversationParticipant();
             participant.setConversation(conversation);
-            participant.setUserId(userId);
+            participant.setUserId(user.getId());
             participant.setJoinedAt(LocalDateTime.now());
             participants.add(participant);
         }

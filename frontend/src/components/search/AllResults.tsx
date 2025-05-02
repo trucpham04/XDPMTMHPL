@@ -28,23 +28,20 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
       setError(null);
 
       try {
-        const [usersRes, postsRes] = await Promise.all([
-          axios.get(
-            "http://127.0.0.1:8090/search-service/api/users/search/users",
-            {
-              params: { query, currentUserId },
-            },
-          ),
-          axios.get(
-            "http://127.0.0.1:8090/search-service/api/post/search/posts",
-            {
-              params: { query },
-            },
-          ),
+        const [usersRes] = await Promise.all([
+          axios.get("http://127.0.0.1:8090/user-service/api/users/search", {
+            params: { query, currentUserId },
+          }),
+          // axios.get(
+          //   "http://127.0.0.1:8090/search-service/api/post/search/posts",
+          //   {
+          //     params: { query },
+          //   },
+          // ),
         ]);
 
         setUsers(usersRes.data);
-        setPosts(postsRes.data);
+        // setPosts(postsRes.data);
       } catch (err) {
         console.error("Lỗi khi tìm kiếm:", err);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
@@ -79,36 +76,36 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
     }
   };
 
-  const renderButton = (status: string) => {
-    switch (status) {
-      case "FRIEND":
-        return (
-          <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
-            Message
-          </button>
-        );
-      case "NOT_FRIEND":
-        return (
-          <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">
-            Add Friend
-          </button>
-        );
-      case "REQUEST_SENT":
-        return (
-          <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">
-            Cancel Request
-          </button>
-        );
-      case "REQUEST_RECEIVED":
-        return (
-          <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">
-            Accept
-          </button>
-        );
-      default:
-        return null;
-    }
-  };
+  // const renderButton = (status: string) => {
+  //   switch (status) {
+  //     case "FRIEND":
+  //       return (
+  //         <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
+  //           Message
+  //         </button>
+  //       );
+  //     case "NOT_FRIEND":
+  //       return (
+  //         <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">
+  //           Add Friend
+  //         </button>
+  //       );
+  //     case "REQUEST_SENT":
+  //       return (
+  //         <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">
+  //           Cancel Request
+  //         </button>
+  //       );
+  //     case "REQUEST_RECEIVED":
+  //       return (
+  //         <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">
+  //           Accept
+  //         </button>
+  //       );
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   if (!query.trim()) return null;
 
@@ -125,7 +122,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
               <li key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.profilePicture || ""} />
+                    <AvatarImage src={user.profilePictureUrl || ""} />
                     <AvatarFallback>
                       {user.firstName[0]}
                       {user.lastName[0]}
@@ -138,12 +135,12 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
                     >
                       {user.firstName} {user.lastName}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    {/* <p className="text-sm text-gray-500">
                       {user.relationStatus === "FRIEND" ? "Friend" : ""}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
-                {renderButton(user.relationStatus)}
+                {/* {renderButton(user.relationStatus)} */}
               </li>
             ))}
           </ul>

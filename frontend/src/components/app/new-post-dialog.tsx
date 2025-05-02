@@ -57,7 +57,9 @@ export default function NewPostDialog() {
                 <div className="flex flex-row gap-3">
                   <UserAvatar user={user} />
                   <div className="flex flex-col justify-center gap-1">
-                    <p className="ml-1 font-semibold">{user?.fullName}</p>
+                    <p className="ml-1 font-semibold">
+                      {user?.firstName} {user?.lastName}
+                    </p>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import Message from "./message";
-import { ChatMessage } from "../../types";
+import { ChatMessage } from "@/types/Message";
 
 // Remove WebSocket-related props and just accept messages directly
 interface MessagesSectionProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -46,13 +46,11 @@ function getMessageClassName(
 function MessagesSection({
   messages,
   className,
-  currentUserId = 1,
+  currentUserId,
   ...props
 }: MessagesSectionProps) {
-  // No WebSocket or state management here, just render messages passed as props
   return (
     <div className={cn("flex w-full flex-col gap-1 p-4", className)} {...props}>
-      {/* Messages list */}
       {messages.map((message, index) => {
         const prevMessage = messages[index - 1];
         const nextMessage = messages[index + 1];

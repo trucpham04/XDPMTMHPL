@@ -6,12 +6,12 @@ import {
   Home,
   MessageSquare,
   Users,
-  Video,
-  Store,
-  Landmark,
-  MapPin,
-  UsersRound,
-  Star,
+  // Video,
+  // Store,
+  // Landmark,
+  // MapPin,
+  // UsersRound,
+  // Star,
 } from "lucide-react";
 
 const Filters: React.FC = () => {
@@ -50,7 +50,7 @@ const Filters: React.FC = () => {
           active={type === "people"}
           onClick={() => handleClick("people")}
         />
-        <FilterItem
+        {/* <FilterItem
           label="Videos"
           icon={<Video size={20} />}
           active={type === "videos"}
@@ -85,7 +85,7 @@ const Filters: React.FC = () => {
           icon={<Star size={20} />}
           active={type === "events"}
           onClick={() => handleClick("events")}
-        />
+        /> */}
       </div>
     </div>
   );

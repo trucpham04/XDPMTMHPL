@@ -4,13 +4,22 @@ import com.xdpmtmhpl.user_service.dto.UserDTO;
 import com.xdpmtmhpl.user_service.models.User;
 import com.xdpmtmhpl.user_service.models.Role;
 import com.xdpmtmhpl.user_service.repository.UserRepository;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,9 +42,9 @@ public class UserService {
 
     public UserDTO getUserByToken(String token) {
         logger.debug("Validating token and fetching user");
-        String email = validateToken(token);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        String username = validateToken(token);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + username));
         return mapToUserDTO(user);
     }
 
@@ -64,19 +73,33 @@ public class UserService {
     }
 
     private String validateToken(String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null) {
             throw new RuntimeException("Invalid token");
         }
+
         try {
-            String jwtToken = token.substring(7); // Bỏ "Bearer "
-            return Jwts.parserBuilder()
-                    .setSigningKey(jwtSecret.getBytes()) // Chuyển secret thành bytes
+            String jwtToken = token;
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(jwtSecret.getBytes())
                     .build()
                     .parseClaimsJws(jwtToken)
-                    .getBody()
-                    .getSubject(); // Subject là email
+                    .getBody();
+            return claims.getSubject();
+        } catch (SignatureException e) {
+            throw new RuntimeException("Invalid JWT signature", e);
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("Token expired", e);
+        } catch (MalformedJwtException e) {
+            throw new RuntimeException("Malformed JWT", e);
         } catch (Exception e) {
             throw new RuntimeException("Failed to validate token", e);
         }
     }
+
+    public Page<UserDTO> getAllUsers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> userPage = userRepository.findAll(pageable);
+        return userPage.map(this::mapToUserDTO);
+    }
+
 }

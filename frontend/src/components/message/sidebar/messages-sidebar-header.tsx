@@ -10,17 +10,14 @@ function MessagesSidebarHeader({
 }: React.ComponentProps<"div">) {
   return (
     <>
-      <div
-        className={cn("flex h-14 items-center justify-between px-2", className)}
-        {...props}
-      >
-        <div className="text-2xl font-semibold">Chats</div>
-        <Button
+      <div className={cn("flex h-14 items-center px-2", className)} {...props}>
+        <div className="text-2xl font-semibold">Tin nhắn</div>
+        {/* <Button
           variant={"secondary"}
           className="hidden h-10 w-10 cursor-pointer rounded-full sm:block"
         >
           <SquarePen className="size-5!" />
-        </Button>
+        </Button> */}
       </div>
     </>
   );

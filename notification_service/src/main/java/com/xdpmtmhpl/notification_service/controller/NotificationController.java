@@ -21,10 +21,10 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<NotificationResponse> getUserNotifications(
-            @RequestParam Long userId,
+
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(notificationService.getUserNotifications(userId, page, size));
+        return ResponseEntity.ok(notificationService.getUserNotifications(page, size));
     }
 
     @GetMapping("/{id}")
@@ -34,11 +34,11 @@ public class NotificationController {
 
     @GetMapping("/type/{type}")
     public ResponseEntity<NotificationResponse> getNotificationsByType(
-            @RequestParam Long userId,
+
             @PathVariable NotificationType type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(notificationService.getNotificationsByType(userId, type, page, size));
+        return ResponseEntity.ok(notificationService.getNotificationsByType(type, page, size));
     }
 
     @PostMapping

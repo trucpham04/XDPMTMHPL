@@ -16,7 +16,6 @@ public class SearchHistoryController {
     @Autowired
     private SearchHistoryService searchHistoryService;
 
-    // ✅ Lưu lịch sử tìm kiếm
     @PostMapping
     public ResponseEntity<String> saveSearch(
             @RequestParam(required = false) Integer searcherId,
@@ -27,7 +26,6 @@ public class SearchHistoryController {
         return ResponseEntity.ok("Search history saved successfully.");
     }
 
-    // ✅ Lấy lịch sử gần đây của người dùng
     @GetMapping("/recent")
     public ResponseEntity<List<SearchHistoryDTO>> getRecentSearches(
             @RequestParam Integer searcherId,
@@ -42,28 +40,24 @@ public class SearchHistoryController {
     public ResponseEntity<String> deleteHistoryByIdAndSearcherId(
             @PathVariable Integer historyId,
             @RequestParam(required = false, defaultValue = "0") Integer searcherId) {
-    
-        // Kiểm tra trường hợp `searcherId` mặc định không hợp lệ
+
         if (searcherId == 0) {
             return ResponseEntity.badRequest().body("Invalid 'searcherId' value");
         }
-    
+
         searchHistoryService.deleteSearchHistoryByIdAndSearcherId(historyId, searcherId);
         return ResponseEntity.ok("Search history with ID " + historyId + " deleted.");
     }
-    
-    // ✅ Xóa lịch sử của 1 người dùng
+
     @DeleteMapping("/user/{userId}")
     public ResponseEntity<String> deleteUserHistory(@PathVariable Integer userId) {
         searchHistoryService.deleteSearchHistoryByUserId(userId);
         return ResponseEntity.ok("Search history for user " + userId + " deleted.");
     }
 
-    // ✅ Xóa toàn bộ lịch sử (cẩn thận)
     @DeleteMapping("/all")
     public ResponseEntity<String> deleteAllHistory() {
         searchHistoryService.deleteAllSearchHistory();
         return ResponseEntity.ok("All search history deleted.");
     }
 }
-

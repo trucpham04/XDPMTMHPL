@@ -2,7 +2,6 @@ import { User } from "./User";
 
 export type NotificationType =
   | "FRIEND_REQUEST"
-  | "FRIEND_ACCEPT"
   | "POST_LIKE"
   | "POST_COMMENT"
   | "NEW_MESSAGE";

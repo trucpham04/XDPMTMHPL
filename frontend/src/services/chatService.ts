@@ -11,9 +11,9 @@ class ChatService {
   /**
    * Lấy tất cả cuộc trò chuyện của người dùng
    */
-  async getUserConversations(userId: number): Promise<Conversation[]> {
+  async getUserConversations(): Promise<Conversation[]> {
     return apiClient.get<Conversation[]>(
-      `${serviceName}/api/chat/conversations/${userId}`,
+      `${serviceName}/api/chat/conversations`,
     );
   }
 

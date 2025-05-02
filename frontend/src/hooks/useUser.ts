@@ -27,8 +27,7 @@ export const useUser = () => {
     setLoading(true);
     setError(null);
     try {
-      const res: MessageResponse = await userService.updateUserProfile(data);
-      // await getCurrentUser(); // Refresh user after update
+      const res = await userService.updateUserProfile(data);
       return res;
     } catch (err: any) {
       setError(err.message || "Failed to update user");
