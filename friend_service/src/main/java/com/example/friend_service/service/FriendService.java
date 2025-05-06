@@ -139,6 +139,15 @@ public class FriendService {
         return alreadyFriends;
     }
 
+    public Map<String, Boolean> getFriendStatus(Integer otherUserId) {
+        Integer currentUserId=getCurrentUserId();
+        Map<String, Boolean> status = new HashMap<>();
+        status.put("isFriend", friendRepository.existsByUser1IdAndUser2Id(currentUserId, otherUserId));
+        status.put("isFriendRequestSent", friendRequestRepository.existsBySenderIdAndReceiverId(currentUserId, otherUserId));
+        status.put("isFriendRequestReceived", friendRequestRepository.existsBySenderIdAndReceiverId(otherUserId, currentUserId));
+        return status;
+    }
+
     // private int calculateMutualFriends(Integer userId, Integer friendId,
     // Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
     // Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId,
