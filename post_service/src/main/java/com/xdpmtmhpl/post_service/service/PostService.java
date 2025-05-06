@@ -1,56 +1,82 @@
 package com.xdpmtmhpl.post_service.service;
 
 import com.xdpmtmhpl.post_service.model.Post;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.*;
+import com.xdpmtmhpl.post_service.repository.CommentRepository;
+import com.xdpmtmhpl.post_service.repository.LikeRepository;
+import com.xdpmtmhpl.post_service.repository.PostRepository;
+import com.xdpmtmhpl.post_service.repository.SharedPostRepository;
 
-import java.util.Collections;
+import jakarta.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
 public class PostService {
 
     @Autowired
-    private RestTemplate restTemplate;
+    private PostRepository postRepository;
 
-    private static final String BASE_URL = "http://localhost:8083";
+    @Autowired
+    private LikeRepository likeRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
+    private SharedPostRepository sharedPostRepository;
 
     public Post createPost(Post post) {
-        try {
-            return restTemplate.postForObject(BASE_URL + "/api/posts", post, Post.class);
-        } catch (RestClientException e) {
-            throw new RuntimeException("Lỗi khi tạo bài viết: " + e.getMessage(), e);
-        }
+        return postRepository.save(post);
     }
 
     public Post getPostById(Integer postId) {
-        try {
-            return restTemplate.getForObject(BASE_URL + "/api/posts/" + postId, Post.class);
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new RuntimeException("Không tìm thấy bài viết với ID: " + postId);
-        } catch (RestClientException e) {
-            throw new RuntimeException("Lỗi khi lấy bài viết: " + e.getMessage(), e);
-        }
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với ID: " + postId));
     }
 
     public List<Post> getPostsByUserId(Integer userId) {
-        try {
-            ResponseEntity<List> response = restTemplate.getForEntity(BASE_URL + "/api/posts/user/" + userId, List.class);
-            return response.getBody();
-        } catch (RestClientException e) {
-            throw new RuntimeException("Lỗi khi lấy danh sách bài viết theo userId: " + e.getMessage(), e);
-        }
+        return postRepository.findByUserId(userId);
     }
 
+    @Transactional
     public void deletePost(Integer postId) {
-        try {
-            restTemplate.delete(BASE_URL + "/api/posts/" + postId);
-        } catch (HttpClientErrorException.NotFound e) {
+        if (!postRepository.existsById(postId)) {
             throw new RuntimeException("Không tìm thấy bài viết để xóa với ID: " + postId);
-        } catch (RestClientException e) {
-            throw new RuntimeException("Lỗi khi xóa bài viết: " + e.getMessage(), e);
         }
+        likeRepository.deleteByPostId(postId);
+        commentRepository.deleteByPost_PostId(postId);
+        sharedPostRepository.deleteByOriginalPostId(postId);
+        postRepository.deleteById(postId);
     }
+
+    public List<Post> searchPosts(String keyword) {
+        return postRepository.findByContentContainingIgnoreCase(keyword);
+    }
+
+    public Page<Post> getPostsWithPagination(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> postPage = postRepository.findAll(pageable);
+
+        return postPage;
+    }
+
+    @Transactional
+    public Post updatePost(Integer postId, Post updatedPost) {
+        Post existingPost = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với ID: " + postId));
+
+        existingPost.setContent(updatedPost.getContent());
+        existingPost.setUpdatedAt(updatedPost.getUpdatedAt());
+        existingPost.setViewer(updatedPost.getViewer());
+        existingPost.setMultiFile(updatedPost.getMultiFile());
+
+        return postRepository.save(existingPost);
+    }
+
 }

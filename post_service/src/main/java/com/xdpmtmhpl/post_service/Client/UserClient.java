@@ -1,13 +1,10 @@
-package com.xdpmtmhpl.notification_service.client;
+package com.xdpmtmhpl.post_service.Client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.xdpmtmhpl.notification_service.dto.UserDTO;
-import lombok.RequiredArgsConstructor;
+import com.xdpmtmhpl.post_service.DTO.UserDTO;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Set;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -63,7 +60,7 @@ public class UserClient {
             return objectMapper.readValue(responseJson, UserDTO.class);
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch UserDTO from User Service", e);
+     
+       throw new RuntimeException("Failed to fetch UserDTO from User Service", e);
         }
-    }
-}
+    }}

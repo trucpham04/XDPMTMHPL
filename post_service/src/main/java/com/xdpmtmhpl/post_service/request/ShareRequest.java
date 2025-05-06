@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ShareRequest {
-    private Integer userId;
+    private Long userId;
     private String content;
     private String viewer;
 }

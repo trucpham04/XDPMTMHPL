@@ -1,61 +1,78 @@
 package com.xdpmtmhpl.post_service.service;
 
+import com.xdpmtmhpl.post_service.Client.UserClient;
+import com.xdpmtmhpl.post_service.DTO.UserDTO;
 import com.xdpmtmhpl.post_service.model.Comment;
+import com.xdpmtmhpl.post_service.model.Post;
+import com.xdpmtmhpl.post_service.repository.CommentRepository;
+import com.xdpmtmhpl.post_service.repository.PostRepository;
+import com.xdpmtmhpl.post_service.request.CommentRequest;
 import com.xdpmtmhpl.post_service.response.CommentResponse;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
+
     @Autowired
-    private RestTemplate restTemplate;
+    private CommentRepository commentRepository;
 
-    private static final String BASE_URL = "http://localhost:8083";
+    @Autowired
+    private PostRepository postRepository;
 
-    public CommentResponse addComment(Integer postId, Comment comment) {
-        try {
-            Comment saved = restTemplate.postForObject(BASE_URL + "/api/comments/" + postId, comment, Comment.class);
-            return toResponse(saved);
-        } catch (RestClientException e) {
-            throw new RuntimeException("Failed to add comment: " + e.getMessage());
-        }
-    }
+    @Autowired
+    private UserClient userClient;
 
-    public void deleteComment(Long commentId) {
-        try {
-            restTemplate.delete(BASE_URL + "/api/comments/" + commentId);
-        } catch (RestClientException e) {
-            throw new RuntimeException("Failed to delete comment: " + e.getMessage());
-        }
+    public CommentResponse addComment(Integer postId, CommentRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with ID: " + postId));
+
+        Comment comment = new Comment();
+        comment.setUserId(request.getUserId());
+        comment.setContent(request.getContent());
+        comment.setCreatedAt(LocalDateTime.now());
+        comment.setUpdatedAt(LocalDateTime.now());
+        comment.setPost(post);
+
+        Comment saved = commentRepository.save(comment);
+        return toResponse(saved);
     }
 
     public List<CommentResponse> getCommentsByPostId(Integer postId) {
-        try {
-            Comment[] comments = restTemplate.getForObject(BASE_URL + "/api/comments/post/" + postId, Comment[].class);
-            List<CommentResponse> responses = new ArrayList<>();
-            if (comments != null) {
-                Arrays.stream(comments).forEach(comment -> responses.add(toResponse(comment)));
-            }
-            return responses;
-        } catch (RestClientException e) {
-            throw new RuntimeException("Failed to fetch comments: " + e.getMessage());
+        return commentRepository.findByPost_PostId(postId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            throw new RuntimeException("Comment not found with ID: " + commentId);
         }
+        commentRepository.deleteById(commentId);
     }
 
     private CommentResponse toResponse(Comment comment) {
         CommentResponse res = new CommentResponse();
         res.setCommentId(comment.getCommentId());
-        res.setContent(comment.getContent());
+        res.setPostId(comment.getPost().getPostId());
         res.setUserId(comment.getUserId());
+        res.setContent(comment.getContent());
         res.setCreatedAt(comment.getCreatedAt());
         res.setUpdatedAt(comment.getUpdatedAt());
-        res.setPostId(comment.getPost().getPostId());
+        UserDTO user = userClient.getUserById(comment.getUserId());
+        if (user == null) {
+            throw new RuntimeException("User not found with ID: " + comment.getUserId());
+        }
+        res.setUser(userClient.getUserById(comment.getUserId()));
         return res;
     }
 }

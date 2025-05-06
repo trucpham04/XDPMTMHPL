@@ -23,15 +23,15 @@ public class SharedPost {
     private Integer originalPostId;
 
     @Column(name = "user_id")
-    private Integer userId;
+    private Long userId;
 
-    @Column(name = "created_at")  // Thêm cột created_at
+    @Column(name = "created_at") // Thêm cột created_at
     private LocalDateTime createdAt;
 
-    @Column(name = "content", columnDefinition = "TEXT")  // Thêm cột content
+    @Column(name = "content", columnDefinition = "TEXT") // Thêm cột content
     private String content;
 
-    @Column(name = "viewer")  // Thêm cột viewer
+    @Column(name = "viewer") // Thêm cột viewer
     private String viewer;
 
     // Getter và Setter cho createdAt

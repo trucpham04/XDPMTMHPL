@@ -9,7 +9,7 @@ const DefaultLayout: React.FC = () => {
     location.pathname.startsWith("/friends/");
   const isAdminPage = location.pathname.startsWith("/admin");
   return (
-    <div className="bg-muted overflow-scroll">
+    <div className="bg-muted h-screen overflow-scroll">
       <AppSidebar />
 
       <main className="mt-14 flex items-center justify-center">

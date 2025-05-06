@@ -11,7 +11,7 @@ public interface LikeRepository extends JpaRepository<Like, Integer> {
     boolean existsByPostIdAndUserId(Integer postId, Integer userId);
 
     // Đếm số lượt like của bài viết
-    Long countByPostId(Integer postId);
+    Integer countByPostId(Integer postId);
 
     // Xóa like của user trên bài viết
     void deleteByPostIdAndUserId(Integer postId, Integer userId);
@@ -21,4 +21,6 @@ public interface LikeRepository extends JpaRepository<Like, Integer> {
 
     // Lấy like cụ thể
     Optional<Like> findByPostIdAndUserId(Integer postId, Integer userId);
+
+    void deleteByPostId(Integer postId);
 }

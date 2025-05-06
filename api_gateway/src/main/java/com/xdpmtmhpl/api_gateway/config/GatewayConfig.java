@@ -51,14 +51,6 @@ public class GatewayConfig {
                                                                 .addRequestHeader("X-Forwarded-Prefix",
                                                                                 "/message-service"))
                                                 .uri("http://message-service:8084"))
-                                .route("notification-service-route", r -> r
-                                                .path("/notification-service/**")
-                                                .filters(f -> f
-                                                                .rewritePath("/notification-service/(?<remaining>.*)",
-                                                                                "/${remaining}")
-                                                                .addRequestHeader("X-Forwarded-Prefix",
-                                                                                "/notification-service"))
-                                                .uri("http://notification-service:8085"))
                                 .build();
         }
 }

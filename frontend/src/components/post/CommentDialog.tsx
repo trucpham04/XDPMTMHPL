@@ -1,239 +1,221 @@
-import { MessageCircle } from "lucide-react";
-import { Button } from "../ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import { Textarea } from "../ui/textarea";
-import { useEffect, useRef, useState } from "react";
-import UserAvatar from "../app/userAvatar";
-import { Comment } from "@/types/Post";
-import { User } from "@/types/User";
-import { mockPosts } from "@/pages/main/Home";
+import { useEffect, useState } from "react";
+import { Send, Smile, Camera } from "lucide-react";
+import { ImageGallery } from "./ImageGallery";
+import { InteractionBar } from "./InteractionBar";
+import { Comment, Post } from "@/types/Post";
+import usePost from "@/hooks/usePost";
 import { useAuthContext } from "@/contexts/AuthContext";
+import UserAvatar from "../app/userAvatar";
 
-const anotherUser: User = {
-  id: 2,
-  username: "janesmith",
-  email: "janesmith@example.com",
-  firstName: "Jane",
-  lastName: "Smith",
-  fullName: "Jane Smith",
-  profilePicture: "https://example.com/profiles/janesmith.jpg",
-};
+// Interface đồng bộ với backend chuẩn hóa
 
-export default function CommentDialog({ postId }: { postId: number }) {
+interface CommentDialogProps {
+  post: Post;
+  postIndex: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onLikeClick: () => void;
+  onCommentClick: () => void;
+  onImageClick: (postIndex: number, imageIndex: number) => void;
+  onSubmitComment: (commentText: string) => void;
+}
+
+export const CommentDialog: React.FC<CommentDialogProps> = ({
+  post,
+  postIndex,
+  isOpen,
+  onClose,
+  onLikeClick,
+  onCommentClick,
+  onImageClick,
+  onSubmitComment,
+}) => {
+  const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
-  const commentContainerRef = useRef<HTMLDivElement>(null);
-  const [newComment, setNewComment] = useState("");
+  const { fetchComments, addComment } = usePost();
   const { user } = useAuthContext();
 
-  const mockComments: Comment[] = [
-    {
-      id: 201,
-      post_id: mockPosts[0].id,
-      user: anotherUser,
-      content: "Wow, that looks like an awesome place! 😍",
-      createdAt: new Date("2025-04-20T11:00:00"),
-      updatedAt: new Date("2025-04-20T11:00:00"),
-    },
-    {
-      id: 202,
-      post_id: mockPosts[1].id,
-      user: anotherUser,
-      content: "Those beach vibes are real! 🌴",
-      createdAt: new Date("2025-04-18T15:00:00"),
-      updatedAt: new Date("2025-04-18T15:00:00"),
-    },
-    {
-      id: 203,
-      post_id: mockPosts[2].id,
-      user: anotherUser,
-      content: "Nice setup! What mic are you using?",
-      createdAt: new Date("2025-04-17T10:00:00"),
-      updatedAt: new Date("2025-04-17T10:00:00"),
-    },
-    {
-      id: 204,
-      post_id: mockPosts[3].id,
-      user: anotherUser,
-      content: "Great vlog! Looking forward to more updates.",
-      createdAt: new Date("2025-04-15T18:00:00"),
-      updatedAt: new Date("2025-04-15T18:00:00"),
-    },
-    {
-      id: 205,
-      post_id: mockPosts[4].id,
-      user: anotherUser,
-      content: "That sunset is breathtaking! 🌅",
-      createdAt: new Date("2025-04-14T19:00:00"),
-      updatedAt: new Date("2025-04-14T19:00:00"),
-    },
-    {
-      id: 201,
-      post_id: mockPosts[0].id,
-      user: anotherUser,
-      content: "Wow, that looks like an awesome place! 😍",
-      createdAt: new Date("2025-04-20T11:00:00"),
-      updatedAt: new Date("2025-04-20T11:00:00"),
-    },
-    {
-      id: 202,
-      post_id: mockPosts[1].id,
-      user: anotherUser,
-      content: "Those beach vibes are real! 🌴",
-      createdAt: new Date("2025-04-18T15:00:00"),
-      updatedAt: new Date("2025-04-18T15:00:00"),
-    },
-    {
-      id: 203,
-      post_id: mockPosts[2].id,
-      user: anotherUser,
-      content: "Nice setup! What mic are you using?",
-      createdAt: new Date("2025-04-17T10:00:00"),
-      updatedAt: new Date("2025-04-17T10:00:00"),
-    },
-    {
-      id: 204,
-      post_id: mockPosts[3].id,
-      user: anotherUser,
-      content: "Great vlog! Looking forward to more updates.",
-      createdAt: new Date("2025-04-15T18:00:00"),
-      updatedAt: new Date("2025-04-15T18:00:00"),
-    },
-    {
-      id: 205,
-      post_id: mockPosts[4].id,
-      user: anotherUser,
-      content: "That sunset is breathtaking! 🌅",
-      createdAt: new Date("2025-04-14T19:00:00"),
-      updatedAt: new Date("2025-04-14T19:00:00"),
-    },
-    {
-      id: 201,
-      post_id: mockPosts[0].id,
-      user: anotherUser,
-      content: "Wow, that looks like an awesome place! 😍",
-      createdAt: new Date("2025-04-20T11:00:00"),
-      updatedAt: new Date("2025-04-20T11:00:00"),
-    },
-    {
-      id: 202,
-      post_id: mockPosts[1].id,
-      user: anotherUser,
-      content: "Those beach vibes are real! 🌴",
-      createdAt: new Date("2025-04-18T15:00:00"),
-      updatedAt: new Date("2025-04-18T15:00:00"),
-    },
-    {
-      id: 203,
-      post_id: mockPosts[2].id,
-      user: anotherUser,
-      content: "Nice setup! What mic are you using?",
-      createdAt: new Date("2025-04-17T10:00:00"),
-      updatedAt: new Date("2025-04-17T10:00:00"),
-    },
-    {
-      id: 204,
-      post_id: mockPosts[3].id,
-      user: anotherUser,
-      content: "Great vlog! Looking forward to more updates.",
-      createdAt: new Date("2025-04-15T18:00:00"),
-      updatedAt: new Date("2025-04-15T18:00:00"),
-    },
-    {
-      id: 205,
-      post_id: mockPosts[4].id,
-      user: anotherUser,
-      content: "That sunset is breathtaking! 🌅",
-      createdAt: new Date("2025-04-14T19:00:00"),
-      updatedAt: new Date("2025-04-14T19:00:00"),
-    },
-  ];
+  const fetchCommentsData = async () => {
+    const data = await fetchComments(post.postId);
+    setComments(data);
+  };
 
   useEffect(() => {
-    setComments(mockComments);
+    if (isOpen) {
+      fetchCommentsData();
+    }
   }, []);
 
   useEffect(() => {
-    const el = commentContainerRef.current;
-    if (el && comments.length > 0) {
-      setTimeout(() => {
-        el.scrollTop = el.scrollHeight;
-      });
-    }
-  }, [comments]);
-
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
-    const comment: Comment = {
-      id: Date.now(),
-      user: user, // Note: 'user' is not defined in your code snippet
-      content: newComment.trim(),
-      createdAt: new Date(),
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
     };
-    setComments((prev) => [...prev, comment]);
-    setNewComment("");
-    // TODO: call API to persist comment
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  const handleCommentSubmit = () => {
+    if (commentText.trim()) {
+      onSubmitComment(commentText);
+      setCommentText("");
+      addComment(post.postId, { userId: user?.id, content: commentText });
+    }
+
+    setTimeout(fetchCommentsData, 500);
   };
 
+  const [isLiked, setIsLiked] = useState(post.isLiked);
+  const [likes, setLikes] = useState(post.likes);
+  const { likePost, unlikePost } = usePost();
+  const handleLikeClick = () => {
+    setIsLiked(!isLiked);
+    setLikes((prev) => (isLiked ? prev - 1 : prev + 1));
+    const userId = user?.id || 0;
+    const likeData = {
+      userId: userId,
+    };
+
+    if (isLiked) {
+      unlikePost(post.postId, userId);
+    } else {
+      likePost(post.postId, likeData);
+    }
+
+    onLikeClick(post.postId);
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            className="flex flex-1 cursor-pointer items-center space-x-2"
-          >
-            <MessageCircle className="size-5!" color="gray" />
-            <span>Bình luận</span>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="flex h-200 flex-col gap-0 p-2">
-          <DialogTitle className="flex h-fit p-4">Bình luận</DialogTitle>
-          <div
-            ref={commentContainerRef}
-            className="mt-2 flex-1 content-end space-y-2 overflow-y-auto py-4"
-          >
-            {comments.length > 0 ? (
-              comments.map((c) => (
-                <div key={c.id} className="flex items-start space-x-2">
-                  <UserAvatar user={c.user} className="h-8 w-8" />
-                  <div className="bg-muted rounded-xl p-2 px-4">
-                    <p className="text-sm font-semibold">{c.user.fullName}</p>
-                    <p className="text-sm text-gray-700">{c.content}</p>
-                    <span className="text-xs text-gray-400">
-                      {new Date(c.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-sm text-gray-500">
-                Chưa có bình luận nào.
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
+      <div className="flex h-[70vh] w-full max-w-2xl flex-col overflow-y-auto rounded-lg bg-white shadow-lg">
+        {/* Header */}
+        <div className="sticky top-0 flex items-center justify-between border-b bg-white p-4">
+          <h3 className="text-lg font-semibold">
+            Bài viết của {post.author.firstName} {post.author.lastName}
+          </h3>
+          <button onClick={onClose} className="cursor-pointer">
+            <svg
+              className="h-6 w-6 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* Post Content */}
+        <div className="p-4">
+          <div className="flex items-center space-x-2">
+            <img
+              src={post.author.profilePictureUrl || ""}
+              alt={post.author.firstName[0].toUpperCase()}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 font-bold text-gray-500"
+            />
+            <div>
+              <p className="font-semibold">
+                {post.author.firstName} {post.author.lastName}
               </p>
+              <span className="text-sm text-gray-500">
+                {new Date(post.createdAt).toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-col items-center justify-center gap-2">
+            <div className="ml-2 w-full text-left">
+              <p>{post.content}</p>
+            </div>
+            {post.multiFile && post.multiFile.length > 0 && (
+              <ImageGallery
+                multiFiles={post.multiFile}
+                postIndex={postIndex}
+                onImageClick={onImageClick}
+              />
             )}
           </div>
 
-          <div className="flex h-fit items-center space-x-2">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
+          <InteractionBar
+            likes={likes}
+            isLiked={isLiked}
+            commentsCount={post.comments}
+            shares={post.shares}
+            onLikeClick={handleLikeClick}
+            onCommentClick={onCommentClick}
+            onShareClick={() => {}}
+          />
+        </div>
+
+        {/* Comments Section */}
+        <div className="flex-1 border-t p-4">
+          <h3 className="mb-2 font-semibold">Bình luận</h3>
+          {comments.map((comment, idx) => (
+            <div key={idx} className="mb-4 flex items-start gap-2">
+              <UserAvatar user={comment.user} className="size-10" />
+              <div className="flex-1">
+                <div className="rounded-lg bg-gray-100 p-2">
+                  <p className="text-sm font-semibold">
+                    {comment.user.firstName} {comment.user.lastName}
+                  </p>
+                  <p className="text-sm">{comment.content}</p>
+                </div>
+                <div className="mt-1 flex space-x-2 text-sm text-gray-500">
+                  <span>{new Date(comment.createdAt).toLocaleString()}</span>
+                  {/* <button className="hover:text-blue-500">Thích</button>
+                  <button className="hover:text-blue-500">Phản hồi</button> */}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Comment Input */}
+        <div className="sticky bottom-0 border-t bg-white p-4">
+          <div className="flex items-center space-x-2">
+            <UserAvatar user={user} />
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddComment();
+                if (e.key === "Enter") {
+                  handleCommentSubmit();
                 }
               }}
               placeholder="Viết bình luận..."
-              className="flex-1 resize-none"
+              className="flex-1 rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
-            <Button onClick={handleAddComment}>Gửi</Button>
+            <button onClick={handleCommentSubmit}>
+              <Send size={20} className="text-gray-500 hover:text-blue-500" />
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+          {/* <div className="mt-2 ml-12 flex space-x-3">
+            <button>
+              <Smile size={20} className="text-gray-500" />
+            </button>
+            <button>
+              <Camera size={20} className="text-gray-500" />
+            </button>
+            <button className="text-sm font-semibold text-gray-500">GIF</button>
+            <button>
+              <Smile size={20} className="text-gray-500" />
+            </button>
+          </div> */}
+        </div>
+      </div>
+    </div>
   );
-}
+};
