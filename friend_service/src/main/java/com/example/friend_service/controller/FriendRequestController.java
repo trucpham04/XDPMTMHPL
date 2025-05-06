@@ -59,10 +59,9 @@ public class FriendRequestController {
 
     @PostMapping("/sent/{receiverId}")
     public ResponseEntity<FriendRequest> sendRequest(@PathVariable("receiverId") Integer receiverId) {
-        System.out.println("gửi lời mời kết bạn");
         try {
-            FriendRequest FriendRequest = friendRequestService.SendRequest(receiverId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(FriendRequest);
+            friendRequestService.sendRequest(receiverId);
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception e) {

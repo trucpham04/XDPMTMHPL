@@ -1,6 +1,8 @@
 package com.example.friend_service.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +27,6 @@ public class FriendController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllFriends() {
-        System.out.println("gửi lời mời kết bạn");
         try {
 
             List<UserDTO> friends = friendService.getAllFriends();
@@ -35,7 +36,7 @@ public class FriendController {
         }
     }
 
-    @PostMapping("/{user2Id}")
+    @PostMapping("/add/{user2Id}")
     public ResponseEntity<Friend> addFriend(@PathVariable("user2Id") Integer user2Id) {
 
         try {
@@ -48,7 +49,7 @@ public class FriendController {
         }
     }
 
-    @DeleteMapping("/{user2Id}")
+    @DeleteMapping("/remove/{user2Id}")
     public ResponseEntity<Void> removeFriend(@PathVariable("user2Id") Integer user2Id) {
         try {
             friendService.removeFriend(user2Id);
@@ -60,12 +61,15 @@ public class FriendController {
         }
     }
 
-    @GetMapping("/check")
-    public ResponseEntity<Boolean> checkFriendship(@RequestParam Integer user2Id) {
-        if (user2Id == null) {
-            return ResponseEntity.badRequest().body(false);
-        }
-        boolean areFriends = friendService.checkFriendShip(user2Id);
-        return ResponseEntity.ok(areFriends);
+    // @GetMapping("/check")
+    // public ResponseEntity<Boolean> checkFriendship(@RequestParam Integer user2Id) {
+    //     boolean areFriends = friendService.checkFriendShip(user2Id);
+    //     return ResponseEntity.ok(areFriends);
+    // }
+
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Boolean>> getFriendStatus(@RequestParam Integer otherUserId) {
+        Map<String, Boolean> status = friendService.getFriendStatus(otherUserId);
+        return ResponseEntity.ok(status);
     }
 }
