@@ -57,9 +57,9 @@ public class FriendRequestController {
         }
     }
 
-    @PostMapping("/{receiverId}")
+    @PostMapping("/sent/{receiverId}")
     public ResponseEntity<FriendRequest> sendRequest(@PathVariable("receiverId") Integer receiverId) {
-
+        System.out.println("gửi lời mời kết bạn");
         try {
             FriendRequest FriendRequest = friendRequestService.SendRequest(receiverId);
             return ResponseEntity.status(HttpStatus.CREATED).body(FriendRequest);

@@ -25,6 +25,7 @@ public class FriendController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllFriends() {
+        System.out.println("gửi lời mời kết bạn");
         try {
 
             List<UserDTO> friends = friendService.getAllFriends();
@@ -60,8 +61,11 @@ public class FriendController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<Boolean> checkFriendship(@RequestParam Integer user1Id, @RequestParam Integer user2Id) {
-        boolean areFriends = friendService.checkFriendShip(user1Id, user2Id);
+    public ResponseEntity<Boolean> checkFriendship(@RequestParam Integer user2Id) {
+        if (user2Id == null) {
+            return ResponseEntity.badRequest().body(false);
+        }
+        boolean areFriends = friendService.checkFriendShip(user2Id);
         return ResponseEntity.ok(areFriends);
     }
 }

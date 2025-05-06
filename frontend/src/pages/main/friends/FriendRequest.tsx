@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
 import axios from "axios";
@@ -18,6 +18,8 @@ axios.defaults.withCredentials = true;
 const FriendRequests: React.FC = () => {
   const [requests, setRequests] = useState<User[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
+  const [sentRequests, setSentRequests] = useState<User[]>([]);
+  const [showSentRequests, setShowSentRequests] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const calculateTimeSince = (date: string): string => {
@@ -61,6 +63,37 @@ const FriendRequests: React.FC = () => {
   useEffect(() => {
     fetchFriendRequests();
   }, []);
+
+  const fetchSentRequests = () => {
+    axios
+      .get("http://127.0.0.1:8090/friend-service/api/friends/requests/allsent")
+      .then((response) => {
+        setSentRequests(response.data);
+        setError(null);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách lời mời đã gửi:", error);
+        setError(
+          "Không thể tải danh sách lời mời đã gửi. Vui lòng thử lại sau."
+        );
+      });
+  };
+
+  useEffect(() => {
+    fetchSentRequests();
+  }, []);
+
+  const handleCancel = (id: number) => {
+    axios
+      .delete(`http://127.0.0.1:8090/friend-service/api/friends/requests/cancel/${id}`)
+      .then(() => {
+        fetchSentRequests();
+      })
+      .catch((error) => {
+        console.error("Lỗi khi hủy lời mời:", error);
+        setError("Không thể hủy lời mời. Vui lòng thử lại.");
+      });
+  };
 
   const handleAccept = (id: number) => {
     console.log("Accepting friend request with id:", id);
@@ -114,11 +147,61 @@ const FriendRequests: React.FC = () => {
                 {requests.length}
               </span>
             </h2>
-            <a href="/sentRequest" className="text-blue-500 hover:underline">
+            <button onClick={() => {
+              fetchSentRequests();
+              setShowSentRequests(true);
+              }}
+                className="text-blue-500 hover:underline"
+            >
               Xem lời mời đã gửi
-            </a>
-          </div>
+            </button> 
+            {showSentRequests && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-lg">
+                  <div className="mb-4 flex items-center justify-between border-b pb-2">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold">Lời mời đã gửi</h2>
+                      <span className="ml-2 rounded-full bg-gray-200 px-2 py-0.5 text-sm font-semibold text-gray-700">
+                        {sentRequests.length}
+                      </span>
+                    </div>
+                    <button onClick={() => setShowSentRequests(false)} className="p-1 ml-auto">
+                      <X size={20} className="text-gray-600" />
+                    </button>
+                  </div>
 
+                  {error && <p className="mb-2 text-sm text-red-500">{error}</p>}
+
+                  {sentRequests.length > 0 ? (
+                    <ul className="max-h-[400px] space-y-3 overflow-y-auto">
+                      {sentRequests.map((request) => (
+                        <li
+                          key={request.id}
+                          className="flex items-center justify-between rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200"
+                        >
+                          <div className="flex items-center gap-3">
+                            <UserAvatar className="h-10 w-10" user={request} />
+                            <div>
+                              <p className="font-medium">{`${request.firstName} ${request.lastName}`}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleCancel(request.id)}
+                            className="rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
+                          >
+                            Hủy
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="py-8 text-center text-gray-500">Không có lời mời nào đã gửi</p>
+                  )}
+                </div>
+              </div>
+            )}
+           
+          </div>
           {requests.length > 0 ? (
             requests.map((request) => (
               <div

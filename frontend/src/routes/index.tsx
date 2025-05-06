@@ -30,12 +30,12 @@ const routes: React.FC = () => {
           <Route path="friends/*" element={<FriendLayout />}>
             <Route index element={<FriendHome />} />
             <Route path="requests" element={<FriendRequest />} />
-            {/* <Route path="sentRequest" element={<AllSentRequest />} /> */}
+            {/* <Route path="sentRequest" element={<SentRequests />} /> */}
             <Route path="all" element={<AllFriend />} />
-            <Route path="birthdays" element={<FriendBirthday />} />
+            <Route path="birthdays" element={<FriendBirthday />} />                       
             <Route path="custom-list" element={<FriendCustomList />} />
           </Route>
-          <Route path="admin" element={<AdminLayout />}>
+          <Route path="admin" element={<AdminLayout />}>        
             <Route path="user" element={<AdminUser />} />
             <Route path="post" element={<AdminPost />} />
           </Route>
