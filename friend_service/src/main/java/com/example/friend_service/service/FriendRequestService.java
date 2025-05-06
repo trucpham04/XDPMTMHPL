@@ -125,9 +125,9 @@ public class FriendRequestService {
 
     public FriendRequest SendRequest(Integer receiverId) {
         try {
+
             Integer senderId = getCurrentUserId();
-            // String receiverUrl = "http://api-gateway:8090/api/auth/users/" + receiverId;
-            // UserDTO receiver = restTemplate.getForObject(receiverUrl, UserDTO.class);
+            System.out.println(senderId);
             UserDTO receiver = userClient.getUserById(receiverId);
             if (receiver == null) {
                 throw new IllegalArgumentException("User with ID " + receiverId + " does not exist.");

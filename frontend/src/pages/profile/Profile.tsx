@@ -34,9 +34,12 @@ const Profile: React.FC = () => {
   );
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isFriend, setIsFriend] = useState<boolean>(false);
-  const [isFriendCheckDone, setIsFriendCheckDone] = useState(false);
-  const [isFriendRequestSent, setIsFriendRequestSent] = useState(false);
-  const [showFriendMenu, setShowFriendMenu] = useState(false);
+
+// const [isFriendCheckDone, setIsFriendCheckDone] = useState(false);
+const [isFriendRequestSent, setIsFriendRequestSent] = useState(false);
+const [isFriendRequestReceived, setIsFriendRequestReceived] = useState(false);
+const [showFriendMenu, setShowFriendMenu] = useState(false);
+const [isLoading, setIsLoading] = useState(true);
 
   // Fetch user data first
   useEffect(() => {
@@ -54,42 +57,67 @@ const Profile: React.FC = () => {
       }
     });
     if (user?.id !== Number(user_id)) {
-      console.log("hehe:", user_id);
-      axios
-        .get(
-          `http://127.0.0.1:8090/friend-service/api/friends/check?user2Id=${user_id}`,
-          { withCredentials: true },
-        )
+        setIsLoading(true);
+         axios
+        .get(`http://127.0.0.1:8090/friend-service/api/friends/status?otherUserId=${user_id}`, {
+          withCredentials: true,
+        })
         .then((res) => {
-          console.log("res data: ", res.data);
-          const result = res.data === true;
-          setIsFriend(result);
-          setIsFriendCheckDone(true);
-        });
-      // .then((data) => {
-      //   console.log("Phản hồi từ API:", data);
-      //   const result = data === "true"; // nếu trả về "true"/"false" dạng string
-      //   setIsFriend(result);
-      //   setIsFriendCheckDone(true);
-      // });
-      // fetch(`/api/friends/check?user2Id=${user_id}`, {
-      //   credentials: "include",
-      // })
-      //   .then((res) => console.log("res: ", res))
-      //   .then((data) => {
-      //     console.log("Phản hồi từ API:", data);
-      //     const result = data === "true"; // nếu trả về "true"/"false" dạng string
-      //     setIsFriend(result);
-      //     setIsFriendCheckDone(true);
-      //   })
-      //   .catch((err) => {
-      //     console.error("Lỗi kiểm tra bạn bè", err);
-      //     setIsFriend(false);
-      //     setIsFriendCheckDone(true);
-      //   });
+          console.log("Phản hồi từ API trạng thái:", res.data);
+          setIsFriend(res.data.isFriend);
+          console.log("Trạng thái bạn bè",setIsFriend);
+          setIsFriendRequestSent(res.data.isFriendRequestSent);
+          setIsFriendRequestReceived(res.data.isFriendRequestReceived);
+        })
+        .catch((err) => {
+          console.error("Lỗi kiểm tra trạng thái:", err);
+          setIsFriend(false);
+          setIsFriendRequestSent(false);
+          setIsFriendRequestReceived(false);
+        }).finally(() => {
+          setIsLoading(false);
+        });   
     }
-    console.log("Cập nhật trạng thái:", { isFriend, isFriendCheckDone });
   }, [user_id, user?.id]);
+
+  const handleFriendRequest = async (action: string) => {
+    setIsLoading(true);
+    try {
+      if (action === 'send') {
+        await axios.post(
+          `http://127.0.0.1:8090/friend-service/api/friends/requests/sent/${user_id}`,
+          {},
+          { withCredentials: true }
+        );
+        setIsFriendRequestSent(true);
+      } else if (action === 'cancel') {
+        await axios.delete(
+          `http://127.0.0.1:8090/friend-service/api/friends/cancel/${user_id}`,
+          { withCredentials: true }
+        );
+        setIsFriendRequestSent(false);
+      } else if (action === 'accept') {
+        await axios.post(
+          `http://127.0.0.1:8090/friend-service/api/friends/accept/${user_id}`,
+          {},
+          { withCredentials: true }
+        );
+        setIsFriend(true);
+        setIsFriendRequestReceived(false);
+      }else if (action === 'unfriend') {
+        await axios.delete(
+          `http://127.0.0.1:8090/friend-service/api/friends/remove/${user_id}`,
+          { withCredentials: true }
+        );
+        setIsFriend(false);
+        setShowFriendMenu(false);
+      }
+    } catch (error) {
+      console.error(`Lỗi khi ${action} lời mời kết bạn:`, error);
+    }finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -125,22 +153,19 @@ const Profile: React.FC = () => {
     }
   };
 
-  const sendFriendRequest = () => {
-    axios
-      .post(
-        `http://127.0.0.1:8090/friend-service/api/friends/requests/sent/${user_id}`,
-        null,
-        {
-          withCredentials: true,
-        },
-      )
-      .then((response) => {
-        setIsFriendRequestSent(true);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi gửi lời mời kết bạn:", error);
-      });
-  };
+  // const sendFriendRequest = () => {
+  //   axios
+  //     .post(`http://127.0.0.1:8090/friend-service/api/friends/requests/sent/${user_id}`, null, {
+  //       withCredentials: true, 
+  //     })
+  //     .then((response) => {
+  //       setIsFriendRequestSent(true);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Lỗi khi gửi lời mời kết bạn:", error);
+  //     });
+  // };
+
 
   const [openCommentIndex, setOpenCommentIndex] = useState<number | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]); // cập nhật feed
@@ -323,66 +348,97 @@ const Profile: React.FC = () => {
                     </Button>
                   </div>
                 </DialogContent>
-              </Dialog>
-            ) : isFriendCheckDone ? (
-              isFriend ? (
-                <div className="flex space-x-4">
-                  <Button
-                    className="w-50 cursor-pointer bg-blue-500 px-6 py-2 font-medium text-white hover:bg-blue-600"
-                    onClick={() => setShowFriendMenu(!showFriendMenu)}
-                  >
-                    <UserCheck className="mr-2 h-5 w-5" />
-                    Bạn bè
-                  </Button>
-                  {showFriendMenu && (
-                    <div className="absolute top-full mt-2 w-48 rounded border bg-white shadow-lg">
-                      <button
-                        className="w-full px-4 py-2 text-left hover:bg-gray-100"
-                        onClick={() => {
-                          // Logic hủy kết bạn
-                          setShowFriendMenu(false);
-                        }}
-                      >
-                        Hủy kết bạn
-                      </button>
-                    </div>
-                  )}
-                  <Button className="w-50 cursor-pointer bg-gray-300 px-6 py-2 font-medium text-black hover:bg-gray-400">
-                    <MessageCircle className="h-5 w-5" />
-                    Nhắn tin
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex space-x-4">
-                  <Button
-                    className="w-50 cursor-pointer bg-blue-500 px-6 py-2 font-semibold text-white hover:bg-blue-600"
-                    onClick={() => {
-                      sendFriendRequest();
-                    }}
-                  >
-                    {isFriendRequestSent ? (
-                      <>
-                        <UserMinus className="h-5 w-5" />
-                        Hủy lời mời
-                      </>
+              </Dialog>             
+               ): isLoading ? (
+                  <p>Đang kiểm tra bạn bè...</p>
+                ) : (
+                  <div className="flex space-x-4">
+                    {isFriend == false ? (
+                      <div className="relative flex space-x-4">
+                        <Button
+                          className="bg-blue-500 text-white px-6 py-2 font-medium hover:bg-blue-600"
+                          onClick={() => setShowFriendMenu(!showFriendMenu)}
+                          disabled={isLoading}
+                        >
+                          <UserCheck className="w-5 h-5" />
+                          Bạn bè
+                        </Button>
+                        {showFriendMenu && (
+                          <div className="absolute top-full left-0 w-48 bg-white border rounded shadow-lg z-10">
+                            <button
+                              className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                              onClick={() => handleFriendRequest('unfriend')}
+                              disabled={isLoading}
+                            >
+                              Hủy kết bạn
+                            </button>
+                          </div>
+                        )}
+                        <Button
+                          className="bg-gray-300 text-black px-6 py-2 font-medium hover:bg-gray-400"
+                          disabled={isLoading}
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          Nhắn tin
+                        </Button>
+                      </div>
+                    ) : isFriendRequestSent ? (
+                      <div className="flex space-x-4">
+                        <Button
+                          className="bg-red-500 text-white px-6 py-2 font-semibold hover:bg-red-600"
+                          onClick={() => handleFriendRequest('cancel')}
+                          disabled={isLoading}
+                        >
+                          <UserMinus className="w-5 h-5" />
+                          Hủy lời mời
+                        </Button>
+                        <Button
+                          className="bg-gray-300 text-black px-6 py-2 font-semibold hover:bg-gray-400"
+                          disabled={isLoading}
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          Nhắn tin
+                        </Button>
+                      </div>
+                    ) : isFriendRequestReceived ? (
+                      <div className="flex space-x-4">
+                        <Button
+                          className="bg-green-500 text-white px-6 py-2 font-semibold hover:bg-green-600"
+                          onClick={() => handleFriendRequest('accept')}
+                          disabled={isLoading}
+                        >
+                          <UserCheck className="w-5 h-5" />
+                          Phản hồi
+                        </Button>
+                        <Button
+                          className="bg-gray-300 text-black px-6 py-2 font-semibold hover:bg-gray-400"
+                          disabled={isLoading}
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          Nhắn tin
+                        </Button>
+                      </div>
                     ) : (
-                      <>
-                        <UserPlus className="h-5 w-5" />
-                        Thêm bạn bè
-                      </>
+                      <div className="flex space-x-4">
+                        <Button
+                          className="bg-blue-500 text-white px-6 py-2 font-semibold hover:bg-blue-600"
+                          onClick={() => handleFriendRequest('send')}
+                          disabled={isLoading}
+                        >
+                          <UserPlus className="w-5 h-5" />
+                          Thêm bạn bè
+                        </Button>
+                        <Button
+                          className="bg-gray-300 text-black px-6 py-2 font-semibold hover:bg-gray-400"
+                          disabled={isLoading}
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          Nhắn tin
+                        </Button>
+                      </div>
                     )}
-                  </Button>
-                  <Link to={`/messages`}>
-                    <Button className="w-50 cursor-pointer bg-gray-300 px-6 py-2 font-semibold text-black hover:bg-gray-400">
-                      <MessageCircle className="h-5 w-5" />
-                      Nhắn tin
-                    </Button>
-                  </Link>
-                </div>
-              )
-            ) : (
-              <p>Đang kiểm tra bạn bè...</p>
-            )}
+                  </div>
+                )}
           </div>
         </div>
       </div>
