@@ -5,6 +5,12 @@ export interface MultiFile {
   type: "image" | "video";
 }
 
+export enum ViewerType {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
+  FRIENDS = "FRIENDS",
+}
+
 export interface Post {
   postId: number;
   userId: number;
@@ -16,7 +22,7 @@ export interface Post {
   comments: number;
   shares: number;
   isLiked: boolean;
-  viewer: string;
+  viewer: ViewerType;
   author: User;
 }
 
@@ -26,7 +32,7 @@ export interface SharedPost {
   userId: number;
   createdAt: string;
   content: string;
-  viewer: string;
+  viewer: ViewerType;
   originalPost: Post;
   author: User;
 }
@@ -39,7 +45,7 @@ export interface PostRequest {
   userId: number;
   content: string;
   multiFile?: MultiFile[];
-  viewer: string;
+  viewer: ViewerType;
 }
 
 export interface Like {
@@ -71,5 +77,5 @@ export interface CommentRequest {
 export interface ShareRequest {
   userId: number;
   content?: string;
-  viewer?: string;
+  viewer?: ViewerType;
 }

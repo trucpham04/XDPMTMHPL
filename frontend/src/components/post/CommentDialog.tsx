@@ -94,7 +94,7 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
-      <div className="h-[70vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-lg">
+      <div className="flex h-[70vh] w-full max-w-2xl flex-col overflow-y-auto rounded-lg bg-white shadow-lg">
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between border-b bg-white p-4">
           <h3 className="text-lg font-semibold">
@@ -160,7 +160,7 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
         </div>
 
         {/* Comments Section */}
-        <div className="border-t p-4">
+        <div className="flex-1 border-t p-4">
           <h3 className="mb-2 font-semibold">Bình luận</h3>
           {comments.map((comment, idx) => (
             <div key={idx} className="mb-4 flex items-start gap-2">

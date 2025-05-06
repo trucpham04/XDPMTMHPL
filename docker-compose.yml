@@ -198,42 +198,6 @@ services:
     networks:
       - database_network
 
-  # notification-service:
-  #   build:
-  #     context: ./notification_service
-  #     dockerfile: Dockerfile
-  #   image: notification-service:latest
-  #   container_name: notification-service
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notification_service
-  #     SPRING_DATASOURCE_USERNAME: notification_service
-  #     SPRING_DATASOURCE_PASSWORD: root
-  #     SPRING_JPA_HIBERNATE_DDL_AUTO: update
-  #   ports:
-  #     - "8085:8085"
-  #   volumes:
-  #     - ./notification_service/src:/app/src
-  #   depends_on:
-  #     - notification-db
-  #     - rabbitmq
-  #   networks:
-  #     - database_network
-  #     - service_network
-
-  # notification-db:
-  #   image: postgres:latest
-  #   container_name: "notification-service-db"
-  #   environment:
-  #     POSTGRES_DB: notification_service
-  #     POSTGRES_USER: notification_service
-  #     POSTGRES_PASSWORD: root
-  #   ports:
-  #     - "3311:5432"
-  #   volumes:
-  #     - notification-db-data:/var/lib/postgresql/data
-  #   networks:
-  #     - database_network
-
   phpmyadmin:
     image: "phpmyadmin:latest"
     container_name: "phpmyadmin"
@@ -259,6 +223,19 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: vite-frontend:latest
+    container_name: xdmhpl-frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - service_network
+    depends_on:
+      - api-gateway
+
 networks:
   database_network:
     driver: bridge
@@ -271,5 +248,4 @@ volumes:
   friend-db-data:
   post-db-data:
   message-db-data:
-  # notification-db-data:
   rabbitmq-data:

@@ -38,6 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import usePost from "@/hooks/usePost";
 import { toast } from "sonner";
+import UserAvatar from "@/components/app/userAvatar";
 
 const PAGE_SIZE = 10;
 
@@ -64,6 +65,7 @@ export default function AdminPost() {
     updatePost,
     searchPosts,
     fetchPostById,
+    getAllPostsWithPagination,
   } = usePost();
 
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -121,23 +123,25 @@ export default function AdminPost() {
         // const response = await fetch(`/api/admin/posts?page=${currentPage}&size=${PAGE_SIZE}`);
         // const data = await response.json();
 
-        if (posts) {
-          setAllPosts(posts);
-          setTotalPages(Math.ceil(posts.length / PAGE_SIZE));
-        }
+        getAllPostsWithPagination(currentPage, PAGE_SIZE).then((res) => {
+          if (res?.content) {
+            setAllPosts(res?.content);
+            setTotalPages(res.totalPages);
+          }
+        });
       } catch (error) {
         toast.error("Failed to fetch posts. Please try again.");
       }
     };
 
     fetchAllPosts();
-  }, [posts, currentPage, toast]);
+  }, [currentPage]);
 
   useEffect(() => {
     if (editPost) {
       editForm.reset({
         content: editPost.content,
-        viewer: editPost.viewer as "PUBLIC" | "PRIVATE" | "FRIENDS",
+        viewer: editPost.viewer as "Mọi người" | "PRIVATE" | "FRIENDS",
       });
 
       // Set media previews from existing post
@@ -264,9 +268,7 @@ export default function AdminPost() {
     if (selectedIds.length > 0) {
       setShowConfirmDialog(true);
     } else {
-      toast.message(
-        "Vui lòng chọn ít nhất 1 bài viết.",
-      );
+      toast.message("Vui lòng chọn ít nhất 1 bài viết.");
     }
   };
 
@@ -480,7 +482,7 @@ export default function AdminPost() {
   };
 
   const viewerLabels = {
-    PUBLIC: "Công khai",
+    PUBLIC: "Mọi người",
     FRIENDS: "Bạn bè",
     PRIVATE: "Riêng tư",
   };
@@ -561,19 +563,19 @@ export default function AdminPost() {
                       key={post.postId}
                       className={isSelected(post.postId) ? "bg-blue-50" : ""}
                     >
-                      <td className="p-3">
+                      <td className="p-3 text-nowrap">
                         <Checkbox
                           checked={isSelected(post.postId)}
                           onCheckedChange={() => toggleSelect(post.postId)}
                         />
                       </td>
-                      <td className="p-3">{post.postId}</td>
-                      <td className="p-3">
+                      <td className="p-3 text-nowrap">{post.postId}</td>
+                      <td className="p-3 text-nowrap">
                         <div className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap">
                           {post.content}
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 text-nowrap">
                         <div className="flex gap-1">
                           {post.multiFile?.map((file, index) => (
                             <div
@@ -595,14 +597,15 @@ export default function AdminPost() {
                           )}
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 text-nowrap">
                         <div className="flex items-center gap-2">
                           {post.author.profilePictureUrl ? (
-                            <img
-                              src={post.author.profilePictureUrl}
-                              alt={post.author.firstName}
-                              className="h-6 w-6 rounded-full"
-                            />
+                            // <img
+                            //   src={post.author.profilePictureUrl}
+                            //   alt={post.author.firstName}
+                            //   className="h-6 w-6 rounded-full"
+                            // />
+                            <UserAvatar user={post.author} className="size-6" />
                           ) : (
                             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-xs text-white">
                               {post.author.firstName[0].toUpperCase()}
@@ -617,7 +620,7 @@ export default function AdminPost() {
                       <td className="p-3">{post.likes}</td>
                       <td className="p-3">{post.comments}</td>
                       <td className="p-3">{post.shares}</td>
-                      <td className="p-3">
+                      <td className="p-3 text-nowrap">
                         <span
                           className={`rounded px-2 py-1 text-xs ${
                             viewerStyles[

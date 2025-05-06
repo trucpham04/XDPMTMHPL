@@ -304,6 +304,29 @@ export const usePost = () => {
     [],
   );
 
+  const getAllPostsWithPagination = useCallback(
+    async (page: number, size: number) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const paginatedPosts = await postService.getPostsWithPagination(
+          page,
+          size,
+        );
+        setPosts(paginatedPosts.content);
+        return paginatedPosts;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch posts";
+        setError(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   return {
     loading,
     error,
@@ -332,6 +355,7 @@ export const usePost = () => {
     deleteShare,
     searchPosts,
     updatePost,
+    getAllPostsWithPagination,
   };
 };
 

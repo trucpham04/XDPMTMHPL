@@ -9,6 +9,9 @@ import com.xdpmtmhpl.post_service.repository.SharedPostRepository;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -54,6 +57,13 @@ public class PostService {
 
     public List<Post> searchPosts(String keyword) {
         return postRepository.findByContentContainingIgnoreCase(keyword);
+    }
+
+    public Page<Post> getPostsWithPagination(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> postPage = postRepository.findAll(pageable);
+
+        return postPage;
     }
 
     @Transactional

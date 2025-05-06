@@ -12,6 +12,18 @@ import apiClient from "./apiClient";
 
 const serviceName = "post-service";
 
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
 class PostService {
   /**
    * Tạo bài viết mới
@@ -185,6 +197,18 @@ class PostService {
       `${serviceName}/api/posts/${postId}`,
       postRequest,
     );
+  }
+
+  /**
+   * Lấy tất cả bài viết với phân trang
+   */
+  async getPostsWithPagination(
+    page: number,
+    size: number,
+  ): Promise<PaginatedResponse<Post>> {
+    return apiClient.get<PaginatedResponse<Post>>(`${serviceName}/api/posts`, {
+      params: { page, size },
+    });
   }
 }
 

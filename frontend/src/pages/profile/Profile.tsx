@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { User as UserIcon } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { User } from "@/types/User";
@@ -55,21 +55,38 @@ const Profile: React.FC = () => {
     });
     if (user?.id !== Number(user_id)) {
       console.log("hehe:", user_id);
-      fetch(`/api/friends/check?user2Id=${user_id}`, {
-        credentials: "include",
-      })
-        .then((res) => res.text())
-        .then((data) => {
-          console.log("Phản hồi từ API:", data);
-          const result = data === "true"; // nếu trả về "true"/"false" dạng string
+      axios
+        .get(
+          `http://127.0.0.1:8090/friend-service/api/friends/check?user2Id=${user_id}`,
+          { withCredentials: true },
+        )
+        .then((res) => {
+          console.log("res data: ", res.data);
+          const result = res.data === true;
           setIsFriend(result);
           setIsFriendCheckDone(true);
-        })
-        .catch((err) => {
-          console.error("Lỗi kiểm tra bạn bè", err);
-          setIsFriend(false);
-          setIsFriendCheckDone(true);
         });
+      // .then((data) => {
+      //   console.log("Phản hồi từ API:", data);
+      //   const result = data === "true"; // nếu trả về "true"/"false" dạng string
+      //   setIsFriend(result);
+      //   setIsFriendCheckDone(true);
+      // });
+      // fetch(`/api/friends/check?user2Id=${user_id}`, {
+      //   credentials: "include",
+      // })
+      //   .then((res) => console.log("res: ", res))
+      //   .then((data) => {
+      //     console.log("Phản hồi từ API:", data);
+      //     const result = data === "true"; // nếu trả về "true"/"false" dạng string
+      //     setIsFriend(result);
+      //     setIsFriendCheckDone(true);
+      //   })
+      //   .catch((err) => {
+      //     console.error("Lỗi kiểm tra bạn bè", err);
+      //     setIsFriend(false);
+      //     setIsFriendCheckDone(true);
+      //   });
     }
     console.log("Cập nhật trạng thái:", { isFriend, isFriendCheckDone });
   }, [user_id, user?.id]);
@@ -311,7 +328,7 @@ const Profile: React.FC = () => {
               isFriend ? (
                 <div className="flex space-x-4">
                   <Button
-                    className="bg-blue-500 px-6 py-2 font-medium text-white hover:bg-blue-600"
+                    className="w-50 cursor-pointer bg-blue-500 px-6 py-2 font-medium text-white hover:bg-blue-600"
                     onClick={() => setShowFriendMenu(!showFriendMenu)}
                   >
                     <UserCheck className="mr-2 h-5 w-5" />
@@ -330,7 +347,7 @@ const Profile: React.FC = () => {
                       </button>
                     </div>
                   )}
-                  <Button className="bg-gray-300 px-6 py-2 font-medium text-black hover:bg-gray-400">
+                  <Button className="w-50 cursor-pointer bg-gray-300 px-6 py-2 font-medium text-black hover:bg-gray-400">
                     <MessageCircle className="h-5 w-5" />
                     Nhắn tin
                   </Button>
@@ -338,7 +355,7 @@ const Profile: React.FC = () => {
               ) : (
                 <div className="flex space-x-4">
                   <Button
-                    className="bg-blue-500 px-6 py-2 font-semibold text-white hover:bg-blue-600"
+                    className="w-50 cursor-pointer bg-blue-500 px-6 py-2 font-semibold text-white hover:bg-blue-600"
                     onClick={() => {
                       sendFriendRequest();
                     }}
@@ -355,10 +372,12 @@ const Profile: React.FC = () => {
                       </>
                     )}
                   </Button>
-                  <Button className="bg-gray-300 px-6 py-2 font-semibold text-black hover:bg-gray-400">
-                    <MessageCircle className="h-5 w-5" />
-                    Nhắn tin
-                  </Button>
+                  <Link to={`/messages`}>
+                    <Button className="w-50 cursor-pointer bg-gray-300 px-6 py-2 font-semibold text-black hover:bg-gray-400">
+                      <MessageCircle className="h-5 w-5" />
+                      Nhắn tin
+                    </Button>
+                  </Link>
                 </div>
               )
             ) : (

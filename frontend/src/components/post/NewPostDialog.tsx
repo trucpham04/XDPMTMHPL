@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Smile, Video, ImagePlus, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import postService from "@/services/postService";
-import { MultiFile, PostRequest } from "@/types/Post";
+import { PostRequest, ViewerType } from "@/types/Post";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { uploadImagesToCloudinary } from "@/utils/cloudiary";
 import UserAvatar from "../app/userAvatar";
@@ -18,7 +18,7 @@ type MediaPreview = {
 export const NewPostDialog: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState("");
-  const [viewer, setViewer] = useState("Mọi người");
+  const [viewer, setViewer] = useState<ViewerType>(ViewerType.PUBLIC);
   const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +100,7 @@ export const NewPostDialog: React.FC = () => {
       // Clear state after successful submission
       setIsOpen(false);
       setContent("");
-      setViewer("Mọi người");
+      setViewer(ViewerType.PUBLIC);
       setMediaPreviews([]);
     } catch (error) {
       console.error("Failed to create post", error);
@@ -142,9 +142,7 @@ export const NewPostDialog: React.FC = () => {
               <div className="m-6 flex items-center">
                 <div className="flex flex-row gap-3">
                   <img
-                    src={
-                      user?.profilePictureUrl || "https://via.placehold.co/40"
-                    }
+                    src={user?.profilePictureUrl}
                     alt=""
                     className="bg-muted-foreground inline-flex size-10 items-center justify-center rounded-full"
                   />
@@ -156,11 +154,11 @@ export const NewPostDialog: React.FC = () => {
                       name="viewer"
                       className="rounded border border-gray-300 text-sm text-gray-700"
                       value={viewer}
-                      onChange={(e) => setViewer(e.target.value)}
+                      onChange={(e) => setViewer(e.target.value as ViewerType)}
                     >
-                      <option value="Mọi người">Mọi người</option>
-                      <option value="Bạn bè">Bạn bè</option>
-                      <option value="Chỉ mình tôi">Chỉ mình tôi</option>
+                      <option value={ViewerType.PUBLIC}>Mọi người</option>
+                      <option value={ViewerType.FRIENDS}>Bạn bè</option>
+                      <option value={ViewerType.PRIVATE}>Chỉ mình tôi</option>
                     </select>
                   </div>
                 </div>

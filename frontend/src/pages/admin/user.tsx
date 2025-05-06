@@ -424,6 +424,7 @@ export default function AdminUser() {
                       }
                     />
                   </th>
+                  <th className="p-3 text-left text-nowrap">ID</th>
                   <th className="p-3 text-left text-nowrap">Ảnh đại diện</th>
                   <th className="p-3 text-left text-nowrap">Tên người dùng</th>
                   <th className="p-3 text-left text-nowrap">Tên</th>
@@ -455,6 +456,7 @@ export default function AdminUser() {
                           onCheckedChange={() => toggleSelect(user.id)}
                         />
                       </td>
+                      <td className="p-3 text-nowrap">{user.id}</td>
                       <td className="flex w-full items-center justify-between p-3">
                         {user.profilePictureUrl ? (
                           <img

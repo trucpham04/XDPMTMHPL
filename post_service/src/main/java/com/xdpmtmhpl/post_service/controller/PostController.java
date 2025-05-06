@@ -15,6 +15,7 @@ import com.xdpmtmhpl.post_service.service.PostService;
 import com.xdpmtmhpl.post_service.service.ShareService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -147,6 +148,18 @@ public class PostController {
         }
 
         return response;
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<PostResponse>> getAllPostsWithPagination(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size) {
+
+        Page<Post> postPage = postService.getPostsWithPagination(page, size);
+
+        Page<PostResponse> responsePage = postPage.map(this::toResponse);
+
+        return ResponseEntity.ok(responsePage);
     }
 
     public ShareResponse toResponse(SharedPost share) {
