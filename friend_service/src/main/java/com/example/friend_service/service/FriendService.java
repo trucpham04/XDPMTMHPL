@@ -131,38 +131,39 @@ public class FriendService {
         }
     }
 
-    public boolean checkFriendShip (Integer user2Id){
+    public boolean checkFriendShip(Integer user2Id) {
         Integer user1Id = getCurrentUserId();
         boolean alreadyFriends = friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id) ||
-                    friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
+                friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
         System.out.println("hello");
         return alreadyFriends;
     }
-    
-    // private int calculateMutualFriends(Integer userId, Integer friendId, Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
-    //     Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId, new HashSet<>());
-    //     Set<Integer> mutualFriends = new HashSet<>(friendOfFriendIds);
-    //     mutualFriends.retainAll(userFriends);
-    //     mutualFriends.remove(userId);
-    //     mutualFriends.remove(friendId);
 
-    //     return mutualFriends.size();
+    // private int calculateMutualFriends(Integer userId, Integer friendId,
+    // Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
+    // Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId,
+    // new HashSet<>());
+    // Set<Integer> mutualFriends = new HashSet<>(friendOfFriendIds);
+    // mutualFriends.retainAll(userFriends);
+    // mutualFriends.remove(userId);
+    // mutualFriends.remove(friendId);
+
+    // return mutualFriends.size();
     // }
 
-    // private Map<Integer, Set<Integer>> getFriendsOfFriendsMap(List<Integer> userIds) {
-    //     if (userIds.isEmpty()) {
-    //         return new HashMap<>();
-    //     }
-    //     List<Friend> friendsOfFriends = friendRepository.findByUser1IdIn(userIds);
-
-    //     return friendsOfFriends.stream()
-    //         .collect(Collectors.groupingBy(
-    //             Friend::getUser1Id,
-    //             Collectors.mapping(Friend::getUser2Id, Collectors.toSet())
-    //         ));
+    // private Map<Integer, Set<Integer>> getFriendsOfFriendsMap(List<Integer>
+    // userIds) {
+    // if (userIds.isEmpty()) {
+    // return new HashMap<>();
     // }
-  
+    // List<Friend> friendsOfFriends = friendRepository.findByUser1IdIn(userIds);
 
+    // return friendsOfFriends.stream()
+    // .collect(Collectors.groupingBy(
+    // Friend::getUser1Id,
+    // Collectors.mapping(Friend::getUser2Id, Collectors.toSet())
+    // ));
+    // }
 }
 
 // private int calculateMutualFriends(Integer userId, Integer friendId,

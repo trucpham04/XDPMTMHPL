@@ -7,6 +7,12 @@ import java.util.List;
 
 public interface SharedPostRepository extends JpaRepository<SharedPost, Integer> {
     List<SharedPost> findByOriginalPostId(Integer postId);
+
     List<SharedPost> findByUserId(Integer userId);
 
+    Integer countByOriginalPostId(Integer postId);
+
+    void deleteBySharedPostId(Integer postId);
+
+    void deleteByOriginalPostId(Integer postId);
 }

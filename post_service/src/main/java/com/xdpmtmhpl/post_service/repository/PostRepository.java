@@ -9,6 +9,8 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findByUserId(Integer userId);
+
+    List<Post> findByContentContainingIgnoreCase(String content);
+
+    void deleteByPostId(Integer postId);
 }
-
-

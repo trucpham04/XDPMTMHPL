@@ -57,10 +57,15 @@ function MessagesMain({
     loadMessages();
   }, [conversationId, getMessages]);
 
-  // Append new websocket messages
   useEffect(() => {
     if (newMessages.length > 0) {
-      setMessages((prev) => [...prev, ...newMessages]);
+      setMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const uniqueNewMessages = newMessages.filter(
+          (m) => !existingIds.has(m.id),
+        );
+        return [...prev, ...uniqueNewMessages];
+      });
     }
   }, [newMessages]);
 

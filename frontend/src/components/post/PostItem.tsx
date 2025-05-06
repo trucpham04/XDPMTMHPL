@@ -1,121 +1,115 @@
-"use client";
-
-import { MoreHorizontal, ThumbsUp, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
+import { MoreHorizontal } from "lucide-react";
+import { ImageGallery } from "./ImageGallery";
+import { InteractionBar } from "./InteractionBar";
 import { Post } from "@/types/Post";
-import UserAvatar from "../app/userAvatar";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { useState } from "react";
+import usePost from "@/hooks/usePost";
 import { useAuthContext } from "@/contexts/AuthContext";
-import CommentDialog from "./CommentDialog";
-import { Link } from "react-router-dom";
+import UserAvatar from "../app/userAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 
-export default function PostItem({ post }: { post: Post }) {
+interface PostItemProps {
+  post: Post;
+  index: number;
+  onImageClick: (postId: number, imageIndex: number) => void;
+  onLikeClick: (postId: number) => void;
+  onCommentClick: (postId: number) => void;
+  onShareClick: (postId: number) => void;
+}
+
+export const PostItem: React.FC<PostItemProps> = ({
+  post,
+  index,
+  onImageClick,
+  onLikeClick,
+  onCommentClick,
+  onShareClick,
+}) => {
+  const [isLiked, setIsLiked] = useState(post.isLiked);
+  const [likes, setLikes] = useState(post.likes);
+  const { likePost, unlikePost, deletePost } = usePost();
   const { user } = useAuthContext();
+  const handleLikeClick = () => {
+    setIsLiked(!isLiked);
+    setLikes((prev) => (isLiked ? prev - 1 : prev + 1));
+    const userId = user?.id || 0;
+    const likeData = {
+      userId: userId,
+    };
+
+    if (isLiked) {
+      unlikePost(post.postId, userId);
+    } else {
+      likePost(post.postId, likeData);
+    }
+
+    onLikeClick(post.postId);
+  };
+
+  const handleDeletePost = () => {
+    deletePost(post.postId);
+  };
 
   return (
-    <div className="flex h-auto flex-col rounded-2xl bg-white p-2 shadow-lg">
-      <div className="flex items-center justify-between p-2">
+    <div className="flex flex-col rounded-2xl bg-white p-4 shadow-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Link to={`/profile/${post.user.id}`}>
-            <UserAvatar user={post.user} className="h-10 w-10" />
-          </Link>
+          <UserAvatar user={post.author} />
           <div>
-            <Link to={`/profile/${post.user.id}`}>
-              <p className="font-semibold">{post.user.fullName}</p>
-            </Link>
-            <span className="text-sm text-gray-500">16 giờ trước</span>
+            <p className="font-semibold">
+              {post.author.firstName} {post.author.lastName}
+            </p>
+            <span className="text-sm text-gray-500">
+              {new Date(post.createdAt).toLocaleString()}
+            </span>
           </div>
         </div>
-
-        {user?.id === post.user.id && (
-          <Popover>
-            <PopoverTrigger>
+        {user?.id === post.author.id && (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
               <MoreHorizontal className="cursor-pointer text-gray-500" />
-            </PopoverTrigger>
-            <PopoverContent className="flex w-fit flex-col p-1">
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
               <Button
-                variant="ghost"
-                className="inline-flex cursor-pointer justify-start"
-              >
-                Chỉnh sửa bài viết
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="inline-flex cursor-pointer justify-start"
+                onClick={handleDeletePost}
+                variant={"outline"}
+                className="w-full cursor-pointer"
               >
                 Xóa bài viết
               </Button>
-            </PopoverContent>
-          </Popover>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
-      <div className="flex h-auto flex-col items-center justify-center gap-2">
-        <div className="ml-2 flex h-auto w-full items-center justify-start">
-          <p>{post.content}</p>
-        </div>
-        {post.imageUrls && post.imageUrls.length > 0 && (
-          <Carousel className="inline-flex w-full max-w-[500px] items-center justify-center">
-            <CarouselContent className="w-5/6">
-              {post.imageUrls.map((idx) => (
-                <CarouselItem key={idx}>
-                  <div className="p-1">
-                    <Card>
-                      <CardContent className="flex aspect-square w-1/1 items-center justify-center p-6">
-                        <span className="text-sm font-semibold">{idx + 1}</span>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
+      {/* Content */}
+      <div className="my-2 flex flex-col items-center justify-center gap-2">
+        <p className="mb-2 w-full text-left">{post.content}</p>
+        {post.multiFile && post.multiFile.length > 0 && (
+          <ImageGallery
+            multiFiles={post.multiFile}
+            postIndex={index}
+            onImageClick={onImageClick}
+          />
         )}
       </div>
 
-      {(post?.likes || post?.comments || post?.shares) && (
-        <div className="mt-4 flex items-center justify-between border-t pt-2">
-          <div className="ml-4 flex space-x-4 text-sm text-gray-500">
-            {post?.likes && <span>{post.likes} lượt thích</span>}
-          </div>
-          <div className="mr-4 flex space-x-4 text-sm text-gray-500">
-            {post?.comments && <span>{post.comments} bình luận</span>}
-            {post?.shares && <span>{post.shares} chia sẻ</span>}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-2 flex justify-around border-t pt-2">
-        <Button
-          variant="ghost"
-          className="flex flex-1 cursor-pointer items-center space-x-2 text-black"
-        >
-          <ThumbsUp className="size-5!" fill="black" />
-
-          <span>Thích</span>
-        </Button>
-
-        <CommentDialog postId={post.id} />
-
-        <Button
-          variant="ghost"
-          className="flex flex-1 cursor-pointer items-center space-x-2"
-        >
-          <Share2 className="size-5!" color="gray" />
-          <span>Chia sẻ</span>
-        </Button>
-      </div>
+      {/* Interaction Bar */}
+      <InteractionBar
+        likes={likes}
+        isLiked={isLiked}
+        commentsCount={post.comments}
+        shares={post.shares}
+        onLikeClick={handleLikeClick}
+        onCommentClick={() => onCommentClick(post.postId)}
+        onShareClick={() => onShareClick(post.postId)}
+      />
     </div>
   );
-}
+};

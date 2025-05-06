@@ -16,8 +16,6 @@ public class MessageClient {
     private final ObjectMapper objectMapper;
 
     public void createConversation(Integer userId1, Integer userId2) {
-        rabbitTemplate.setReplyTimeout(3000);
-
         ObjectNode requestMap = objectMapper.createObjectNode();
         requestMap.put("type", "create_conversation");
         requestMap.put("user_id_1", userId1);

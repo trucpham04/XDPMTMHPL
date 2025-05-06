@@ -3,16 +3,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { User as UserIcon } from "lucide-react";
 import { useParams } from "react-router-dom";
-import PostList from "@/components/post/PostList";
-import { mockPosts } from "../main/Home";
-import NewPostDialog from "@/components/app/new-post-dialog";
 import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { User } from "@/types/User";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { uploadImagesToCloudinary } from "@/utils/cloudiary";
-import { UserPlus, MessageCircle,UserCheck ,UserMinus} from "lucide-react";
+import { UserPlus, MessageCircle, UserCheck, UserMinus } from "lucide-react";
 import axios from "axios";
+import { NewPostDialog } from "@/components/post/NewPostDialog";
+import usePost from "@/hooks/usePost";
+import { FeedItem, Post } from "@/types/Post";
+import { PostList } from "@/components/post/PostList";
+import { CommentDialog } from "@/components/post/CommentDialog";
 
 const Profile: React.FC = () => {
   const { user } = useAuthContext();
@@ -32,9 +34,9 @@ const Profile: React.FC = () => {
   );
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isFriend, setIsFriend] = useState<boolean>(false);
-const [isFriendCheckDone, setIsFriendCheckDone] = useState(false);
-const [isFriendRequestSent, setIsFriendRequestSent] = useState(false);
-const [showFriendMenu, setShowFriendMenu] = useState(false);
+  const [isFriendCheckDone, setIsFriendCheckDone] = useState(false);
+  const [isFriendRequestSent, setIsFriendRequestSent] = useState(false);
+  const [showFriendMenu, setShowFriendMenu] = useState(false);
 
   // Fetch user data first
   useEffect(() => {
@@ -49,11 +51,11 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
           bio: res.bio || "",
           profilePictureUrl: res.profilePicture || "",
         });
-      }    
+      }
     });
     if (user?.id !== Number(user_id)) {
-         console.log("hehe:",user_id);
-       fetch(`/api/friends/check?user2Id=${user_id}`, {
+      console.log("hehe:", user_id);
+      fetch(`/api/friends/check?user2Id=${user_id}`, {
         credentials: "include",
       })
         .then((res) => res.text())
@@ -108,9 +110,13 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
 
   const sendFriendRequest = () => {
     axios
-      .post(`http://127.0.0.1:8090/friend-service/api/friends/requests/sent/${user_id}`, null, {
-        withCredentials: true, 
-      })
+      .post(
+        `http://127.0.0.1:8090/friend-service/api/friends/requests/sent/${user_id}`,
+        null,
+        {
+          withCredentials: true,
+        },
+      )
       .then((response) => {
         setIsFriendRequestSent(true);
       })
@@ -119,7 +125,38 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
       });
   };
 
- 
+  const [openCommentIndex, setOpenCommentIndex] = useState<number | null>(null);
+  const [feed, setFeed] = useState<FeedItem[]>([]); // cập nhật feed
+  const userId = user?.id || 0;
+  const [openingPost, setOpeningPost] = useState<Post | null>(null);
+
+  const { fetchPostById, fetchPostsByUserId, addComment, likePost, sharePost } =
+    usePost();
+
+  const handleImageClick = (postIndex: number, imageIndex: number) => {
+    console.log(`Clicked image ${imageIndex} in post ${postIndex}`);
+    // Mở lightbox hoặc modal nếu có
+  };
+
+  const handleLikeClick = (postId: number) => {};
+
+  const handleCommentClick = async (postId: number) => {
+    await fetchPostById(postId).then((res) => {
+      setOpeningPost(res);
+      setOpenCommentIndex(postId);
+    });
+  };
+
+  const handleShareClick = (postId: number) => {
+    sharePost(postId, { userId: userId });
+  };
+
+  const handleCloseComment = () => {
+    setOpenCommentIndex(null);
+  };
+
+  const handleSubmitComment = (commentText: string) => {};
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center bg-gray-100">
       {/* Ảnh bìa */}
@@ -153,9 +190,14 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
           </h1>
           <div className="mt-4">
             {user?.id === Number(user_id) ? (
-              <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+              <Dialog
+                open={isUpdateDialogOpen}
+                onOpenChange={setIsUpdateDialogOpen}
+              >
                 <DialogTrigger>
-                  <Button className="mt-4 px-6 py-2">Chỉnh sửa trang cá nhân</Button>
+                  <Button className="mt-4 px-6 py-2">
+                    Chỉnh sửa trang cá nhân
+                  </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-lg rounded-lg bg-white p-6 shadow-lg">
                   <h2 className="mb-4 text-xl font-semibold text-gray-800">
@@ -163,19 +205,26 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
                   </h2>
                   <div className="space-y-4">
                     <div className="flex flex-col">
-                      <label className="mb-1 text-sm font-medium text-gray-600">Họ</label>
+                      <label className="mb-1 text-sm font-medium text-gray-600">
+                        Họ
+                      </label>
                       <input
                         type="text"
                         placeholder="Họ"
                         className="input rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                         value={formData.firstName}
                         onChange={(e) =>
-                          setFormData({ ...formData, firstName: e.target.value })
+                          setFormData({
+                            ...formData,
+                            firstName: e.target.value,
+                          })
                         }
                       />
                     </div>
                     <div className="flex flex-col">
-                      <label className="mb-1 text-sm font-medium text-gray-600">Tên</label>
+                      <label className="mb-1 text-sm font-medium text-gray-600">
+                        Tên
+                      </label>
                       <input
                         type="text"
                         placeholder="Tên"
@@ -187,7 +236,9 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
                       />
                     </div>
                     <div className="flex flex-col">
-                      <label className="mb-1 text-sm font-medium text-gray-600">Bio</label>
+                      <label className="mb-1 text-sm font-medium text-gray-600">
+                        Bio
+                      </label>
                       <textarea
                         placeholder="Bio"
                         className="input rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
@@ -256,19 +307,20 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
                   </div>
                 </DialogContent>
               </Dialog>
-            ) : (
-              isFriendCheckDone ? (
-                isFriend ? (
-                  <div className="flex space-x-4">
-                    <Button className="bg-blue-500 text-white px-6 py-2 font-medium hover:bg-blue-600"
-                      onClick={() => setShowFriendMenu(!showFriendMenu)}
-                    >
-                      <UserCheck className="w-5 h-5 mr-2" />Bạn bè
-                    </Button>
-                    {showFriendMenu && (
-                    <div className="absolute top-full mt-2 w-48 bg-white border rounded shadow-lg">
+            ) : isFriendCheckDone ? (
+              isFriend ? (
+                <div className="flex space-x-4">
+                  <Button
+                    className="bg-blue-500 px-6 py-2 font-medium text-white hover:bg-blue-600"
+                    onClick={() => setShowFriendMenu(!showFriendMenu)}
+                  >
+                    <UserCheck className="mr-2 h-5 w-5" />
+                    Bạn bè
+                  </Button>
+                  {showFriendMenu && (
+                    <div className="absolute top-full mt-2 w-48 rounded border bg-white shadow-lg">
                       <button
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100"
                         onClick={() => {
                           // Logic hủy kết bạn
                           setShowFriendMenu(false);
@@ -278,30 +330,39 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
                       </button>
                     </div>
                   )}
-                    <Button className="bg-gray-300 text-black px-6 py-2 font-medium hover:bg-gray-400"><MessageCircle className="w-5 h-5" />Nhắn tin</Button>
-                  </div>
-                ) : (
-                  <div className="flex space-x-4">
-                    <Button className="bg-blue-500 text-white px-6 py-2 font-semibold hover:bg-blue-600"
-                        onClick={() => {
-                          sendFriendRequest();
-                        }}
-                    >{isFriendRequestSent ? (
+                  <Button className="bg-gray-300 px-6 py-2 font-medium text-black hover:bg-gray-400">
+                    <MessageCircle className="h-5 w-5" />
+                    Nhắn tin
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex space-x-4">
+                  <Button
+                    className="bg-blue-500 px-6 py-2 font-semibold text-white hover:bg-blue-600"
+                    onClick={() => {
+                      sendFriendRequest();
+                    }}
+                  >
+                    {isFriendRequestSent ? (
                       <>
-                        <UserMinus className="w-5 h-5" />Hủy lời mời
+                        <UserMinus className="h-5 w-5" />
+                        Hủy lời mời
                       </>
                     ) : (
                       <>
-                        <UserPlus className="w-5 h-5" />Thêm bạn bè
+                        <UserPlus className="h-5 w-5" />
+                        Thêm bạn bè
                       </>
                     )}
-                    </Button>
-                    <Button className="bg-gray-300 text-black px-6 py-2 font-semibold hover:bg-gray-400"><MessageCircle className="w-5 h-5" />Nhắn tin</Button>
-                  </div>
-                )
-              ) : (
-                <p>Đang kiểm tra bạn bè...</p>
+                  </Button>
+                  <Button className="bg-gray-300 px-6 py-2 font-semibold text-black hover:bg-gray-400">
+                    <MessageCircle className="h-5 w-5" />
+                    Nhắn tin
+                  </Button>
+                </div>
               )
+            ) : (
+              <p>Đang kiểm tra bạn bè...</p>
             )}
           </div>
         </div>
@@ -312,7 +373,31 @@ const [showFriendMenu, setShowFriendMenu] = useState(false);
         {/* Hộp tạo bài viết */}
         {user?.id == Number(user_id) && <NewPostDialog />}
 
-        <PostList posts={mockPosts} />
+        <div className="w-full">
+          <PostList
+            userId={user_id}
+            onImageClick={handleImageClick}
+            onLikeClick={handleLikeClick}
+            onCommentClick={handleCommentClick}
+            onShareClick={handleShareClick}
+          />
+        </div>
+
+        {/* Hiển thị CommentDialog nếu có post được mở */}
+        {openCommentIndex !== null && (
+          // feed.length > openCommentIndex &&
+          // feed[openCommentIndex].type === "post" &&
+          <CommentDialog
+            post={openingPost}
+            postIndex={openCommentIndex}
+            isOpen={true}
+            onClose={handleCloseComment}
+            onLikeClick={() => handleLikeClick(openCommentIndex)}
+            onCommentClick={() => {}}
+            onImageClick={handleImageClick}
+            onSubmitComment={handleSubmitComment}
+          />
+        )}
       </div>
     </div>
   );

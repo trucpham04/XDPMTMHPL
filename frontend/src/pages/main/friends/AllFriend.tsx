@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
 import axios from "axios";
 import { User } from "@/types/User";
+import UserAvatar from "@/components/app/userAvatar";
 
 type Friend = {
   id: number;
@@ -86,11 +87,12 @@ const AllFriend: React.FC = () => {
               >
                 <div className="flex w-full">
                   <div className="mr-4 h-12 w-12 rounded-full bg-gray-300">
-                    <img
+                    {/* <img
                       src={friend.profilePictureUrl}
                       alt={friend.firstName}
                       className="mr-4 size-14 rounded-full"
-                    />
+                    /> */}
+                    <UserAvatar user={friend} className="size-12" />
                   </div>
 
                   <div className="flex flex-col">

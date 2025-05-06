@@ -4,6 +4,8 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+import com.xdpmtmhpl.post_service.DTO.UserDTO;
+
 @Data
 public class CommentResponse {
     private Long commentId;
@@ -12,4 +14,5 @@ public class CommentResponse {
     private Integer postId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UserDTO user;
 }

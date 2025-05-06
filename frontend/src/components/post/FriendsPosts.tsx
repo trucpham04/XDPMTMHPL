@@ -2,18 +2,19 @@ import React, { useEffect, useState } from "react";
 import { PostItem } from "./PostItem";
 import { SharedPostItem } from "./SharedPostItem";
 import { postService } from "@/services/postService";
-import { FeedItem } from "@/types/Post";
+import { Post, SharedPost, FeedItem } from "@/types/Post";
+import { User } from "@/types/User";
 
-interface PostListProps {
-  userId: number;
+interface FriendsPostsProps {
+  friends: User[];
   onImageClick: (postId: number, imageIndex: number) => void;
   onLikeClick: (postId: number) => void;
   onCommentClick: (postId: number) => void;
   onShareClick: (postId: number) => void;
 }
 
-export const PostList: React.FC<PostListProps> = ({
-  userId,
+export const FriendsPosts: React.FC<FriendsPostsProps> = ({
+  friends,
   onImageClick,
   onLikeClick,
   onCommentClick,
@@ -23,14 +24,22 @@ export const PostList: React.FC<PostListProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchFeed = async () => {
       setLoading(true);
       try {
-        const [posts, sharedPosts] = await Promise.all([
-          postService.getPostsByUserId(userId),
-          postService.getSharesByUserId(userId),
-        ]);
+        // Fetch posts and shares for each friend
+        const postsArrays = await Promise.all(
+          friends.map((f) => postService.getPostsByUserId(f.id)),
+        );
+        const sharesArrays = await Promise.all(
+          friends.map((f) => postService.getSharesByUserId(f.id)),
+        );
 
+        // Flatten
+        const posts: Post[] = postsArrays.flat();
+        const shares: SharedPost[] = sharesArrays.flat();
+
+        // Build list with timestamps
         const timedItems: { item: FeedItem; timestamp: number }[] = [];
 
         posts.forEach((post) => {
@@ -40,25 +49,31 @@ export const PostList: React.FC<PostListProps> = ({
           });
         });
 
-        sharedPosts.forEach((share) => {
+        shares.forEach((share) => {
           timedItems.push({
             item: { type: "share", data: share },
             timestamp: new Date(share.createdAt).getTime(),
           });
         });
 
+        // Sort by timestamp desc
         timedItems.sort((a, b) => b.timestamp - a.timestamp);
 
-        setFeed(timedItems.map((t) => t.item));
-      } catch (err) {
-        console.error("Lỗi khi tải bài viết:", err);
+        // Extract sorted FeedItems
+        const sortedFeed = timedItems.map((t) => t.item);
+
+        setFeed(sortedFeed);
+        console.log("Sorted feed:", sortedFeed);
+      } catch (error) {
+        console.error("Error fetching feed:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [userId]);
+    if (friends.length) fetchFeed();
+    else setLoading(false);
+  }, [friends]);
 
   if (loading)
     return (

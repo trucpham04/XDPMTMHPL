@@ -3,6 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
 import { User } from "@/types/User";
 import { Post } from "@/types/Post";
+import { PostItem } from "../post/PostItem";
+import { CommentDialog } from "../post/CommentDialog";
+import { useAuthContext } from "@/contexts/AuthContext";
+import usePost from "@/hooks/usePost";
 
 interface AllResultsProps {
   query: string;
@@ -15,6 +19,12 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [openCommentIndex, setOpenCommentIndex] = useState<number | null>(null);
+  const { user } = useAuthContext();
+  const userId = user?.id || 0;
+  const [openingPost, setOpeningPost] = useState<Post | null>(null);
+
+  const { fetchPostById, sharePost } = usePost();
   useEffect(() => {
     setUsers([]);
     setPosts([]);
@@ -28,20 +38,17 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
       setError(null);
 
       try {
-        const [usersRes] = await Promise.all([
+        const [usersRes, postsRes] = await Promise.all([
           axios.get("http://127.0.0.1:8090/user-service/api/users/search", {
             params: { query, currentUserId },
           }),
-          // axios.get(
-          //   "http://127.0.0.1:8090/search-service/api/post/search/posts",
-          //   {
-          //     params: { query },
-          //   },
-          // ),
+          axios.get("http://127.0.0.1:8090/post-service/api/posts/search", {
+            params: { keyword: query },
+          }),
         ]);
 
         setUsers(usersRes.data);
-        // setPosts(postsRes.data);
+        setPosts(postsRes.data);
       } catch (err) {
         console.error("Lỗi khi tìm kiếm:", err);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
@@ -60,8 +67,8 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
         null,
         {
           params: {
-            searcherId: currentUserId, // 👈 người đang đăng nhập
-            targetUserId: user.id, // 👈 người được click vào
+            searcherId: currentUserId,
+            targetUserId: user.id,
             searchText: `${user.firstName} ${user.lastName}`,
           },
         },
@@ -76,36 +83,28 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
     }
   };
 
-  // const renderButton = (status: string) => {
-  //   switch (status) {
-  //     case "FRIEND":
-  //       return (
-  //         <button className="rounded bg-blue-500 px-3 py-1 text-sm text-white">
-  //           Message
-  //         </button>
-  //       );
-  //     case "NOT_FRIEND":
-  //       return (
-  //         <button className="rounded bg-green-500 px-3 py-1 text-sm text-white">
-  //           Add Friend
-  //         </button>
-  //       );
-  //     case "REQUEST_SENT":
-  //       return (
-  //         <button className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">
-  //           Cancel Request
-  //         </button>
-  //       );
-  //     case "REQUEST_RECEIVED":
-  //       return (
-  //         <button className="rounded bg-indigo-500 px-3 py-1 text-sm text-white">
-  //           Accept
-  //         </button>
-  //       );
-  //     default:
-  //       return null;
-  //   }
-  // };
+  const handleImageClick = (postIndex: number, imageIndex: number) => {
+    console.log(`Clicked image ${imageIndex} in post ${postIndex}`);
+  };
+
+  const handleLikeClick = (postId: number) => {};
+
+  const handleCommentClick = async (postId: number) => {
+    await fetchPostById(postId).then((res) => {
+      setOpeningPost(res);
+      setOpenCommentIndex(postId);
+    });
+  };
+
+  const handleShareClick = (postId: number) => {
+    sharePost(postId, { userId: userId });
+  };
+
+  const handleCloseComment = () => {
+    setOpenCommentIndex(null);
+  };
+
+  const handleSubmitComment = (commentText: string) => {};
 
   if (!query.trim()) return null;
 
@@ -151,36 +150,31 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
         <div>
           <h2 className="mb-3 text-xl font-semibold">Posts</h2>
           <ul className="space-y-4">
-            {posts.map((post) => (
-              <li
-                key={post.id}
-                className="rounded border bg-white p-4 shadow-sm"
-              >
-                <div className="mb-2 flex items-center gap-3">
-                  {post.user?.profilePicture && (
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.user.profilePicture} />
-                      <AvatarFallback>
-                        {post.user.firstName[0]}
-                        {post.user.lastName[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div>
-                    <p className="font-medium">
-                      {post.user?.firstName} {post.user?.lastName}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(post.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-gray-800">{post.content}</p>
-                {/* <div className="mt-2 text-sm text-gray-400">
-                  Privacy: {post.privacyLevel || "unknown"} | Status:{" "}
-                  {post.status || "unknown"}
-                </div> */}
-              </li>
+            {posts.map((post, index) => (
+              <>
+                <PostItem
+                  key={post.postId}
+                  post={post}
+                  index={index}
+                  onCommentClick={handleCommentClick}
+                  onImageClick={handleImageClick}
+                  onLikeClick={handleLikeClick}
+                  onShareClick={handleShareClick}
+                />
+
+                {openCommentIndex !== null && (
+                  <CommentDialog
+                    post={openingPost}
+                    postIndex={openCommentIndex}
+                    isOpen={true}
+                    onClose={handleCloseComment}
+                    onLikeClick={() => handleLikeClick(openCommentIndex)}
+                    onCommentClick={() => {}}
+                    onImageClick={handleImageClick}
+                    onSubmitComment={handleSubmitComment}
+                  />
+                )}
+              </>
             ))}
           </ul>
         </div>

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class PostRequest {
-    private Integer userId;
+    private Long userId;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -8,7 +8,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: post_service_mysql
+    container_name: post-db
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: post_service_db
@@ -24,7 +24,7 @@ services:
     image: phpmyadmin/phpmyadmin:latest
     container_name: post_service_phpmyadmin
     environment:
-      PMA_HOST: post_service_mysql
+      PMA_HOST: post-db
       PMA_PORT: 3306
       PMA_USER: user
       PMA_PASSWORD: user_password
