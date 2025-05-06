@@ -1,9 +1,10 @@
 import RoutesComponent from "@/routes/index";
+import { useNotificationWebSocketContext } from "@/contexts/NotificationWebSocketContext";
 
 function App() {
-  return (
-    <RoutesComponent />
-  );
+  useNotificationWebSocketContext();
+
+  return <RoutesComponent />;
 }
 
 export default App;

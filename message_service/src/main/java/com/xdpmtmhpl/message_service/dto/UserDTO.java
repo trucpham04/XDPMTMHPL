@@ -1,42 +1,40 @@
 package com.xdpmtmhpl.message_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Set;
+
+@Data
 public class UserDTO {
+
     private Long id;
     private String username;
-    private String displayName;
-    private String avatarUrl;
+    private String email;
+    private String phoneNumber;
+    private String firstName;
+    private String lastName;
 
-    // Getters and Setters
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateOfBirth;
 
-    public Long getId() {
-        return id;
-    }
+    private String gender;
+    private String bio;
+    private String profilePictureUrl;
+    private String coverPhotoUrl;
+    private Boolean isVerified;
+    private Boolean isActive;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt;
 
-    public String getUsername() {
-        return username;
-    }
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime updatedAt;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime lastLoginAt;
 
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
+    private Set<String> roles;
 }
