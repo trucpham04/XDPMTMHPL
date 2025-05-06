@@ -6,13 +6,6 @@ import axios from "axios";
 import { User } from "@/types/User";
 import UserAvatar from "@/components/app/userAvatar";
 
-type Friend = {
-  id: number;
-  name: string;
-  mutualFriends: number;
-  avatar: string;
-};
-
 axios.defaults.withCredentials = true;
 const AllFriend: React.FC = () => {
   const [friends, setFriends] = useState<User[]>([]);
