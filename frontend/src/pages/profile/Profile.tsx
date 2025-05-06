@@ -353,7 +353,7 @@ const [isLoading, setIsLoading] = useState(true);
                   <p>Đang kiểm tra bạn bè...</p>
                 ) : (
                   <div className="flex space-x-4">
-                    {isFriend == false ? (
+                    {isFriend ? (
                       <div className="relative flex space-x-4">
                         <Button
                           className="bg-blue-500 text-white px-6 py-2 font-medium hover:bg-blue-600"
