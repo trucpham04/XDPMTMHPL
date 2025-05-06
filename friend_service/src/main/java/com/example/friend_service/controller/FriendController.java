@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.friend_service.DTO.UserDTO;
@@ -24,6 +25,7 @@ public class FriendController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllFriends() {
+        System.out.println("gửi lời mời kết bạn");
         try {
 
             List<UserDTO> friends = friendService.getAllFriends();
@@ -59,8 +61,11 @@ public class FriendController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<Boolean> checkFriendship(@RequestParam Integer user1Id, @RequestParam Integer user2Id) {
-        boolean areFriends = friendService.checkFriendShip(user1Id, user2Id);
+    public ResponseEntity<Boolean> checkFriendship(@RequestParam Integer user2Id) {
+        if (user2Id == null) {
+            return ResponseEntity.badRequest().body(false);
+        }
+        boolean areFriends = friendService.checkFriendShip(user2Id);
         return ResponseEntity.ok(areFriends);
     }
 }

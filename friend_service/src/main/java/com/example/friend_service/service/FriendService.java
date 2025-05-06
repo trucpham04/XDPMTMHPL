@@ -131,12 +131,13 @@ public class FriendService {
         }
     }
 
-    public boolean checkFriendShip (Integer user1Id, Integer user2Id){
-        boolean friendsForward = friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id);
-        boolean friendsBackward = friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
-        return friendsForward || friendsBackward;
+    public boolean checkFriendShip (Integer user2Id){
+        Integer user1Id = getCurrentUserId();
+        boolean alreadyFriends = friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id) ||
+                    friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
+        System.out.println("hello");
+        return alreadyFriends;
     }
-
     
     // private int calculateMutualFriends(Integer userId, Integer friendId, Set<Integer> userFriends, Map<Integer, Set<Integer>> friendsOfFriendsMap) {
     //     Set<Integer> friendOfFriendIds = friendsOfFriendsMap.getOrDefault(friendId, new HashSet<>());
@@ -161,7 +162,7 @@ public class FriendService {
     //         ));
     // }
   
-- [ ] Nhắn thằng kia coi MNM có được chưa
+
 }
 
 // private int calculateMutualFriends(Integer userId, Integer friendId,
