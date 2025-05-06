@@ -1,34 +1,62 @@
 # Đồ án Xây dựng phần mềm theo mô hình phân lớp
 
-## Hướng dẫn tải một phần của repository bằng Git
+## Yêu cầu hệ thống
 
-### Các bước thực hiện
-#### 1. Clone repository nhưng không checkout toàn bộ
-Mở terminal và chạy lệnh sau:
-```sh
-git clone --no-checkout https://github.com/trucpham04/XDPMTMHPL.git
-```
+### 1. Yêu cầu phần cứng
 
-#### 2. Di chuyển vào thư mục repository
-```sh
+- **RAM**: Tối thiểu 8GB, khuyến nghị 16GB để đảm bảo hiệu suất khi chạy Docker và các dịch vụ liên quan.
+- **CPU**: Tối thiểu 2GHz, khuyến nghị 3GHz hoặc cao hơn để xử lý nhanh các tác vụ Back-end và Front-end.
+- **Dung lượng ổ cứng**: Tối thiểu 10GB để lưu trữ mã nguồn, file âm nhạc và video, và các container Docker.
+- **Kết nối mạng**: Cần kết nối Internet ổn định để tải các dependency, truy cập Cloudinary (lưu trữ file âm nhạc và video).
+
+### 2. Yêu cầu phần mềm
+
+- **Hệ điều hành**: Hỗ trợ Windows 10/11, Linux (Ubuntu 20.04+), hoặc macOS (12+).  
+  *Lưu ý: Hướng dẫn bên dưới tập trung cho hệ điều hành Windows.*
+- **Phần mềm cần cài đặt trước**:
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop): Dùng để chạy ứng dụng trong container.
+  - Trình duyệt hiện đại: Google Chrome (90+), Firefox (85+), hoặc Microsoft Edge (90+).
+
+---
+
+## Hướng dẫn cài đặt và chạy ứng dụng với Docker
+
+### 1. Cài đặt Docker Desktop
+
+- Truy cập trang chính thức của Docker: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+- Tải và cài đặt Docker Desktop cho Windows:
+  - Yêu cầu **Windows 10/11 Pro hoặc Enterprise**.
+  - Nếu dùng **Windows Home**, cần bật **WSL 2**.
+- Sau khi cài đặt, khởi động Docker Desktop và đảm bảo Docker đang chạy (biểu tượng Docker xuất hiện trên thanh taskbar).
+
+---
+
+### 2. Clone mã nguồn từ repository
+
+Mở **Command Prompt** hoặc **PowerShell**, sau đó thực hiện:
+
+```bash
+git clone https://github.com/trucpham04/XDPMTMHPL.git
 cd XDPMTMHPL
+````
+
+---
+
+### 3. Chạy ứng dụng bằng Docker
+
+Thực hiện lệnh sau để build và khởi động ứng dụng:
+
+```bash
+docker-compose up --build
 ```
 
-#### 3. Khởi tạo chế độ sparse-checkout
-```sh
-git sparse-checkout init --cone
-```
-Lệnh này bật chế độ sparse-checkout.
+Lệnh này sẽ:
 
-#### 4. Chọn thư mục hoặc file cần tải
-Ví dụ, để chỉ tải thư mục `frontend`, `user_service` và file `docker-compose.yml`, chạy:
-```sh
-git sparse-checkout set frontend user_service docker-compose.yml
-```
+* Build các container cho **Front-end** và **Back-end**.
+* Khởi chạy ứng dụng với cấu hình từ file `docker-compose.yml`.
 
-#### 5. Hoàn tất quá trình checkout
-```sh
-git checkout
-```
-Lệnh này sẽ tải xuống các file và thư mục đã chọn.
+---
 
+### 4. Truy cập ứng dụng
+
+* **Front-end**: [http://localhost:5173](http://localhost:5173)
