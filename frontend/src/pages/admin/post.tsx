@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import AdminNavbar from "@/components/admin/admin-navbar";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import AdminNavbar, { AdminAction } from "@/components/admin/admin-navbar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 // import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Post, PostRequest } from "@/types/Post";
+import { Post, PostRequest, ViewerType } from "@/types/Post";
 import {
   Form,
   FormControl,
@@ -33,28 +33,42 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { uploadImagesToCloudinary } from "@/utils/cloudiary";
-import { Loader2, Image, Film } from "lucide-react";
+import { Loader2, Image, Film, ArrowUpDown, ChevronDown, MoreHorizontal, Heart, MessageCircle, Share2, Eye } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import usePost from "@/hooks/usePost";
 import { toast } from "sonner";
 import UserAvatar from "@/components/app/userAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { debounce } from "lodash-es";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+import { useAuth } from "@/hooks/useAuth";
+import { ImageGallery } from "@/components/post/ImageGallery";
+import { Toaster } from "sonner";
 
 const PAGE_SIZE = 10;
 
 // Schema for editing posts
 const postEditFormSchema = z.object({
   content: z.string().min(1, "Nội dung bài viết không được để trống"),
-  viewer: z.enum(["PUBLIC", "PRIVATE", "FRIENDS"]),
+  viewer: z.nativeEnum(ViewerType),
 });
 
 // Schema for adding new posts
 const postAddFormSchema = z.object({
   content: z.string().min(1, "Nội dung bài viết không được để trống"),
-  viewer: z.enum(["PUBLIC", "PRIVATE", "FRIENDS"]),
+  viewer: z.nativeEnum(ViewerType),
 });
 
 export default function AdminPost() {
+  const { user } = useAuth();
   // const { toast } = useToast();
   const {
     loading,
@@ -97,7 +111,7 @@ export default function AdminPost() {
     resolver: zodResolver(postEditFormSchema),
     defaultValues: {
       content: "",
-      viewer: "PUBLIC",
+      viewer: ViewerType.PUBLIC,
     },
   });
 
@@ -105,12 +119,47 @@ export default function AdminPost() {
     resolver: zodResolver(postAddFormSchema),
     defaultValues: {
       content: "",
-      viewer: "PUBLIC",
+      viewer: ViewerType.PUBLIC,
     },
   });
 
   const [hasEditFormChanges, setHasEditFormChanges] = useState(false);
   const [hasAddFormChanges, setHasAddFormChanges] = useState(false);
+
+  const [sortField, setSortField] = useState<keyof Post>("createdAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [isBulkActionMenuOpen, setIsBulkActionMenuOpen] = useState(false);
+
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [previewPost, setPreviewPost] = useState<Post | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((keyword: string) => {
+      handleSearch(keyword);
+    }, 300),
+    []
+  );
+
+  // Handle search input change
+  const handleSearchInputChange = (keyword: string) => {
+    setSearchInput(keyword);
+    debouncedSearch(keyword);
+  };
+
+  // Preview post handler
+  const handlePreview = () => {
+    if (selectedIds.length === 1) {
+      const post = allPosts.find(p => p.postId === selectedIds[0]);
+      if (post) {
+        setPreviewPost(post);
+        setShowPreviewDialog(true);
+      }
+    } else {
+      toast.error("Vui lòng chọn 1 bài viết để xem trước");
+    }
+  };
 
   // Fetch all posts on mount and when page changes
   useEffect(() => {
@@ -141,7 +190,7 @@ export default function AdminPost() {
     if (editPost) {
       editForm.reset({
         content: editPost.content,
-        viewer: editPost.viewer as "Mọi người" | "PRIVATE" | "FRIENDS",
+        viewer: editPost.viewer as ViewerType,
       });
 
       // Set media previews from existing post
@@ -172,7 +221,7 @@ export default function AdminPost() {
     if (showAddDialog) {
       addForm.reset({
         content: "",
-        viewer: "PUBLIC",
+        viewer: ViewerType.PUBLIC,
       });
 
       // Reset media state
@@ -250,17 +299,13 @@ export default function AdminPost() {
 
   const handleEdit = async () => {
     if (selectedIds.length === 1) {
-      try {
-        const post = await fetchPostById(selectedIds[0]);
-        if (post) {
-          setEditPost(post);
-          setShowEditDialog(true);
-        }
-      } catch (error) {
-        toast.error("Failed to fetch post details");
+      const post = allPosts.find(p => p.postId === selectedIds[0]);
+      if (post) {
+        setEditPost(post);
+        setShowEditDialog(true);
       }
     } else {
-      toast.message("Selection required");
+      toast.error("Vui lòng chọn 1 bài viết để chỉnh sửa");
     }
   };
 
@@ -268,7 +313,7 @@ export default function AdminPost() {
     if (selectedIds.length > 0) {
       setShowConfirmDialog(true);
     } else {
-      toast.message("Vui lòng chọn ít nhất 1 bài viết.");
+      toast.error("Vui lòng chọn ít nhất 1 bài viết.");
     }
   };
 
@@ -311,8 +356,22 @@ export default function AdminPost() {
     setCurrentPage(newPage);
   };
 
+  // Add a function to refresh posts
+  const refreshPosts = useCallback(async () => {
+    try {
+      const res = await getAllPostsWithPagination(currentPage, PAGE_SIZE);
+      if (res?.content) {
+        setAllPosts(res.content);
+        setTotalPages(res.totalPages);
+      }
+    } catch (error) {
+      toast.error("Failed to refresh posts");
+    }
+  }, [currentPage, getAllPostsWithPagination]);
+
+  // Update the onSubmitEdit function
   const onSubmitEdit = async (values: z.infer<typeof postEditFormSchema>) => {
-    if (!editPost) return;
+    if (!editPost || !user) return;
 
     try {
       setIsUploading(true);
@@ -343,13 +402,9 @@ export default function AdminPost() {
         }
 
         // For video uploads, you would need a similar service for videos
-        // This is a placeholder for where you would handle video uploads
         if (videoFiles.length > 0) {
           // Example video upload implementation would go here
-          toast({
-            title: "Video upload",
-            description: "Video upload functionality would be implemented here",
-          });
+          toast("Video upload functionality would be implemented here");
         }
       }
 
@@ -357,29 +412,30 @@ export default function AdminPost() {
         content: values.content,
         viewer: values.viewer,
         multiFile: mediaUrls,
+        userId: user.id,
       };
 
       const updatedPost = await updatePost(editPost.postId, postData);
       if (updatedPost) {
-        toast({
-          title: "Success",
-          description: "Bài viết đã được cập nhật thành công",
-        });
+        toast.success("Bài viết đã được cập nhật thành công");
         setShowEditDialog(false);
         setHasEditFormChanges(false);
+        await refreshPosts(); // Refresh posts after update
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update post. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to update post. Please try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
+  // Update the onSubmitAdd function
   const onSubmitAdd = async (values: z.infer<typeof postAddFormSchema>) => {
+    if (!user) {
+      toast.error("You must be logged in to create a post");
+      return;
+    }
+
     try {
       setIsUploading(true);
       let mediaUrls: { url: string; type: "image" | "video" }[] = [];
@@ -403,10 +459,7 @@ export default function AdminPost() {
         // For video uploads, you would need a similar service for videos
         if (videoFiles.length > 0) {
           // Example video upload implementation would go here
-          toast({
-            title: "Video upload",
-            description: "Video upload functionality would be implemented here",
-          });
+          toast("Video upload functionality would be implemented here");
         }
       }
 
@@ -414,28 +467,24 @@ export default function AdminPost() {
         content: values.content,
         viewer: values.viewer,
         multiFile: mediaUrls,
+        userId: user.id,
       };
 
       const newPost = await createPost(postData);
       if (newPost) {
-        toast({
-          title: "Success",
-          description: "Bài viết mới đã được tạo thành công",
-        });
+        toast.success("Bài viết mới đã được tạo thành công");
         setShowAddDialog(false);
         setHasAddFormChanges(false);
+        await refreshPosts(); // Refresh posts after create
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to create post. Please try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
+  // Update the handleConfirmDelete function
   const handleConfirmDelete = async () => {
     try {
       let successCount = 0;
@@ -450,20 +499,14 @@ export default function AdminPost() {
       }
 
       if (successCount > 0) {
-        toast({
-          title: "Success",
-          description: `Đã xóa thành công ${successCount} bài viết.`,
-        });
+        toast.success(`Đã xóa thành công ${successCount} bài viết.`);
         setSelectedIds([]);
+        await refreshPosts(); // Refresh posts after delete
       }
 
       setShowConfirmDialog(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete posts. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete posts. Please try again.");
     }
   };
 
@@ -493,13 +536,56 @@ export default function AdminPost() {
     PRIVATE: "bg-gray-100 text-gray-800",
   };
 
+  // Add sorting function
+  const sortedPosts = useMemo(() => {
+    return [...paginatedPosts].sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortDirection === "asc" 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortDirection === "asc" 
+          ? aValue - bValue
+          : bValue - aValue;
+      }
+      
+      return 0;
+    });
+  }, [paginatedPosts, sortField, sortDirection]);
+
+  // Update the sort handler
+  const handleSort = (field: keyof Post) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
   return (
     <>
+      <Toaster richColors position="top-right" />
       <AdminNavbar
-        onAdd={handleAdd}
+        title="Quản lý bài viết"
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onSearch={handleSearch}
+        onSearch={handleSearchInputChange}
+        selectedCount={selectedIds.length}
+        searchPlaceholder="Tìm kiếm bài viết..."
+        actions={[
+          {
+            label: "Xem trước",
+            icon: <Eye className="mr-1 h-4 w-4" />,
+            onClick: handlePreview,
+            variant: "outline",
+          },
+        ]}
       />
       <div className="w-full space-y-4 p-2">
         {error && (
@@ -510,9 +596,20 @@ export default function AdminPost() {
 
         <div className="overflow-x-auto rounded-md border text-sm shadow-sm">
           {loading ? (
-            <div className="flex h-40 items-center justify-center">
-              <Loader2 className="mr-2 h-8 w-8 animate-spin" />
-              <p>Đang tải dữ liệu bài viết...</p>
+            <div className="space-y-2 p-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              ))}
             </div>
           ) : (
             <table className="min-w-full table-auto">
@@ -537,19 +634,83 @@ export default function AdminPost() {
                       }
                     />
                   </th>
-                  <th className="p-3 text-left text-nowrap">ID</th>
-                  <th className="p-3 text-left text-nowrap">Nội dung</th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("postId")}
+                    >
+                      ID
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("content")}
+                    >
+                      Nội dung
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
                   <th className="p-3 text-left text-nowrap">Ảnh/Video</th>
-                  <th className="p-3 text-left text-nowrap">Tác giả</th>
-                  <th className="p-3 text-left text-nowrap">Thời gian</th>
-                  <th className="p-3 text-left text-nowrap">Lượt thích</th>
-                  <th className="p-3 text-left text-nowrap">Bình luận</th>
-                  <th className="p-3 text-left text-nowrap">Chia sẻ</th>
-                  <th className="p-3 text-left text-nowrap">Chế độ</th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("author")}
+                    >
+                      Tác giả
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("createdAt")}
+                    >
+                      Thời gian
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("likes")}
+                    >
+                      Lượt thích
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("comments")}
+                    >
+                      Bình luận
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("shares")}
+                    >
+                      Chia sẻ
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
+                  <th className="p-3 text-left text-nowrap">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort("viewer")}
+                    >
+                      Chế độ
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedPosts.length === 0 ? (
+                {sortedPosts.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="p-5 text-center text-gray-500">
                       {searchKeyword
@@ -558,7 +719,7 @@ export default function AdminPost() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedPosts.map((post) => (
+                  sortedPosts.map((post) => (
                     <tr
                       key={post.postId}
                       className={isSelected(post.postId) ? "bg-blue-50" : ""}
@@ -1029,6 +1190,103 @@ export default function AdminPost() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Preview Dialog */}
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Xem trước bài viết</DialogTitle>
+          </DialogHeader>
+          
+          {previewPost && (
+            <div className="flex flex-col rounded-2xl bg-white p-4 shadow-lg">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <UserAvatar user={previewPost.author} className="size-10" />
+                  <div>
+                    <p className="font-semibold">
+                      {previewPost.author.firstName} {previewPost.author.lastName}
+                    </p>
+                    <span className="text-sm text-gray-500">
+                      {new Date(previewPost.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <MoreHorizontal className="cursor-pointer text-gray-500" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <Button
+                      onClick={() => {
+                        setEditPost(previewPost);
+                        setShowEditDialog(true);
+                        setShowPreviewDialog(false);
+                      }}
+                      variant="outline"
+                      className="w-full cursor-pointer"
+                    >
+                      Chỉnh sửa
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setSelectedIds([previewPost.postId]);
+                        setShowConfirmDialog(true);
+                        setShowPreviewDialog(false);
+                      }}
+                      variant="outline"
+                      className="w-full cursor-pointer text-red-600"
+                    >
+                      Xóa bài viết
+                    </Button>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Content */}
+              <div className="my-2 flex flex-col items-center justify-center gap-2">
+                <p className="mb-2 w-full text-left">{previewPost.content}</p>
+                {previewPost.multiFile && previewPost.multiFile.length > 0 && (
+                  <ImageGallery
+                    multiFiles={previewPost.multiFile}
+                    postIndex={0}
+                    onImageClick={() => {}}
+                  />
+                )}
+              </div>
+
+              {/* Interaction Bar */}
+              <div className="mt-2 flex items-center justify-between border-t pt-2">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    <Heart className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm text-gray-500">{previewPost.likes}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MessageCircle className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm text-gray-500">{previewPost.comments}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Share2 className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm text-gray-500">{previewPost.shares}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Chế độ hiển thị:</span>
+                  <span
+                    className={`rounded px-2 py-1 text-xs ${
+                      viewerStyles[previewPost.viewer as keyof typeof viewerStyles]
+                    }`}
+                  >
+                    {viewerLabels[previewPost.viewer as keyof typeof viewerLabels]}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>
