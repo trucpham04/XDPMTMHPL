@@ -25,6 +25,8 @@ public class FriendService {
 
     @Autowired
     private FriendRepository friendRepository;
+    @Autowired
+    private FriendRequestRepository friendRequestRepository;
 
     @Autowired
     private UserClient userClient;
