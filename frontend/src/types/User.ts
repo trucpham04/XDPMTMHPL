@@ -9,6 +9,8 @@ export interface User {
   dateOfBirth?: string | null;
   gender?: string | null;
   createdAt?: string;
+  requestTime?: string;
+  mutualFriends?: number;
   profilePicture?: string;
   profilePictureUrl?: string | null;
   bio?: string | null;

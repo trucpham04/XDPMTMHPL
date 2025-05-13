@@ -20,6 +20,7 @@ import SearchPage from "@/pages/main/SearchPage";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import AdminUser from "@/pages/admin/user";
 import AdminPost from "@/pages/admin/post";
+import FriendSuggest from "@/pages/main/friends/FriendSuggest";
 
 const routes: React.FC = () => {
   return (
@@ -32,8 +33,9 @@ const routes: React.FC = () => {
             <Route path="requests" element={<FriendRequest />} />
             {/* <Route path="sentRequest" element={<SentRequests />} /> */}
             <Route path="all" element={<AllFriend />} />
-            <Route path="birthdays" element={<FriendBirthday />} />                       
-            <Route path="custom-list" element={<FriendCustomList />} />
+            <Route path="suggest" element={<FriendSuggest />} />
+            {/* <Route path="birthdays" element={<FriendBirthday />} />                       
+            <Route path="custom-list" element={<FriendCustomList />} /> */}
           </Route>
           <Route path="admin" element={<AdminLayout />}>        
             <Route path="user" element={<AdminUser />} />
