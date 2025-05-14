@@ -19,7 +19,6 @@ const FriendSuggest: React.FC = () => {
       .get("http://127.0.0.1:8090/friend-service/api/friends/suggest")
       .then((response) => {
         setFriendSuggets(response.data);
-        console.log(response.data);
         setError(null);
       })
       .catch((error) => {

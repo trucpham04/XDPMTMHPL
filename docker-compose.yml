@@ -263,6 +263,8 @@ services:
       dockerfile: Dockerfile
     image: vite-frontend:latest
     container_name: xdmhpl-frontend
+    volumes:
+      - ./frontend/src:/app/src
     ports:
       - "5173:5173"
     networks:

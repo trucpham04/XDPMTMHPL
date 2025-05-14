@@ -1,6 +1,5 @@
 package com.example.friend_service.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
@@ -33,10 +32,6 @@ public class FriendRequestService {
 
     @Autowired
     private FriendRepository friendRepository;
-
-    @Autowired
-    private FriendService friendService;
-
 
     @Autowired
     private FriendService friendService;
@@ -159,7 +154,7 @@ public class FriendRequestService {
             FriendRequest friendRequest = new FriendRequest();
             friendRequest.setSenderId(senderId);
             friendRequest.setReceiverId(receiverId);
-            friendRequest.setTime(LocalDateTime.now());
+            friendRequest.setTime(LocalDateTime.now().toString());
             friendRequestRepository.save(friendRequest);
 
             // Send notification to receiver
