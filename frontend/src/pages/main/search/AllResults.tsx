@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
-import { User } from "@/API/UserServiceInterface";
-import { Post } from "@/API/PostServiceInterface";
+import { User } from "@/types/User";
+import { Post } from "@/types/Post";
 
 interface AllResultsProps {
   query: string;
@@ -55,7 +55,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
       await axios.post("http://localhost:8080/api/search/history", null, {
         params: {
           searcherId: currentUserId, // 👈 người đang đăng nhập
-          targetUserId: user.id,     // 👈 người được click vào
+          targetUserId: user.id, // 👈 người được click vào
           searchText: `${user.firstName} ${user.lastName}`,
         },
       });
@@ -68,7 +68,6 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
       console.error("❌ Lỗi khi lưu lịch sử:", error);
     }
   };
-  
 
   const renderButton = (status: string) => {
     switch (status) {
@@ -112,29 +111,31 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
         <div>
           <h2 className="mb-3 text-xl font-semibold">People</h2>
           <ul className="space-y-4">
-          {users.map((user) => (
-  <li key={user.id} className="flex items-center justify-between">
-    <div className="flex items-center gap-3">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={user.avatarUrl || ""} />
-        <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
-      </Avatar>
-      <div>
-        <p
-          className="font-medium cursor-pointer hover:underline"
-          onClick={() => handleUserClick(user)}
-        >
-          {user.firstName} {user.lastName}
-        </p>
-        <p className="text-sm text-gray-500">
-          {user.relationStatus === "FRIEND" ? "Friend" : ""}
-        </p>
-      </div>
-    </div>
-    {renderButton(user.relationStatus)}
-  </li>
-))}
-
+            {users.map((user) => (
+              <li key={user.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.profilePictureUrl || ""} />
+                    <AvatarFallback>
+                      {user.firstName[0]}
+                      {user.lastName[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p
+                      className="cursor-pointer font-medium hover:underline"
+                      onClick={() => handleUserClick(user)}
+                    >
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {user.relationStatus === "FRIEND" ? "Friend" : ""}
+                    </p>
+                  </div>
+                </div>
+                {renderButton(user.relationStatus)}
+              </li>
+            ))}
           </ul>
         </div>
       )}
@@ -145,13 +146,13 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
           <ul className="space-y-4">
             {posts.map((post) => (
               <li
-                key={post.id}
+                key={post.postId}
                 className="rounded border bg-white p-4 shadow-sm"
               >
                 <div className="mb-2 flex items-center gap-3">
-                  {post.author?.avatarUrl && (
+                  {post.author?.profilePictureUrl && (
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.author.avatarUrl} />
+                      <AvatarImage src={post.author.profilePictureUrl} />
                       <AvatarFallback>
                         {post.author.firstName[0]}
                         {post.author.lastName[0]}
@@ -169,8 +170,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
                 </div>
                 <p className="text-gray-800">{post.content}</p>
                 <div className="mt-2 text-sm text-gray-400">
-                  Privacy: {post.privacyLevel || "unknown"} | Status:{" "}
-                  {post.status || "unknown"}
+                  Privacy: {post.viewer || "unknown"}
                 </div>
               </li>
             ))}

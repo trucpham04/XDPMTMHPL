@@ -74,7 +74,7 @@ export const PostList: React.FC<PostListProps> = ({
     );
 
   return (
-    <div className="mt-4 w-full space-y-6">
+    <div className="w-full space-y-6">
       {feed.map((item, index) =>
         item.type === "post" ? (
           <PostItem

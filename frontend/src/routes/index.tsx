@@ -21,6 +21,7 @@ import AdminLayout from "@/components/layouts/AdminLayout";
 import AdminUser from "@/pages/admin/user";
 import AdminPost from "@/pages/admin/post";
 import FriendSuggest from "@/pages/main/friends/FriendSuggest";
+import SearchLayout from "@/components/layouts/SearchLayout";
 
 const routes: React.FC = () => {
   return (
@@ -36,13 +37,17 @@ const routes: React.FC = () => {
             <Route path="suggest" element={<FriendSuggest />} />
             {/* <Route path="birthdays" element={<FriendBirthday />} />                       
             <Route path="custom-list" element={<FriendCustomList />} /> */}
+            <Route path="birthdays" element={<FriendBirthday />} />
+            <Route path="custom-list" element={<FriendCustomList />} />
           </Route>
-          <Route path="admin" element={<AdminLayout />}>        
+          <Route path="admin" element={<AdminLayout />}>
             <Route path="user" element={<AdminUser />} />
             <Route path="post" element={<AdminPost />} />
           </Route>
           <Route path="notifications" element={<Notifications />} />
-          <Route path="search" element={<SearchPage />} />
+          <Route path="search" element={<SearchLayout />}>
+            <Route index element={<SearchPage />} />
+          </Route>
           <Route path="profile/:user_id" element={<Profile />} />
         </Route>
         <Route path="auth" element={<AuthLayout />}>

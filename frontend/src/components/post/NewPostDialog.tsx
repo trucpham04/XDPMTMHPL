@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X } from "lucide-react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { Camera, Video, X, Smile, ImagePlus } from "lucide-react";
 import postService from "@/services/postService";
 import { PostRequest, ViewerType } from "@/types/Post";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { uploadImagesToCloudinary } from "@/utils/cloudiary";
 import UserAvatar from "../app/userAvatar";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+} from "../ui/dialog";
 
 // Define a type for media preview
 type MediaPreview = {
@@ -82,7 +87,7 @@ export const NewPostDialog: React.FC = () => {
 
       // Prepare post data
       const postRequest: PostRequest = {
-        userId: user?.id,
+        userId: user?.id || 0,
         content,
         multiFile: uploadedUrls.map((url, index) => ({
           url,
@@ -112,105 +117,82 @@ export const NewPostDialog: React.FC = () => {
   return (
     <div className="flex h-fit w-full flex-col rounded-2xl bg-white p-4 shadow-lg">
       <div className="flex items-center space-x-4">
-        {/* <img
-          src={user?.profilePictureUrl || "https://via.placeholder.com/40"}
-          alt="Avatar"
-          className="h-10 w-10 rounded-full"
-        /> */}
         <UserAvatar user={user} />
-        <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-          <Dialog.Trigger asChild>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
             <Button
               variant="outline"
               className="flex-1 cursor-pointer justify-start rounded-full bg-gray-100 px-4 py-2 text-gray-500"
             >
               Ấy ơi, bạn đang nghĩ gì thế?
             </Button>
-          </Dialog.Trigger>
+          </DialogTrigger>
 
-          <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-            <Dialog.Content className="fixed top-1/2 left-1/2 h-[550px] w-[600px] -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white p-2 shadow-lg">
-              <Dialog.Close className="ml-[95%] cursor-pointer text-2xl font-bold text-gray-500">
-                ✕
-              </Dialog.Close>
-              <div className="flex items-center justify-center">
-                <h1 className="text-2xl font-semibold">Tạo bài viết</h1>
-              </div>
+          <DialogContent className="fixed top-1/2 left-1/2 min-w-2xl -translate-x-1/2 -translate-y-1/2 transform overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+            <div className="flex items-center justify-between border-b pb-4">
+              <h1 className="text-2xl font-semibold">Tạo bài viết</h1>
+            </div>
 
-              {/* Thông tin người dùng và chế độ xem */}
-              <div className="m-6 flex items-center">
-                <div className="flex flex-row gap-3">
-                  <img
-                    src={user?.profilePictureUrl}
-                    alt=""
-                    className="bg-muted-foreground inline-flex size-10 items-center justify-center rounded-full"
-                  />
-                  <div className="flex flex-col justify-start gap-1">
-                    <p className="ml-3 font-semibold">
-                      {user?.firstName} {user?.lastName}
-                    </p>
-                    <select
-                      name="viewer"
-                      className="rounded border border-gray-300 text-sm text-gray-700"
-                      value={viewer}
-                      onChange={(e) => setViewer(e.target.value as ViewerType)}
-                    >
-                      <option value={ViewerType.PUBLIC}>Mọi người</option>
-                      <option value={ViewerType.FRIENDS}>Bạn bè</option>
-                      <option value={ViewerType.PRIVATE}>Chỉ mình tôi</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Nội dung bài viết */}
-              <div className="flex h-2/5 w-full justify-center">
-                <textarea
-                  className="h-full w-[90%] overflow-auto border-none p-2 text-[17px]"
-                  placeholder="Bạn đang nghĩ gì?"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                ></textarea>
-              </div>
-
-              {/* Ảnh/Video đính kèm */}
-              <div className="mt-3 flex w-full justify-start">
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <Button
-                  variant="outline"
-                  className="ml-4 flex items-center space-x-2 text-gray-700"
-                  onClick={handleAddMedia}
+            {/* User info and visibility */}
+            <div className="mb-4 flex items-center gap-3">
+              <UserAvatar user={user} className="h-12 w-12" />
+              <div className="flex flex-col gap-1">
+                <p className="font-semibold">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <select
+                  name="viewer"
+                  className="rounded border border-gray-300 px-2 py-1 text-sm text-gray-700"
+                  value={viewer}
+                  onChange={(e) => setViewer(e.target.value as ViewerType)}
                 >
-                  <ImagePlus size={24} />
-                  <span>Thêm ảnh/video</span>
-                </Button>
+                  <option value={ViewerType.PUBLIC}>Mọi người</option>
+                  <option value={ViewerType.FRIENDS}>Bạn bè</option>
+                  <option value={ViewerType.PRIVATE}>Chỉ mình tôi</option>
+                </select>
+              </div>
+            </div>
 
-                <div className="ml-2 flex h-[70px] max-w-full flex-row gap-2 overflow-x-auto">
+            {/* Post content */}
+            <div className="mb-4">
+              <textarea
+                className="min-h-[150px] w-full resize-none rounded-lg border-none bg-transparent p-2 text-lg focus:outline-none"
+                placeholder="Bạn đang nghĩ gì?"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              ></textarea>
+            </div>
+
+            {/* Media attachments */}
+            <div className="mb-4">
+              <input
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileChange}
+              />
+
+              {mediaPreviews.length > 0 && (
+                <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {mediaPreviews.map((media, idx) => (
-                    <div key={idx} className="relative">
+                    <div key={idx} className="relative aspect-square">
                       {media.type === "video" ? (
                         <video
                           src={media.url}
-                          className="h-[70px] w-[70px] rounded object-cover"
+                          className="h-full w-full rounded-lg object-cover"
                           muted
                         />
                       ) : (
                         <img
                           src={media.url}
                           alt={`Media ${idx + 1}`}
-                          className="h-[70px] w-[70px] rounded object-cover"
+                          className="h-full w-full rounded-lg object-cover"
                         />
                       )}
                       <button
-                        className="absolute top-0.5 right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-500 text-white"
+                        className="absolute top-2 right-2 rounded-full bg-gray-800/60 p-1 text-white hover:bg-gray-800"
                         onClick={() => handleRemoveMedia(idx)}
                       >
                         <X size={16} />
@@ -218,45 +200,69 @@ export const NewPostDialog: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
 
-              {/* Nút đăng bài */}
-              <div className="mt-6 flex w-full justify-center">
+              <div
+                className="flex cursor-pointer items-center gap-2 rounded-lg border p-4"
+                onClick={handleAddMedia}
+              >
+                <p className="text-sm font-medium">Thêm vào bài viết</p>
                 <Button
-                  className="flex w-full items-center space-x-2 bg-blue-600 text-white hover:bg-blue-500"
-                  onClick={handleSubmit}
-                  disabled={isUploading}
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto text-green-600 hover:bg-green-50 hover:text-green-700"
+                  onClick={handleAddMedia}
                 >
-                  {isUploading ? (
-                    <>
-                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                      <span>Đang đăng...</span>
-                    </>
-                  ) : (
-                    <span>Đăng bài viết</span>
-                  )}
+                  <ImagePlus size={24} />
                 </Button>
               </div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
+            </div>
+
+            {/* Submit button */}
+            <Button
+              className="w-full bg-blue-600 py-6 text-base font-semibold text-white transition hover:bg-blue-700 disabled:bg-blue-300"
+              onClick={handleSubmit}
+              disabled={
+                isUploading || (!content.trim() && mediaPreviews.length === 0)
+              }
+            >
+              {isUploading ? (
+                <div className="flex items-center gap-2">
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  <span>Đang đăng...</span>
+                </div>
+              ) : (
+                "Đăng bài viết"
+              )}
+            </Button>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Các nút nhanh phía dưới */}
-      {/* <div className="mt-4 flex justify-around">
-        <Button variant="outline" className="flex items-center space-x-2">
-          <Video className="text-red-500" size={20} />
+      <div className="mt-4 flex justify-around">
+        <Button
+          variant="outline"
+          className="flex flex-1 cursor-pointer items-center space-x-2 border-0 shadow-none"
+        >
+          <Video className="size-5 text-red-500" />
           <span>Video trực tiếp</span>
         </Button>
-        <Button variant="outline" className="flex items-center space-x-2">
-          <Camera className="text-green-500" size={20} />
+        <Button
+          variant="outline"
+          className="flex flex-1 cursor-pointer items-center space-x-2 border-0 shadow-none"
+        >
+          <Camera className="size-5 text-green-500" />
           <span>Ảnh/video</span>
         </Button>
-        <Button variant="outline" className="flex items-center space-x-2">
-          <Smile className="text-yellow-500" size={20} />
+        <Button
+          variant="outline"
+          className="flex flex-1 cursor-pointer items-center space-x-2 border-0 shadow-none"
+        >
+          <Smile className="size-5 text-yellow-500" />
           <span>Cảm xúc/hoạt động</span>
         </Button>
-      </div> */}
+      </div>
     </div>
   );
 };

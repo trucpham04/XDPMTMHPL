@@ -14,6 +14,8 @@ import {
 import { Button } from "../ui/button";
 import usePost from "@/hooks/usePost";
 import { User } from "@/types/User";
+import { Link } from "react-router-dom";
+import { getTimeAgo } from "@/utils";
 
 interface SharedPostItemProps {
   sharedPostId: number;
@@ -56,13 +58,17 @@ export const SharedPostItem: React.FC<SharedPostItemProps> = ({
       {/* Shared Info */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <UserAvatar user={author} />
+          <Link to={`/profile/${author.id}`}>
+            <UserAvatar user={author} />
+          </Link>
           <div>
-            <p className="font-semibold">
-              {author.firstName} {author.lastName}
-            </p>
+            <Link to={`/profile/${author.id}`}>
+              <p className="font-semibold">
+                {author.firstName} {author.lastName}
+              </p>
+            </Link>
             <span className="text-sm text-gray-500">
-              {new Date(createdAt).toLocaleString()}
+              {getTimeAgo(createdAt)}
             </span>
           </div>
         </div>

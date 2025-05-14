@@ -8,6 +8,7 @@ import com.xdpmtmhpl.post_service.repository.CommentRepository;
 import com.xdpmtmhpl.post_service.repository.LikeRepository;
 import com.xdpmtmhpl.post_service.repository.SharedPostRepository;
 import com.xdpmtmhpl.post_service.request.PostRequest;
+import com.xdpmtmhpl.post_service.response.MediaResponse;
 import com.xdpmtmhpl.post_service.response.PostResponse;
 import com.xdpmtmhpl.post_service.response.ShareResponse;
 import com.xdpmtmhpl.post_service.service.GetUser;
@@ -177,6 +178,18 @@ public class PostController {
         }
         res.setAuthor(author);
         return res;
+    }
+
+    @GetMapping("/user/{userId}/images")
+    public ResponseEntity<List<MediaResponse>> getAllImagesByUserId(@PathVariable Long userId) {
+        List<MediaResponse> mediaFiles = postService.getAllImagesByUserId(userId);
+        return ResponseEntity.ok(mediaFiles);
+    }
+
+    @GetMapping("/user/{userId}/videos")
+    public ResponseEntity<List<MediaResponse>> getAllVideosByUserId(@PathVariable Long userId) {
+        List<MediaResponse> mediaFiles = postService.getAllVideosByUserId(userId);
+        return ResponseEntity.ok(mediaFiles);
     }
 
 }

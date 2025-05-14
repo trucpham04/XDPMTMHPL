@@ -1,6 +1,8 @@
 package com.xdpmtmhpl.post_service.service;
 
 import com.xdpmtmhpl.post_service.model.Post;
+import com.xdpmtmhpl.post_service.model.MultiFile;
+import com.xdpmtmhpl.post_service.response.MediaResponse;
 import com.xdpmtmhpl.post_service.repository.CommentRepository;
 import com.xdpmtmhpl.post_service.repository.LikeRepository;
 import com.xdpmtmhpl.post_service.repository.PostRepository;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -77,6 +80,32 @@ public class PostService {
         existingPost.setMultiFile(updatedPost.getMultiFile());
 
         return postRepository.save(existingPost);
+    }
+
+    public List<Post> getAllPostsWithImagesByUserId(Long userId) {
+        return postRepository.findAllPostsWithImagesByUserId(userId);
+    }
+
+    public List<Post> getAllPostsWithVideosByUserId(Long userId) {
+        return postRepository.findAllPostsWithVideosByUserId(userId);
+    }
+
+    public List<MediaResponse> getAllImagesByUserId(Long userId) {
+        List<Post> posts = postRepository.findAllPostsWithImagesByUserId(userId);
+        return posts.stream()
+                .flatMap(post -> post.getMultiFile().stream()
+                        .filter(file -> file.getType().equals("image"))
+                        .map(file -> MediaResponse.fromMultiFile(file, post.getPostId())))
+                .collect(Collectors.toList());
+    }
+
+    public List<MediaResponse> getAllVideosByUserId(Long userId) {
+        List<Post> posts = postRepository.findAllPostsWithVideosByUserId(userId);
+        return posts.stream()
+                .flatMap(post -> post.getMultiFile().stream()
+                        .filter(file -> file.getType().equals("video"))
+                        .map(file -> MediaResponse.fromMultiFile(file, post.getPostId())))
+                .collect(Collectors.toList());
     }
 
 }

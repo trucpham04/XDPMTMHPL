@@ -15,6 +15,9 @@ public class UpdateUserRequest {
     @Size(max = 255)
     private String profilePictureUrl;
 
+    @Size(max = 255)
+    private String coverPhotoUrl;
+
     // Getters và setters
     public String getFirstName() {
         return firstName;
@@ -46,5 +49,13 @@ public class UpdateUserRequest {
 
     public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public String getCoverPhotoUrl() {
+        return coverPhotoUrl;
+    }
+
+    public void setCoverPhotoUrl(String coverPhotoUrl) {
+        this.coverPhotoUrl = coverPhotoUrl;
     }
 }

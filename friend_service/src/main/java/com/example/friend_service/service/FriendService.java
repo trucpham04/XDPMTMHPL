@@ -4,6 +4,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.friend_service.Repository.FriendRepository;
+import com.example.friend_service.Repository.FriendRequestRepository;
 import com.example.friend_service.Entity.Friend;
 import com.example.friend_service.Client.UserClient;
 import com.example.friend_service.DTO.UserDTO;
@@ -12,7 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,7 +30,6 @@ public class FriendService {
     private FriendRepository friendRepository;
     @Autowired
     private FriendRequestRepository friendRequestRepository;
-
     @Autowired
     private UserClient userClient;
 
@@ -142,12 +144,24 @@ public class FriendService {
     }
 
     public Map<String, Boolean> getFriendStatus(Integer otherUserId) {
-        Integer currentUserId=getCurrentUserId();
+        Integer currentUserId = getCurrentUserId();
         Map<String, Boolean> status = new HashMap<>();
         status.put("isFriend", friendRepository.existsByUser1IdAndUser2Id(currentUserId, otherUserId));
-        status.put("isFriendRequestSent", friendRequestRepository.existsBySenderIdAndReceiverId(currentUserId, otherUserId));
-        status.put("isFriendRequestReceived", friendRequestRepository.existsBySenderIdAndReceiverId(otherUserId, currentUserId));
+        status.put("isFriendRequestSent",
+                friendRequestRepository.existsBySenderIdAndReceiverId(currentUserId, otherUserId));
+        status.put("isFriendRequestReceived",
+                friendRequestRepository.existsBySenderIdAndReceiverId(otherUserId, currentUserId));
         return status;
+    }
+
+    public List<UserDTO> getUserFriends(Integer userId) {
+        List<Friend> friendsAsUser1 = friendRepository.findByUser1Id(userId);
+
+        List<UserDTO> friends = friendsAsUser1.stream()
+                .map(friend -> userClient.getUserById(friend.getUser2Id()))
+                .collect(Collectors.toList());
+
+        return friends;
     }
 
     // private int calculateMutualFriends(Integer userId, Integer friendId,
