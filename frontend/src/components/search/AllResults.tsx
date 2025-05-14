@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import axios from "axios";
 import { User } from "@/types/User";
 import { Post } from "@/types/Post";
 import { PostItem } from "../post/PostItem";
 import { CommentDialog } from "../post/CommentDialog";
 import { useAuthContext } from "@/contexts/AuthContext";
 import usePost from "@/hooks/usePost";
+import { useSearch } from "@/hooks/useSearch";
 
 interface AllResultsProps {
   query: string;
@@ -14,73 +14,33 @@ interface AllResultsProps {
 }
 
 const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
-  const [users, setUsers] = useState<(User & { relationStatus: string })[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const [openCommentIndex, setOpenCommentIndex] = useState<number | null>(null);
   const { user } = useAuthContext();
   const userId = user?.id || 0;
   const [openingPost, setOpeningPost] = useState<Post | null>(null);
-
   const { fetchPostById, sharePost } = usePost();
-  useEffect(() => {
-    setUsers([]);
-    setPosts([]);
-  }, [query]);
+  const {
+    users,
+    posts,
+    loading,
+    error,
+    searchUsers,
+    searchPosts,
+    saveSearchHistory,
+  } = useSearch();
 
   useEffect(() => {
     if (!query.trim()) return;
-
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const [usersRes, postsRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8090/user-service/api/users/search", {
-            params: { query, currentUserId },
-          }),
-          axios.get("http://127.0.0.1:8090/post-service/api/posts/search", {
-            params: { keyword: query },
-          }),
-        ]);
-
-        setUsers(usersRes.data);
-        setPosts(postsRes.data);
-      } catch (err) {
-        console.error("Lỗi khi tìm kiếm:", err);
-        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [query, currentUserId]);
+    searchUsers(query, currentUserId);
+    searchPosts(query);
+  }, [query, currentUserId, searchUsers, searchPosts]);
 
   const handleUserClick = async (user: User) => {
-    try {
-      await axios.post(
-        "http://127.0.0.1:8090/search-service/api/search/history",
-        null,
-        {
-          params: {
-            searcherId: currentUserId,
-            targetUserId: user.id,
-            searchText: `${user.firstName} ${user.lastName}`,
-          },
-        },
-      );
-      console.log("✅ Đã lưu lịch sử tìm kiếm:", {
-        searcherId: currentUserId,
-        targetUserId: user.id,
-        name: `${user.firstName} ${user.lastName}`,
-      });
-    } catch (error) {
-      console.error("❌ Lỗi khi lưu lịch sử:", error);
-    }
+    await saveSearchHistory(
+      currentUserId,
+      user.id,
+      `${user.firstName} ${user.lastName}`,
+    );
   };
 
   const handleImageClick = (postIndex: number, imageIndex: number) => {
@@ -90,10 +50,11 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
   const handleLikeClick = (postId: number) => {};
 
   const handleCommentClick = async (postId: number) => {
-    await fetchPostById(postId).then((res) => {
-      setOpeningPost(res);
+    const post = await fetchPostById(postId);
+    if (post) {
+      setOpeningPost(post);
       setOpenCommentIndex(postId);
-    });
+    }
   };
 
   const handleShareClick = (postId: number) => {
@@ -121,7 +82,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
               <li key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.profilePictureUrl || ""} />
+                    <AvatarImage src={user.profilePictureUrl || undefined} />
                     <AvatarFallback>
                       {user.firstName[0]}
                       {user.lastName[0]}
@@ -134,12 +95,8 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
                     >
                       {user.firstName} {user.lastName}
                     </p>
-                    {/* <p className="text-sm text-gray-500">
-                      {user.relationStatus === "FRIEND" ? "Friend" : ""}
-                    </p> */}
                   </div>
                 </div>
-                {/* {renderButton(user.relationStatus)} */}
               </li>
             ))}
           </ul>
@@ -151,9 +108,8 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
           <h2 className="mb-3 text-xl font-semibold">Posts</h2>
           <ul className="space-y-4">
             {posts.map((post, index) => (
-              <>
+              <React.Fragment key={post.postId}>
                 <PostItem
-                  key={post.postId}
                   post={post}
                   index={index}
                   onCommentClick={handleCommentClick}
@@ -162,7 +118,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
                   onShareClick={handleShareClick}
                 />
 
-                {openCommentIndex !== null && (
+                {openCommentIndex !== null && openingPost && (
                   <CommentDialog
                     post={openingPost}
                     postIndex={openCommentIndex}
@@ -174,7 +130,7 @@ const AllResults: React.FC<AllResultsProps> = ({ query, currentUserId }) => {
                     onSubmitComment={handleSubmitComment}
                   />
                 )}
-              </>
+              </React.Fragment>
             ))}
           </ul>
         </div>

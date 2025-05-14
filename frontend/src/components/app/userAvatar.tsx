@@ -12,8 +12,8 @@ export default function UserAvatar({
 }) {
   return (
     <>
-      <Avatar className={cn("h-10 w-10", className)}>
-        <AvatarImage src={user?.profilePictureUrl} />
+      <Avatar className={cn("h-10 w-10 border-2 border-white", className)}>
+        <AvatarImage src={user?.profilePictureUrl || undefined} />
         <AvatarFallback>
           <UserIcon className="h-6 w-6" />
         </AvatarFallback>

@@ -17,7 +17,12 @@ const friendNavItems = [
     link: "/friends/requests",
     extraIcon: ChevronRight,
   },
-  { name: "Gợi ý", icon: UserCheck, link: "/friends/suggest", extraIcon: ChevronRight },
+  {
+    name: "Gợi ý",
+    icon: UserCheck,
+    link: "/friends/suggest",
+    extraIcon: ChevronRight,
+  },
   {
     name: "Tất cả bạn bè",
     icon: User,

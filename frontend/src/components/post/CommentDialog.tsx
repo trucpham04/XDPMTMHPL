@@ -120,11 +120,21 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
         {/* Post Content */}
         <div className="p-4">
           <div className="flex items-center space-x-2">
-            <img
-              src={post.author.profilePictureUrl || ""}
-              alt={post.author.firstName[0].toUpperCase()}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 font-bold text-gray-500"
-            />
+            {post.author.profilePictureUrl ? (
+              <img
+                src={post.author.profilePictureUrl}
+                alt={post.author.firstName[0].toUpperCase()}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 object-cover font-bold text-gray-500"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "";
+                }}
+              />
+            ) : (
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 font-bold text-gray-500">
+                {post.author.firstName[0].toUpperCase()}
+              </div>
+            )}
             <div>
               <p className="font-semibold">
                 {post.author.firstName} {post.author.lastName}

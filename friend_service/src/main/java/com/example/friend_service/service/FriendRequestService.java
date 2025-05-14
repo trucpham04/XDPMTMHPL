@@ -10,18 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.example.friend_service.Client.MessageClient;
 import com.example.friend_service.Client.UserClient;
-import com.example.friend_service.DTO.UserDTO;
 import com.example.friend_service.DTO.UserDTO;
 import com.example.friend_service.Entity.FriendRequest;
 import com.example.friend_service.Repository.FriendRepository;
@@ -34,7 +27,7 @@ import jakarta.transaction.Transactional;
 public class FriendRequestService {
 
     private static final Logger logger = (Logger) LoggerFactory.getLogger(FriendRequestService.class);
-    
+
     @Autowired
     private FriendRequestRepository friendRequestRepository;
 
@@ -45,13 +38,7 @@ public class FriendRequestService {
     private FriendService friendService;
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private UserClient userClient;
-
-    @Autowired
-    private MessageClient messageClient;
 
     private String getAuthToken() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -82,36 +69,33 @@ public class FriendRequestService {
     }
 
     public int calculateMutualFriends(Integer currentUserId, Integer targetUserId) {
-        if (currentUserId == null || targetUserId == null) return 0;
+        if (currentUserId == null || targetUserId == null)
+            return 0;
         List<Integer> currentUserFriends = friendRepository.findFriendsByUserId(currentUserId)
                 .stream()
-                .map(friendship -> 
-                    friendship.getUser1Id().equals(currentUserId) ? friendship.getUser2Id() : friendship.getUser1Id())
+                .map(friendship -> friendship.getUser1Id().equals(currentUserId) ? friendship.getUser2Id()
+                        : friendship.getUser1Id())
                 .collect(Collectors.toList());
         List<Integer> targetUserFriends = friendRepository.findFriendsByUserId(targetUserId)
                 .stream()
-                .map(friendship -> 
-                    friendship.getUser1Id().equals(targetUserId) ? friendship.getUser2Id() : friendship.getUser1Id())
+                .map(friendship -> friendship.getUser1Id().equals(targetUserId) ? friendship.getUser2Id()
+                        : friendship.getUser1Id())
                 .collect(Collectors.toList());
         return (int) currentUserFriends.stream()
                 .filter(targetUserFriends::contains)
                 .count();
     }
 
-
     public List<UserDTO> getAllFriendRequests() {
         logger.info("Hellooooo");
         Integer receiverId = getCurrentUserId();
         List<FriendRequest> friends = friendRequestRepository.findByReceiverId(receiverId);
         Function<FriendRequest, UserDTO> toUserDTO = friendRequest -> {
-            // String userServiceUrl = "http://api-gateway:8090/api/auth/users/" +
-            // friendRequest.getSenderId();
-            // return restTemplate.getForObject(userServiceUrl, UserDTO.class);
             UserDTO userDTO = userClient.getUserById(friendRequest.getSenderId());
-            System.out.println("Thời gian gửi request 1: "+ friendRequest.getTime());
-            userDTO.setRequestTime(friendRequest.getTime());
+            System.out.println("Thời gian gửi request 1: " + friendRequest.getTime());
+            userDTO.setRequestTime(friendRequest.getTime().toString());
             userDTO.setMutualFriends(calculateMutualFriends(receiverId, friendRequest.getSenderId()));
-            System.out.println("Thời gian gửi request: "+ userDTO.getRequestTime());
+            System.out.println("Thời gian gửi request: " + userDTO.getRequestTime());
             return userDTO;
         };
         return friends.stream()
@@ -123,10 +107,6 @@ public class FriendRequestService {
         Integer senderId = getCurrentUserId();
         List<FriendRequest> friends = friendRequestRepository.findBySenderId(senderId);
         Function<FriendRequest, UserDTO> toUserDTO = friendRequest -> {
-
-            // String userServiceUrl = "http://api-gateway:8090/api/auth/users/" +
-            // friendRequest.getReceiverId();
-            // return restTemplate.getForObject(userServiceUrl, UserDTO.class);
             UserDTO userDTO = userClient.getUserById(friendRequest.getReceiverId());
             return userDTO;
         };
@@ -146,7 +126,6 @@ public class FriendRequestService {
             }
             friendService.addFriend(senderId);
             removeRequest(senderId);
-            messageClient.createConversation(senderId, userId);
         } catch (DataAccessException e) {
             System.err.println("Database error while saving friend: " + e.getMessage());
             throw new RuntimeException("Database error: " + e.getMessage(), e);
@@ -158,7 +137,6 @@ public class FriendRequestService {
 
     public FriendRequest SendRequest(Integer receiverId) {
         try {
-
             Integer senderId = getCurrentUserId();
             System.out.println(senderId);
             UserDTO receiver = userClient.getUserById(receiverId);
@@ -173,7 +151,7 @@ public class FriendRequestService {
             FriendRequest friendRequest = new FriendRequest();
             friendRequest.setSenderId(senderId);
             friendRequest.setReceiverId(receiverId);
-            friendRequest.setTime(LocalDateTime.now());
+            friendRequest.setTime(LocalDateTime.now().toString());
             friendRequestRepository.save(friendRequest);
 
             return friendRequest;
@@ -209,4 +187,5 @@ public class FriendRequestService {
             friendRequestRepository.delete(friendRequest);
         }
     }
+
 }

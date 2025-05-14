@@ -1,137 +1,99 @@
 import { useCallback, useState } from "react";
 import { User } from "@/types/User";
-import friendService from "../services/friendService";
+import { friendService } from "@/services/friendService";
 
-export const useFriend = () => {
+export function useFriend() {
+  const [friends, setFriends] = useState<User[]>([]);
+  const [requests, setRequests] = useState<User[]>([]);
+  const [sentRequests, setSentRequests] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [friends, setFriends] = useState<User[]>([]);
-  const [friendRequests, setFriendRequests] = useState<User[]>([]);
-  const [sentRequests, setSentRequests] = useState<User[]>([]);
 
-  // Lấy danh sách bạn bè
-  const getAllFriends = useCallback(async () => {
+  const fetchFriends = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await friendService.getAllFriends();
-      setFriends(res);
-      return res;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch friends");
-      return [];
+      const data = await friendService.getAllFriends();
+      setFriends(data);
+      setError(null);
+    } catch (err) {
+      setError("Không thể tải danh sách bạn bè.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Lấy danh sách lời mời kết bạn nhận được
-  const getAllFriendRequests = useCallback(async () => {
+  const fetchRequests = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await friendService.getAllFriendRequests();
-      setFriendRequests(res);
-      return res;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch friend requests");
-      return [];
+      const data = await friendService.getFriendRequests();
+      setRequests(data);
+      setError(null);
+    } catch (err) {
+      setError("Không thể tải danh sách lời mời kết bạn.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Lấy danh sách lời mời đã gửi
-  const getAllRequestsSent = useCallback(async () => {
+  const fetchSentRequests = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await friendService.getAllRequestsSent();
-      setSentRequests(res);
-      return res;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch sent requests");
-      return [];
+      const data = await friendService.getSentRequests();
+      setSentRequests(data);
+      setError(null);
+    } catch (err) {
+      setError("Không thể tải danh sách lời mời đã gửi.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Gửi lời mời kết bạn
-  const sendFriendRequest = useCallback(async (receiverId: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await friendService.sendFriendRequest(receiverId);
-      return res;
-    } catch (err: any) {
-      setError(err.message || "Failed to send friend request");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const acceptRequest = useCallback(
+    async (id: number) => {
+      await friendService.acceptRequest(id);
+      fetchRequests();
+    },
+    [fetchRequests],
+  );
 
-  // Chấp nhận lời mời kết bạn
-  const acceptFriendRequest = useCallback(async (senderId: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await friendService.acceptFriendRequest(senderId);
-      return true;
-    } catch (err: any) {
-      setError(err.message || "Failed to accept friend request");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const deleteRequest = useCallback(
+    async (id: number) => {
+      await friendService.deleteRequest(id);
+      fetchRequests();
+    },
+    [fetchRequests],
+  );
 
-  // Hủy lời mời kết bạn
-  const removeFriendRequest = useCallback(async (senderId: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await friendService.removeFriendRequest(senderId);
-      return true;
-    } catch (err: any) {
-      setError(err.message || "Failed to remove friend request");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const cancelRequest = useCallback(
+    async (id: number) => {
+      await friendService.cancelRequest(id);
+      fetchSentRequests();
+    },
+    [fetchSentRequests],
+  );
 
-  // Xoá bạn
-  const removeFriend = useCallback(async (user2Id: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await friendService.removeFriend(user2Id);
-      setFriends((prev) => prev.filter((f) => f.id !== user2Id));
-      return true;
-    } catch (err: any) {
-      setError(err.message || "Failed to remove friend");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const removeFriend = useCallback(
+    async (id: number) => {
+      await friendService.removeFriend(id);
+      fetchFriends();
+    },
+    [fetchFriends],
+  );
 
   return {
+    friends,
+    requests,
+    sentRequests,
     loading,
     error,
-    friends,
-    friendRequests,
-    sentRequests,
-    getAllFriends,
-    getAllFriendRequests,
-    getAllRequestsSent,
-    sendFriendRequest,
-    acceptFriendRequest,
-    removeFriendRequest,
+    fetchFriends,
+    fetchRequests,
+    fetchSentRequests,
+    acceptRequest,
+    deleteRequest,
+    cancelRequest,
     removeFriend,
   };
-};
+}
 
 export default useFriend;

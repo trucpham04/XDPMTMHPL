@@ -2,55 +2,26 @@ import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
-import axios from "axios";
 import { User } from "@/types/User";
 import UserAvatar from "@/components/app/userAvatar";
+import { useFriend } from "@/hooks/useFriend";
 
-axios.defaults.withCredentials = true;
 const AllFriend: React.FC = () => {
-  const [friends, setFriends] = useState<User[]>([]);
   const navigate = useNavigate();
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchFriends = () => {
-    axios
-      .get("http://127.0.0.1:8090/friend-service/api/friends")
-      .then((response) => {
-        // const fetchedFriends = response.data.map((friend: any) => ({
-        //   id: friend.id,
-        //   name: friend.firstName + " " + friend.lastName,
-        //   mutualFriends: friend.mutualFriends,
-        //   avatar: friend.avatar,
-        // }));
-        setFriends(response.data);
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy danh sách bạn bè:", error);
-        setError("Không thể tải danh sách bạn bè. Vui lòng thử lại sau.");
-      });
-  };
+  const { friends, error, fetchFriends, removeFriend, loading } = useFriend();
 
   useEffect(() => {
     fetchFriends();
-  }, []);
+  }, [fetchFriends]);
 
   const handleRemoveFriend = (id: number, name: string) => {
     if (!window.confirm(`Bạn có chắc muốn hủy kết bạn với ${name}?`)) {
       return;
     }
-    axios
-      .delete(`http://127.0.0.1:8090/friend-service/api/friends/${id}`)
-      .then(() => {
-        setFriends(friends.filter((friend) => friend.id !== id));
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi xóa bạn bè:", error);
-        setError(`Không thể hủy kết bạn với ${name}. Vui lòng thử lại.`);
-      });
+    removeFriend(id);
   };
+
   return (
     <>
       <div className="left-0 h-screen w-90 bg-white shadow-sm">
@@ -68,23 +39,19 @@ const AllFriend: React.FC = () => {
           </div>
 
           {error && <p className="py-2 text-center text-red-500">{error}</p>}
-          {friends.length > 0 ? (
+          {loading ? (
+            <p className="py-4 text-center text-gray-500">Đang tải...</p>
+          ) : friends.length > 0 ? (
             friends.map((friend) => (
               <div
                 key={friend.id}
                 className="flex w-full flex-col rounded-lg px-2 py-3 hover:bg-gray-200"
                 onClick={() => {
                   navigate("/profile/" + friend.id);
-                  // setSelectedFriend(friend.id);
                 }}
               >
                 <div className="flex w-full">
                   <div className="mr-4 h-12 w-12 rounded-full bg-gray-300">
-                    {/* <img
-                      src={friend.profilePictureUrl}
-                      alt={friend.firstName}
-                      className="mr-4 size-14 rounded-full"
-                    /> */}
                     <UserAvatar user={friend} className="size-12" />
                   </div>
 
