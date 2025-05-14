@@ -1,39 +1,47 @@
-import { NotificationCard } from "./notification-card";
-import { Notification } from "../../types/Notification";
+import React from "react";
+import { Notification } from "@/types/Notification";
 import { Loader2 } from "lucide-react";
+import { NotificationCard } from "./notification-card";
 
 interface NotificationsListProps {
   notifications: Notification[];
-  onDeleteNotification: (id: string) => void;
-  onAcceptFriendRequest?: (id: string) => void;
-  onDeclineFriendRequest?: (id: string) => void;
+  onDeleteNotification: (id: number) => void;
+  onMarkAsRead: (id: number) => void;
   isLoading: boolean;
 }
 
-export function NotificationsList({
+export const NotificationsList: React.FC<NotificationsListProps> = ({
   notifications,
   onDeleteNotification,
+  onMarkAsRead,
   isLoading,
-}: NotificationsListProps) {
+}) => {
+  if (isLoading) {
+    return (
+      <div className="flex h-32 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (notifications.length === 0) {
+    return (
+      <div className="text-muted-foreground py-8 text-center">
+        Chưa có thông báo
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full">
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-        </div>
-      ) : notifications.length === 0 ? (
-        <div className="py-8 text-center text-gray-500">No notifications</div>
-      ) : (
-        <>
-          {notifications.map((notification) => (
-            <NotificationCard
-              key={notification.id}
-              notification={notification}
-              onDelete={onDeleteNotification}
-            />
-          ))}
-        </>
-      )}
+    <div className="space-y-4">
+      {notifications.map((notification) => (
+        <NotificationCard
+          key={notification.id}
+          notification={notification}
+          onDelete={() => onDeleteNotification(notification.id)}
+          onMarkAsRead={() => onMarkAsRead(notification.id)}
+        />
+      ))}
     </div>
   );
-}
+};

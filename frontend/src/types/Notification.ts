@@ -2,23 +2,26 @@ import { User } from "./User";
 
 export type NotificationType =
   | "FRIEND_REQUEST"
+  | "FRIEND_REQUEST_ACCEPTED"
   | "POST_LIKE"
   | "POST_COMMENT"
   | "NEW_MESSAGE";
 
 export interface Notification {
-  id: string;
+  id: number;
+  userId: number;
   type: NotificationType;
+  title: string;
   message: string;
+  isRead: boolean;
   createdAt: string;
-  sender: User;
+  sender?: User;
 }
 
 export interface NotificationResponse {
   notifications: Notification[];
-  currentPage: number;
-  hasNext: boolean;
-  length: number;
   totalElements: number;
   totalPages: number;
+  currentPage: number;
+  hasNext: boolean;
 }

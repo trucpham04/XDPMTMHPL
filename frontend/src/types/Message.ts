@@ -7,6 +7,7 @@ export interface ChatMessage {
   conversationId: number;
   senderId: number;
   senderUsername?: string; // fetched from user service
+  senderFullName?: string; // added field for sender's full name
   messageType: MessageType;
   content: string;
   mediaUrl?: string;
@@ -23,7 +24,7 @@ export interface ConversationCreateRequest {
 export interface Conversation {
   id: number;
   name: string;
-  isGroupChat: boolean;
+  groupChat: boolean;
   createdAt: string; // ISO string format
   participantIds: number[];
   otherUser: User; // thông tin người dùng khác trong nhóm chat

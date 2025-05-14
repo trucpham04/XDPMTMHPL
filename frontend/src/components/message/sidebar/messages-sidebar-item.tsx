@@ -9,7 +9,7 @@ function MessagesSidebarItem({
   conversation,
   ...props
 }: React.ComponentProps<"div"> & { conversation: Conversation }) {
-  const isGroupChat = conversation.isGroupChat;
+  const isGroupChat = conversation.groupChat;
 
   return (
     <>
@@ -30,9 +30,6 @@ function MessagesSidebarItem({
                 <div className="bg-muted flex h-full w-full items-center justify-center">
                   <Users className="text-muted-foreground size-8" />
                 </div>
-                <AvatarFallback>
-                  {conversation.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
               </>
             ) : (
               <>

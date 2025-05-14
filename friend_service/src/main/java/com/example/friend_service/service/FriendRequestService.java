@@ -1,6 +1,5 @@
 package com.example.friend_service.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
@@ -37,12 +36,11 @@ public class FriendRequestService {
     @Autowired
     private FriendService friendService;
 
-
-    @Autowired
-    private FriendService friendService;
-
     @Autowired
     private UserClient userClient;
+
+    @Autowired
+    private NotificationService notificationService;
 
     private String getAuthToken() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -144,6 +142,7 @@ public class FriendRequestService {
             Integer senderId = getCurrentUserId();
             System.out.println(senderId);
             UserDTO receiver = userClient.getUserById(receiverId);
+            UserDTO sender = userClient.getUserById(senderId);
             if (receiver == null) {
                 throw new IllegalArgumentException("User with ID " + receiverId + " does not exist.");
             }
@@ -155,8 +154,14 @@ public class FriendRequestService {
             FriendRequest friendRequest = new FriendRequest();
             friendRequest.setSenderId(senderId);
             friendRequest.setReceiverId(receiverId);
-            friendRequest.setTime(LocalDateTime.now());
+            friendRequest.setTime(LocalDateTime.now().toString());
             friendRequestRepository.save(friendRequest);
+
+            // Send notification to receiver
+            notificationService.sendFriendRequestNotification(
+                    senderId.toString(),
+                    sender.getUsername(),
+                    receiverId.toString());
 
             return friendRequest;
         } catch (DataAccessException e) {
@@ -189,6 +194,24 @@ public class FriendRequestService {
 
         if (friendRequest != null) {
             friendRequestRepository.delete(friendRequest);
+        }
+    }
+
+    @Transactional(rollbackOn = Exception.class)
+    public void cancelRequest(Integer receiverId) {
+        try {
+            Integer senderId = getCurrentUserId();
+            FriendRequest friendRequest = friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId);
+
+            if (friendRequest == null) {
+                throw new IllegalArgumentException("Friend request not found");
+            }
+
+            friendRequestRepository.delete(friendRequest);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
         }
     }
 

@@ -24,7 +24,7 @@ export const friendService = {
     return apiClient.get(`${API_BASE}`);
   },
   removeFriend: async (id: number) => {
-    return apiClient.delete(`${API_BASE}/${id}`);
+    return apiClient.delete(`${API_BASE}/remove/${id}`);
   },
 };
 

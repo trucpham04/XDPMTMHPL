@@ -1,9 +1,11 @@
 package com.xdpmtmhpl.post_service.service;
 
+import com.xdpmtmhpl.post_service.Client.NotificationClient;
 import com.xdpmtmhpl.post_service.model.Like;
 import com.xdpmtmhpl.post_service.repository.LikeRepository;
 import com.xdpmtmhpl.post_service.request.LikeRequest;
 import com.xdpmtmhpl.post_service.response.LikeResponse;
+import com.xdpmtmhpl.post_service.enums.NotificationType;
 
 import jakarta.transaction.Transactional;
 
@@ -19,12 +21,30 @@ public class LikeService {
     @Autowired
     private LikeRepository likeRepository;
 
+    @Autowired
+    private NotificationClient notificationClient;
+
+    @Autowired
+    private PostService postService;
+
     // Thích bài viết
     public LikeResponse likePost(LikeRequest likeRequest, Integer postId) {
         Like like = new Like();
         like.setPostId(postId);
         like.setUserId(likeRequest.getUserId());
         like = likeRepository.save(like);
+
+        var post = postService.getPostById(postId);
+        if (post != null && !post.getUserId().equals(likeRequest.getUserId())) {
+            notificationClient.sendNotification(
+                    post.getUserId().intValue(),
+                    NotificationType.LIKE,
+                    postId,
+                    "Bài viết được thích",
+                    "Ai đó đã thích bài viết của bạn",
+                    likeRequest.getUserId().toString());
+        }
+
         return toResponse(like);
     }
 

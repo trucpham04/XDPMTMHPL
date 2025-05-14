@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 import Message from "./message";
 import { ChatMessage } from "@/types/Message";
+import { useEffect, useRef } from "react";
 
-// Remove WebSocket-related props and just accept messages directly
 interface MessagesSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: ChatMessage[];
-  currentUserId?: number;
+  currentUserId: number;
 }
 
 function getMessageClassName(
@@ -14,7 +14,6 @@ function getMessageClassName(
   nextMessage: ChatMessage,
   currentUserId: number,
 ) {
-  // Existing getMessageClassName function remains the same
   const isCurrentUser = message.senderId === currentUserId;
   const isFirstOfGroup =
     !prevMessage || prevMessage.senderId !== message.senderId;
@@ -23,11 +22,11 @@ function getMessageClassName(
 
   return cn(
     isFirstOfGroup && isLastOfGroup
-      ? "my-2" // Single message
+      ? "my-2"
       : isFirstOfGroup
-        ? "mt-2" // First in group
+        ? "mt-2"
         : isLastOfGroup
-          ? "mb-2" // Last in group
+          ? "mb-2"
           : "",
 
     isFirstOfGroup && isCurrentUser && "rounded-br-sm",
@@ -49,6 +48,18 @@ function MessagesSection({
   currentUserId,
   ...props
 }: MessagesSectionProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  if (!currentUserId) return null;
+
   return (
     <div className={cn("flex w-full flex-col gap-1 p-4", className)} {...props}>
       {messages.map((message, index) => {
@@ -62,14 +73,28 @@ function MessagesSection({
         );
 
         return (
-          <Message
-            key={message.id || `${message.senderId}-${index}`} // Use unique id if available
-            message={message}
-            isCurrentUser={message.senderId === currentUserId}
-            className={messageClassName}
-          />
+          <div key={message.id || `${message.senderId}-${index}`}>
+            {(!prevMessage || prevMessage.senderId !== message.senderId) && (
+              <div
+                className={cn(
+                  "mb-1 text-sm text-gray-500",
+                  message.senderId === currentUserId
+                    ? "text-right"
+                    : "text-left",
+                )}
+              >
+                {message.senderFullName}
+              </div>
+            )}
+            <Message
+              message={message}
+              isCurrentUser={message.senderId === currentUserId}
+              className={messageClassName}
+            />
+          </div>
         );
       })}
+      <div ref={messagesEndRef} />
     </div>
   );
 }

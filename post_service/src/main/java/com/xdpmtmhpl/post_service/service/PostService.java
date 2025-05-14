@@ -1,7 +1,6 @@
 package com.xdpmtmhpl.post_service.service;
 
 import com.xdpmtmhpl.post_service.model.Post;
-import com.xdpmtmhpl.post_service.model.MultiFile;
 import com.xdpmtmhpl.post_service.response.MediaResponse;
 import com.xdpmtmhpl.post_service.repository.CommentRepository;
 import com.xdpmtmhpl.post_service.repository.LikeRepository;

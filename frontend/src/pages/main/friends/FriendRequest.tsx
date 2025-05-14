@@ -2,19 +2,10 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
-import { User } from "@/types/User";
 import UserAvatar from "@/components/app/userAvatar";
 import { useFriend } from "@/hooks/useFriend";
 
-import { Friend, FriendRequest } from "@/types/Friend";
-
-// type FriendRequest = {
-//   id: number;
-//   name: string;
-//   mutualFriends: number;
-//   avatar: string;
-//   time: string;
-// };
+import axios from "axios";
 
 axios.defaults.withCredentials = true;
 const FriendRequests: React.FC = () => {

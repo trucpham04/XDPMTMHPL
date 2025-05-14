@@ -5,20 +5,47 @@ const serviceName = "notification-service";
 
 class NotificationService {
   /**
-   * Lấy danh sách thông báo
+   * Get list of notifications for a user
    */
-  async getNotifications(): Promise<NotificationResponse> {
+  async getNotifications(userId: string): Promise<NotificationResponse> {
     return apiClient.get<NotificationResponse>(
-      `${serviceName}/api/notifications?userId=1`,
+      `${serviceName}/api/notifications?userId=${userId}`,
     );
   }
 
   /**
-   * Xóa một thông báo
+   * Delete a notification
    */
   async deleteNotification(notificationId: string): Promise<void> {
     return apiClient.delete<void>(
       `${serviceName}/api/notifications/${notificationId}`,
+    );
+  }
+
+  /**
+   * Mark a notification as read
+   */
+  async markAsRead(notificationId: string): Promise<void> {
+    return apiClient.post<void>(
+      `${serviceName}/api/notifications/${notificationId}/read`,
+    );
+  }
+
+  /**
+   * Get unread notification count
+   */
+  async getUnreadCount(userId: string): Promise<number> {
+    return apiClient.get<number>(
+      `${serviceName}/api/notifications/unread/count?userId=${userId}`,
+    );
+  }
+
+  /**
+   * Mark all notifications as read
+   */
+  async markAllAsRead(userId: string): Promise<void> {
+    return apiClient.post<void>(
+      `${serviceName}/api/notifications/read/all?userId=${userId}`,
     );
   }
 }

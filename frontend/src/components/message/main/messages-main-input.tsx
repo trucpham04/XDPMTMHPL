@@ -1,46 +1,20 @@
-import { useState, FormEvent, useEffect, useRef } from "react";
+import { useState, FormEvent } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { SendIcon } from "lucide-react";
 
 interface MessageInputProps extends React.HTMLAttributes<HTMLFormElement> {
   onSendMessage: (content: string) => void;
-  onTyping?: () => void;
   disabled?: boolean;
 }
 
 function MessageInput({
   onSendMessage,
-  onTyping,
   disabled = false,
   className,
   ...props
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Handle typing notification with debounce
-  useEffect(() => {
-    if (message && onTyping) {
-      // Clear previous timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-
-      // Send typing notification
-      onTyping();
-
-      // Set cooldown period before sending another typing notification
-      typingTimeoutRef.current = setTimeout(() => {
-        typingTimeoutRef.current = null;
-      }, 3000); // 3 seconds cooldown
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [message, onTyping]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -64,13 +38,14 @@ function MessageInput({
         disabled={disabled}
         className="flex-1 rounded-md border p-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
       />
-      <button
+      <Button
         type="submit"
         disabled={!message.trim() || disabled}
-        className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300"
+        className="rounded-md bg-blue-600 px-4 py-5 text-white hover:bg-blue-700 disabled:bg-blue-300"
       >
+        <SendIcon className="h-4 w-4" />
         Send
-      </button>
+      </Button>
     </form>
   );
 }
