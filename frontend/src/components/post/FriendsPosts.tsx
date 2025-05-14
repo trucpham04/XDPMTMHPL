@@ -27,7 +27,6 @@ export const FriendsPosts: React.FC<FriendsPostsProps> = ({
     const fetchFeed = async () => {
       setLoading(true);
       try {
-        // Fetch posts and shares for each friend
         const postsArrays = await Promise.all(
           friends.map((f) => postService.getPostsByUserId(f.id)),
         );
@@ -35,11 +34,9 @@ export const FriendsPosts: React.FC<FriendsPostsProps> = ({
           friends.map((f) => postService.getSharesByUserId(f.id)),
         );
 
-        // Flatten
         const posts: Post[] = postsArrays.flat();
         const shares: SharedPost[] = sharesArrays.flat();
 
-        // Build list with timestamps
         const timedItems: { item: FeedItem; timestamp: number }[] = [];
 
         posts.forEach((post) => {
@@ -56,14 +53,11 @@ export const FriendsPosts: React.FC<FriendsPostsProps> = ({
           });
         });
 
-        // Sort by timestamp desc
         timedItems.sort((a, b) => b.timestamp - a.timestamp);
 
-        // Extract sorted FeedItems
         const sortedFeed = timedItems.map((t) => t.item);
 
         setFeed(sortedFeed);
-        console.log("Sorted feed:", sortedFeed);
       } catch (error) {
         console.error("Error fetching feed:", error);
       } finally {

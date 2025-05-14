@@ -16,14 +16,26 @@ function MessagesContainer({
 }: React.ComponentProps<"div">) {
   const { id } = useParams<{ id: string }>();
   const { getUserConversations, conversations } = useMessage();
-
   const { user } = useAuthContext();
 
   useEffect(() => {
     if (!user) return;
-    getUserConversations(user?.id);
-    console.log("Conversations: ", conversations);
+    getUserConversations();
   }, [getUserConversations, user]);
+
+  if (!user) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <p className="text-muted-foreground mt-10 text-lg">
+          Vui lòng đăng nhập để xem tin nhắn
+        </p>
+      </div>
+    );
+  }
+
+  const currentConversation = conversations.find(
+    (conversation) => conversation.id === Number(id),
+  );
 
   return (
     <>
@@ -43,8 +55,21 @@ function MessagesContainer({
           }
           defaultOpen={false}
         >
-          <MessagesMain currentUserId={user?.id} conversationId={id} />
-          <MessagesInfo className="mt-14" />
+          {id ? (
+            <>
+              <MessagesMain currentUserId={user.id} conversationId={id} />
+              <MessagesInfo
+                className="mt-14"
+                conversation={currentConversation}
+              />
+            </>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <p className="text-muted-foreground text-lg">
+                Chọn một cuộc trò chuyện để bắt đầu
+              </p>
+            </div>
+          )}
         </SidebarProvider>
       </div>
     </>

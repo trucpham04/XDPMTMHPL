@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 import MessageSidebarItem from "./messages-sidebar-item";
 import MessageSidebarHeader from "./messages-sidebar-header";
-import { Conversation } from "../../types";
+import { Conversation } from "@/types/Message";
 
 function MessagesSidebar({
   className,

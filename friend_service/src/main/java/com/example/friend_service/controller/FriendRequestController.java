@@ -84,7 +84,7 @@ public class FriendRequestController {
     @DeleteMapping("/cancel/{receiverId}")
     public ResponseEntity<Void> cancelRequest(@PathVariable("receiverId") Integer receiverId) {
         try {
-            friendRequestService.removeRequest(receiverId);
+            friendRequestService.cancelRequest(receiverId);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

@@ -5,23 +5,56 @@ import {
   Conversation,
   ConversationCreateRequest,
 } from "../types/Message";
+import { User } from "../types/User";
 
 export const useMessage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [groupMembers, setGroupMembers] = useState<User[]>([]);
 
   // Get conversations by user
-  const getUserConversations = useCallback(async (userId: number) => {
+  const getUserConversations = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await chatService.getUserConversations(userId);
+      const res = await chatService.getUserConversations();
       setConversations(res);
       return res;
     } catch (err: any) {
       setError(err.message || "Failed to get conversations");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Get a single conversation
+  const getConversation = useCallback(async (conversationId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await chatService.getConversation(conversationId);
+      return res;
+    } catch (err: any) {
+      setError(err.message || "Failed to get conversation");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Get group members
+  const getGroupMembers = useCallback(async (conversationId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await chatService.getGroupMembers(conversationId);
+      setGroupMembers(res);
+      return res;
+    } catch (err: any) {
+      setError(err.message || "Failed to get group members");
       return [];
     } finally {
       setLoading(false);
@@ -107,11 +140,14 @@ export const useMessage = () => {
     error,
     conversations,
     messages,
+    groupMembers,
     getUserConversations,
     createConversation,
     getMessages,
     updateMessageStatus,
     isUserInConversation,
+    getConversation,
+    getGroupMembers,
   };
 };
 

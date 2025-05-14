@@ -1,38 +1,25 @@
+import React from "react";
+import { Notification, NotificationType } from "@/types/Notification";
 import { formatDistanceToNow } from "date-fns";
-import { Notification, NotificationType } from "../../types/Notification";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  MessageSquare,
-  ThumbsUp,
-  MessageCircle,
-  UserPlus,
-  Check,
-  X,
-  MoreHorizontal,
-} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { MessageSquare, ThumbsUp, UserPlus, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import UserAvatar from "../app/userAvatar";
 
 interface NotificationCardProps {
   notification: Notification;
-  onDelete: (id: string) => void;
-  onAcceptFriendRequest?: (id: string) => void;
-  onDeclineFriendRequest?: (id: string) => void;
+  onDelete: () => void;
+  onMarkAsRead: () => void;
 }
 
 // Icon mapping for easier scalability
 const NOTIFICATION_ICONS: Record<NotificationType, React.ReactNode> = {
   NEW_MESSAGE: <MessageSquare className="size-5 text-blue-500" />,
   POST_LIKE: <ThumbsUp className="size-5 text-pink-500" />,
-  POST_COMMENT: <MessageCircle className="size-5 text-green-500" />,
+  POST_COMMENT: <MessageSquare className="size-5 text-green-500" />,
   FRIEND_REQUEST: <UserPlus className="size-5 text-violet-500" />,
+  FRIEND_REQUEST_ACCEPTED: <Check className="size-5 text-green-500" />,
 };
 
 const NotificationActions = ({
@@ -42,9 +29,9 @@ const NotificationActions = ({
   onDecline,
 }: {
   type: NotificationType;
-  notificationId: string;
-  onAccept?: (id: string) => void;
-  onDecline?: (id: string) => void;
+  notificationId: number;
+  onAccept?: (id: number) => void;
+  onDecline?: (id: number) => void;
 }) => {
   if (type !== "FRIEND_REQUEST") return null;
 
@@ -80,23 +67,21 @@ const NotificationActions = ({
 export function NotificationCard({
   notification,
   onDelete,
+  onMarkAsRead,
 }: NotificationCardProps) {
-  const { id, sender, type, message, createdAt } = notification;
+  const { id, type, message, createdAt, isRead, sender } = notification;
 
   return (
     <Card
       className={cn(
         "relative mb-2 rounded-lg p-4 shadow-sm transition-colors hover:bg-gray-50",
+        !isRead && "bg-blue-50",
       )}
+      onClick={onMarkAsRead}
     >
       <div className="flex items-start gap-3">
         {/* Avatar */}
-        <Avatar className="size-12">
-          <AvatarImage src={sender.profilePicture} alt={sender.firstName} />
-          <AvatarFallback>
-            {sender.firstName.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar className="size-14" user={sender || null} />
 
         {/* Notification Content */}
         <div className="flex-1">
@@ -104,7 +89,7 @@ export function NotificationCard({
             {/* Notification Icon */}
             {NOTIFICATION_ICONS[type]}
             <span className="font-medium">
-              {sender.firstName} {sender.lastName}
+              {sender?.firstName} {sender?.lastName}
             </span>
 
             {/* Message */}
@@ -116,32 +101,25 @@ export function NotificationCard({
 
           {/* Timestamp */}
           <div className="mt-1 text-xs text-gray-500">
-            {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+            {formatDistanceToNow(new Date(createdAt), {
+              addSuffix: true,
+              includeSeconds: true,
+            })}
           </div>
         </div>
 
-        {/* Dropdown Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Options</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => onDelete(id)}
-              className="text-red-500"
-            >
-              Delete notification
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Delete Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
     </Card>
   );

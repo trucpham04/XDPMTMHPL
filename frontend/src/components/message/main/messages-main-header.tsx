@@ -2,19 +2,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Info } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Conversation } from "@/types/Message";
+import { Info, Users } from "lucide-react";
 
-// Define extended props interface to include WebSocket properties
 interface MessagesMainHeaderProps extends React.ComponentProps<"div"> {
   isConnected?: boolean;
-  conversationId?: string | number;
+  conversation?: Conversation;
 }
 
 function MessagesMainHeader({
   className,
   isConnected,
-  conversationId,
+  conversation,
   ...props
 }: MessagesMainHeaderProps) {
   const { toggleSidebar } = useSidebar();
@@ -27,15 +26,32 @@ function MessagesMainHeader({
       >
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage />
-            <AvatarFallback>TP</AvatarFallback>
+            {conversation?.groupChat ? (
+              <Users className="text-muted-foreground size-8" />
+            ) : (
+              <>
+                <AvatarImage
+                  src={conversation?.otherUser?.profilePictureUrl || undefined}
+                />
+                <AvatarFallback>
+                  {conversation?.otherUser.firstName[0]}
+                  {conversation?.otherUser.lastName[0]}
+                </AvatarFallback>
+              </>
+            )}
           </Avatar>
 
           <div className="flex items-center gap-2">
-            <Link to={"/messages"}>Name</Link>
+            {conversation?.groupChat ? (
+              <div className="text-sm font-medium">{conversation?.name}</div>
+            ) : (
+              <div className="text-sm font-medium">
+                {conversation?.otherUser.firstName}{" "}
+                {conversation?.otherUser.lastName}
+              </div>
+            )}
 
-            {/* Display connection status if conversationId exists */}
-            {conversationId && (
+            {conversation && (
               <div
                 className={`rounded-full px-2 py-0.5 text-xs ${isConnected ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
               >
@@ -45,14 +61,14 @@ function MessagesMainHeader({
           </div>
         </div>
 
-        {/* <Button
+        <Button
           className="cursor-pointer rounded-full"
           variant={"secondary"}
           onClick={toggleSidebar}
           size={"icon"}
         >
           <Info className="size-5!" />
-        </Button> */}
+        </Button>
       </div>
     </>
   );

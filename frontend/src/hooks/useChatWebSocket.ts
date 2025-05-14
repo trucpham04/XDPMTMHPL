@@ -50,6 +50,7 @@ export default function useChatWebSocket() {
             status: messageData.status || "SENT",
             content: messageData.content,
             timestamp: messageData.timestamp || new Date().toISOString(),
+            senderFullName: messageData.senderFullName,
           };
 
           if (formattedMessage.senderId != userId) {
@@ -94,12 +95,10 @@ export default function useChatWebSocket() {
     };
   }, [url, userId]);
 
-  // Function to join a conversation
   const joinConversation = useCallback(
     (conversationId: string | number) => {
       if (!conversationId) return;
 
-      // If we're already in a conversation, leave it first
       if (
         currentConversationIdRef.current &&
         currentConversationIdRef.current !== conversationId &&
@@ -110,10 +109,8 @@ export default function useChatWebSocket() {
 
       currentConversationIdRef.current = conversationId;
 
-      // Clear previous messages when joining a new conversation
       setMessages([]);
 
-      // If connected, send join message to server
       if (socketRef.current?.readyState === WebSocket.OPEN) {
         socketRef.current.send(
           JSON.stringify({
@@ -127,7 +124,6 @@ export default function useChatWebSocket() {
     [isConnected],
   );
 
-  // Function to leave the current conversation
   const leaveCurrentConversation = useCallback(() => {
     if (!currentConversationIdRef.current) return;
 
@@ -144,7 +140,6 @@ export default function useChatWebSocket() {
     currentConversationIdRef.current = null;
   }, []);
 
-  // Function to send message
   const sendMessage = useCallback((content: string) => {
     if (!currentConversationIdRef.current) {
       console.error("No active conversation");
@@ -158,27 +153,12 @@ export default function useChatWebSocket() {
           conversationId: Number(currentConversationIdRef.current),
           data: {
             content: content,
-            messageType: "TEXT", // Default to TEXT message type
+            messageType: "TEXT",
           },
         }),
       );
     } else {
       console.error("WebSocket is not connected");
-    }
-  }, []);
-
-  // Function to send typing notification
-  const sendTypingNotification = useCallback(() => {
-    if (!currentConversationIdRef.current) return;
-
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(
-        JSON.stringify({
-          action: "TYPING",
-          conversationId: Number(currentConversationIdRef.current),
-          data: {},
-        }),
-      );
     }
   }, []);
 
@@ -188,7 +168,6 @@ export default function useChatWebSocket() {
     sendMessage,
     joinConversation,
     leaveConversation: leaveCurrentConversation,
-    sendTypingNotification,
     currentConversationId: currentConversationIdRef.current,
   };
 }

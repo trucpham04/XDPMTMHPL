@@ -79,4 +79,14 @@ public class FriendController {
         List<UserDTO> friends = friendService.getUserFriends(userId);
         return ResponseEntity.ok(friends);
     }
+
+    @GetMapping("/suggest")
+    public ResponseEntity<List<UserDTO>> getFriendSuggestions() {
+        try {
+            List<UserDTO> suggestions = friendService.getFriendSuggestions();
+            return ResponseEntity.ok(suggestions);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

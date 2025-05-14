@@ -1,12 +1,14 @@
 package com.xdpmtmhpl.message_service.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.xdpmtmhpl.message_service.dto.ChatMessageDTO;
 import com.xdpmtmhpl.message_service.dto.ConversationCreateRequestDTO;
 import com.xdpmtmhpl.message_service.dto.ConversationDTO;
+import com.xdpmtmhpl.message_service.dto.UserDTO;
 import com.xdpmtmhpl.message_service.models.Conversation;
 import com.xdpmtmhpl.message_service.models.Message;
 import com.xdpmtmhpl.message_service.repository.MessageRepository;
@@ -71,6 +73,26 @@ public class ChatRestController {
             @PathVariable Long userId) {
         boolean isInConversation = chatService.isUserInConversation(userId, conversationId);
         return ResponseEntity.ok(isInConversation);
+    }
+
+    @GetMapping("/conversations/{conversationId}")
+    public ResponseEntity<ConversationDTO> getConversation(@PathVariable Long conversationId) {
+        try {
+            ConversationDTO conversation = chatService.getConversation(conversationId);
+            return ResponseEntity.ok(conversation);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping("/conversations/{conversationId}/members")
+    public ResponseEntity<List<UserDTO>> getGroupMembers(@PathVariable Long conversationId) {
+        try {
+            List<UserDTO> members = chatService.getGroupMembers(conversationId);
+            return ResponseEntity.ok(members);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     private ConversationDTO convertToDTO(Conversation conversation) {

@@ -13,7 +13,7 @@ function MessagesSidebarHeader({
   ...props
 }: React.ComponentProps<"div">) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const { createConversation } = useMessage();
+  const { createConversation, getUserConversations } = useMessage();
   const navigate = useNavigate();
   const { user } = useAuthContext();
 
@@ -31,6 +31,7 @@ function MessagesSidebarHeader({
 
     const newConversation = await createConversation(conversationData);
     if (newConversation) {
+      await getUserConversations(user.id);
       navigate(`/messages/${newConversation.id}`);
     }
   };

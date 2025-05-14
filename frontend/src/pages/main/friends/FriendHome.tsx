@@ -61,7 +61,11 @@ const FriendList: React.FC = () => {
               className="cursor-pointer overflow-hidden rounded-lg bg-white text-white shadow-md"
               onClick={() => navigate("/profile/" + friend.id)}
             >
-              <UserAvatar user={friend} className="h-40 w-full object-cover" />
+              <img
+                src={friend.profilePictureUrl || DEFAULT_AVATAR}
+                alt={friend.firstName}
+                className="h-40 w-full object-cover"
+              />
               <div className="m-2">
                 <p className="font-medium text-black">
                   {friend.firstName} {friend.lastName}
