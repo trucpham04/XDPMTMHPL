@@ -6,6 +6,17 @@ import { User } from "@/types/User";
 import UserAvatar from "@/components/app/userAvatar";
 import { useFriend } from "@/hooks/useFriend";
 
+import { Friend, FriendRequest } from "@/types/Friend";
+
+// type FriendRequest = {
+//   id: number;
+//   name: string;
+//   mutualFriends: number;
+//   avatar: string;
+//   time: string;
+// };
+
+axios.defaults.withCredentials = true;
 const FriendRequests: React.FC = () => {
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
   const [showSentRequests, setShowSentRequests] = useState(false);

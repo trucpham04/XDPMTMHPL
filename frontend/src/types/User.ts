@@ -8,10 +8,10 @@ export interface User {
   fullName?: string;
   dateOfBirth?: string | null;
   gender?: string | null;
-  // createdAt?: string;
+  createdAt?: string;
   requestTime?: string;
   mutualFriends?: number;
-  createdAt?: number[];
+  // createdAt?: number[];
   profilePicture?: string;
   profilePictureUrl?: string | null;
   bio?: string | null;

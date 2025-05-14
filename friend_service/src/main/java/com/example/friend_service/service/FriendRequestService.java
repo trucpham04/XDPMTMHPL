@@ -37,6 +37,10 @@ public class FriendRequestService {
     @Autowired
     private FriendService friendService;
 
+
+    @Autowired
+    private FriendService friendService;
+
     @Autowired
     private UserClient userClient;
 
@@ -151,7 +155,7 @@ public class FriendRequestService {
             FriendRequest friendRequest = new FriendRequest();
             friendRequest.setSenderId(senderId);
             friendRequest.setReceiverId(receiverId);
-            friendRequest.setTime(LocalDateTime.now().toString());
+            friendRequest.setTime(LocalDateTime.now());
             friendRequestRepository.save(friendRequest);
 
             return friendRequest;
