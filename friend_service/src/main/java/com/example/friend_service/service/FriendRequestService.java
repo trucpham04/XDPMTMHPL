@@ -1,10 +1,13 @@
 package com.example.friend_service.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpEntity;
@@ -21,6 +24,7 @@ import com.example.friend_service.Client.UserClient;
 import com.example.friend_service.DTO.UserDTO;
 import com.example.friend_service.DTO.UserDTO;
 import com.example.friend_service.Entity.FriendRequest;
+import com.example.friend_service.Repository.FriendRepository;
 import com.example.friend_service.Repository.FriendRequestRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,8 +32,14 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class FriendRequestService {
+
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(FriendRequestService.class);
+    
     @Autowired
     private FriendRequestRepository friendRequestRepository;
+
+    @Autowired
+    private FriendRepository friendRepository;
 
     @Autowired
     private FriendService friendService;
@@ -71,7 +81,26 @@ public class FriendRequestService {
         }
     }
 
+    public int calculateMutualFriends(Integer currentUserId, Integer targetUserId) {
+        if (currentUserId == null || targetUserId == null) return 0;
+        List<Integer> currentUserFriends = friendRepository.findFriendsByUserId(currentUserId)
+                .stream()
+                .map(friendship -> 
+                    friendship.getUser1Id().equals(currentUserId) ? friendship.getUser2Id() : friendship.getUser1Id())
+                .collect(Collectors.toList());
+        List<Integer> targetUserFriends = friendRepository.findFriendsByUserId(targetUserId)
+                .stream()
+                .map(friendship -> 
+                    friendship.getUser1Id().equals(targetUserId) ? friendship.getUser2Id() : friendship.getUser1Id())
+                .collect(Collectors.toList());
+        return (int) currentUserFriends.stream()
+                .filter(targetUserFriends::contains)
+                .count();
+    }
+
+
     public List<UserDTO> getAllFriendRequests() {
+        logger.info("Hellooooo");
         Integer receiverId = getCurrentUserId();
         List<FriendRequest> friends = friendRequestRepository.findByReceiverId(receiverId);
         Function<FriendRequest, UserDTO> toUserDTO = friendRequest -> {
@@ -79,6 +108,10 @@ public class FriendRequestService {
             // friendRequest.getSenderId();
             // return restTemplate.getForObject(userServiceUrl, UserDTO.class);
             UserDTO userDTO = userClient.getUserById(friendRequest.getSenderId());
+            System.out.println("Thời gian gửi request 1: "+ friendRequest.getTime());
+            userDTO.setRequestTime(friendRequest.getTime());
+            userDTO.setMutualFriends(calculateMutualFriends(receiverId, friendRequest.getSenderId()));
+            System.out.println("Thời gian gửi request: "+ userDTO.getRequestTime());
             return userDTO;
         };
         return friends.stream()
@@ -140,7 +173,7 @@ public class FriendRequestService {
             FriendRequest friendRequest = new FriendRequest();
             friendRequest.setSenderId(senderId);
             friendRequest.setReceiverId(receiverId);
-            friendRequest.setTime(LocalDate.now());
+            friendRequest.setTime(LocalDateTime.now());
             friendRequestRepository.save(friendRequest);
 
             return friendRequest;

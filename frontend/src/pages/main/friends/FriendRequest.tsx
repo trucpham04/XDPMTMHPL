@@ -5,14 +5,15 @@ import FriendProfile from "./FriendProfile";
 import axios from "axios";
 import { User } from "@/types/User";
 import UserAvatar from "@/components/app/userAvatar";
+import { Friend, FriendRequest } from "@/types/Friend";
 
-type FriendRequest = {
-  id: number;
-  name: string;
-  mutualFriends: number;
-  avatar: string;
-  time: string;
-};
+// type FriendRequest = {
+//   id: number;
+//   name: string;
+//   mutualFriends: number;
+//   avatar: string;
+//   time: string;
+// };
 
 axios.defaults.withCredentials = true;
 const FriendRequests: React.FC = () => {
@@ -41,22 +42,21 @@ const FriendRequests: React.FC = () => {
     axios
       .get("http://127.0.0.1:8090/friend-service/api/friends/requests")
       .then((response) => {
-        // const fetchedRequests = response.data.map((req: any) => ({
-        //   id: req.id,
-        //   name: req.firstName + " " + req.lastName,
-        //   mutualFriends: req.mutualFriends,
-        //   avatar: req.avatar,
-        //   time: calculateTimeSince(req.time),
-        // }));
+        const fetchedRequests = response.data.map((req: User) => {
+          console.log("req.requestTime:", req);
+          return {
+            ...req,
+            time: req.requestTime ? calculateTimeSince(req.requestTime) : "Không rõ",
+          };
+        });
 
-        setRequests(response.data);
+        setRequests(fetchedRequests);
+        console.log(fetchedRequests);
         setError(null);
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách lời mời kết bạn:", error);
-        setError(
-          "Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.",
-        );
+        setError("Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.");
       });
   };
 
@@ -217,10 +217,10 @@ const FriendRequests: React.FC = () => {
                   <UserAvatar className="mr-4 size-12" user={request} />
                   <div className="flex-1">
                     <p className="font-semibold">{`${request.firstName} ${request.lastName}`}</p>
-                    {/* <p className="flex justify-between text-sm text-gray-500">
-                      <span>{request.mutualFriends} bạn chung</span>
-                      <span>{request.time}</span>
-                    </p> */}
+                    <p className="flex justify-between text-sm text-gray-500">
+                      {/* <span>{request.mutualFriends} bạn chung</span> */}
+                      <span>{request.requestTime}</span>
+                    </p>
                   </div>
                 </div>
                 <div className="mt-1 ml-auto flex-1 space-x-2">

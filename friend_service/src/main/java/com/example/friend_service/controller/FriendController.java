@@ -72,4 +72,28 @@ public class FriendController {
         Map<String, Boolean> status = friendService.getFriendStatus(otherUserId);
         return ResponseEntity.ok(status);
     }
+
+    // @GetMapping("/status/{userId}")
+    // public ResponseEntity<Map<String, Object>> getFriendStatus(@PathVariable Integer userId) {
+    //     try {
+    //         Map<String, Object> status = friendService.getFriendStatus(userId);
+    //         return ResponseEntity.ok(status);
+    //     } catch (Exception e) {
+    //         Map<String, Object> errorResponse = new HashMap<>();
+    //         errorResponse.put("error", e.getMessage());
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    //     }
+    // }
+    
+    // @GetMapping("/mutual/{userId}")
+    // public ResponseEntity<?> getMutualFriends(@PathVariable Integer userId) {
+    //     try {
+    //         List<UserDTO> mutualFriends = friendService.getMutualFriends(userId);
+    //         return ResponseEntity.ok(mutualFriends);
+    //     } catch (Exception e) {
+    //         Map<String, String> errorResponse = new HashMap<>();
+    //         errorResponse.put("error", e.getMessage());
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    //     }
+    // }
 }
