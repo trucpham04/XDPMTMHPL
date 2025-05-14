@@ -59,10 +59,9 @@ public class FriendRequestController {
 
     @PostMapping("/sent/{receiverId}")
     public ResponseEntity<FriendRequest> sendRequest(@PathVariable("receiverId") Integer receiverId) {
-        System.out.println("gửi lời mời kết bạn");
         try {
-            FriendRequest FriendRequest = friendRequestService.SendRequest(receiverId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(FriendRequest);
+            friendRequestService.SendRequest(receiverId);
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception e) {
@@ -74,6 +73,18 @@ public class FriendRequestController {
     public ResponseEntity<Void> removeFriend(@PathVariable("senderId") Integer senderId) {
         try {
             friendRequestService.removeRequest(senderId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/cancel/{receiverId}")
+    public ResponseEntity<Void> cancelRequest(@PathVariable("receiverId") Integer receiverId) {
+        try {
+            friendRequestService.cancelRequest(receiverId);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

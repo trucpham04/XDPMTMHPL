@@ -1,8 +1,10 @@
 package com.xdpmtmhpl.post_service.service;
 
+import com.xdpmtmhpl.post_service.Client.NotificationClient;
 import com.xdpmtmhpl.post_service.model.SharedPost;
 import com.xdpmtmhpl.post_service.repository.SharedPostRepository;
 import com.xdpmtmhpl.post_service.request.ShareRequest;
+import com.xdpmtmhpl.post_service.enums.NotificationType;
 
 import jakarta.transaction.Transactional;
 
@@ -18,6 +20,12 @@ public class ShareService {
     @Autowired
     private SharedPostRepository sharedPostRepository;
 
+    @Autowired
+    private NotificationClient notificationClient;
+
+    @Autowired
+    private PostService postService;
+
     public SharedPost sharePost(Integer postId, ShareRequest request) {
         SharedPost share = new SharedPost();
         share.setOriginalPostId(postId);
@@ -27,6 +35,19 @@ public class ShareService {
         share.setCreatedAt(LocalDateTime.now());
 
         SharedPost saved = sharedPostRepository.save(share);
+
+        // Send notification to post owner if sharer is not the post owner
+        var post = postService.getPostById(postId);
+        if (post != null && !post.getUserId().equals(request.getUserId())) {
+            notificationClient.sendNotification(
+                    post.getUserId().intValue(),
+                    NotificationType.SHARE,
+                    postId,
+                    "Bài viết được chia sẻ",
+                    "Ai đó đã chia sẻ bài viết của bạn",
+                    request.getUserId().toString());
+        }
+
         return saved;
     }
 

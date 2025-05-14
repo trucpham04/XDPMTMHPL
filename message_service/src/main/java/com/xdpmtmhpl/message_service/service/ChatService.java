@@ -172,7 +172,61 @@ public class ChatService {
         return participantRepository.findByConversationIdAndUserId(conversationId, userId).isPresent();
     }
 
-    // === MESSAGE MANAGEMENT METHODS ===
+    public ConversationDTO getConversation(Long conversationId) {
+        Long userId = getCurrentUserId();
+        if (!isUserInConversation(userId, conversationId)) {
+            throw new RuntimeException("User is not a participant in this conversation");
+        }
+
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+
+        ConversationDTO dto = new ConversationDTO();
+        dto.setId(conversation.getId());
+        dto.setName(conversation.getName());
+        dto.setGroupChat(conversation.isGroupChat());
+        dto.setCreatedAt(conversation.getCreatedAt());
+
+        List<Long> participantIds = conversation.getParticipants().stream()
+                .map(participant -> participant.getUserId())
+                .collect(Collectors.toList());
+        dto.setParticipantIds(participantIds);
+
+        if (!conversation.isGroupChat()) {
+            Long otherUserId = participantIds.stream()
+                    .filter(id -> !id.equals(userId))
+                    .findFirst()
+                    .orElse(null);
+            if (otherUserId != null) {
+                UserDTO otherUser = userClient.getUserById(otherUserId);
+                dto.setOtherUser(otherUser);
+            }
+        }
+
+        return dto;
+    }
+
+    public List<UserDTO> getGroupMembers(Long conversationId) {
+        Long userId = getCurrentUserId();
+        if (!isUserInConversation(userId, conversationId)) {
+            throw new RuntimeException("User is not a participant in this conversation");
+        }
+
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+
+        if (!conversation.isGroupChat()) {
+            throw new RuntimeException("This is not a group conversation");
+        }
+
+        List<Long> participantIds = conversation.getParticipants().stream()
+                .map(participant -> participant.getUserId())
+                .collect(Collectors.toList());
+
+        return participantIds.stream()
+                .map(userClient::getUserById)
+                .collect(Collectors.toList());
+    }
 
     public List<ChatMessageDTO> getConversationMessages(Long conversationId) {
         List<Message> messages = messageRepository.findByConversationIdOrderByTimestampAsc(conversationId);
@@ -249,6 +303,13 @@ public class ChatService {
         dto.setId(message.getId());
         dto.setConversationId(message.getConversationId());
         dto.setSenderId(message.getSenderId());
+
+        // Get sender information from UserClient
+        UserDTO sender = userClient.getUserById(message.getSenderId());
+        if (sender != null) {
+            dto.setSenderFullName(sender.getFirstName() + " " + sender.getLastName());
+        }
+
         dto.setContent(message.getContent());
         dto.setMessageType(message.getType());
         dto.setStatus(message.getStatus().toString());

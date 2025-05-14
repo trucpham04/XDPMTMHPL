@@ -3,9 +3,10 @@ import MessagesSection from "./message-section";
 import MessagesMainHeader from "./messages-main-header";
 import { cn } from "@/lib/utils";
 import MessageInput from "./messages-main-input";
-import { ChatMessage } from "@/types/Message";
+import { ChatMessage, Conversation } from "@/types/Message";
 import { useChatWebSocket } from "@/hooks";
 import useMessage from "@/hooks/useMessage";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface MessagesMainProps extends React.ComponentProps<"div"> {
   conversationId?: string | number;
@@ -22,6 +23,8 @@ function MessagesMain({
   ...props
 }: MessagesMainProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [conversation, setConversation] = useState<Conversation>();
+  const { user } = useAuthContext();
 
   const {
     messages: newMessages,
@@ -29,10 +32,9 @@ function MessagesMain({
     sendMessage,
     joinConversation,
     leaveConversation,
-    sendTypingNotification,
   } = useChatWebSocket();
 
-  const { getMessages } = useMessage();
+  const { getMessages, getConversation } = useMessage();
 
   useEffect(() => {
     if (isConnected && conversationId) {
@@ -46,16 +48,21 @@ function MessagesMain({
     };
   }, [conversationId, isConnected, joinConversation, leaveConversation]);
 
-  // Load initial messages from server
   useEffect(() => {
-    const loadMessages = async () => {
+    const loadData = async () => {
       if (!conversationId) return;
-      const serverMessages = await getMessages(Number(conversationId));
+      const [serverMessages, conv] = await Promise.all([
+        getMessages(Number(conversationId)),
+        getConversation(Number(conversationId)),
+      ]);
       setMessages(serverMessages);
+      if (conv) {
+        setConversation(conv);
+      }
     };
 
-    loadMessages();
-  }, [conversationId, getMessages]);
+    loadData();
+  }, [conversationId, getMessages, getConversation]);
 
   useEffect(() => {
     if (newMessages.length > 0) {
@@ -73,9 +80,14 @@ function MessagesMain({
     if (!content.trim()) return;
 
     const newMessage: ChatMessage = {
+      id: Date.now(),
+      conversationId: Number(conversationId),
       senderId: currentUserId,
       content,
+      messageType: "TEXT",
+      status: "SENT",
       timestamp: new Date().toISOString(),
+      senderFullName: user?.firstName + " " + user?.lastName,
     };
 
     setMessages((prev) => [...prev, newMessage]);
@@ -85,16 +97,15 @@ function MessagesMain({
 
   return (
     <div className={cn("flex h-full w-full flex-col", className)} {...props}>
-      {/* <MessagesMainHeader
+      <MessagesMainHeader
         isConnected={isConnected}
-        conversationId={conversationId}
-      /> */}
+        conversation={conversation}
+      />
       <div className="flex-1 overflow-auto">
         <MessagesSection messages={messages} currentUserId={currentUserId} />
       </div>
       <MessageInput
         onSendMessage={handleSendMessage}
-        onTyping={sendTypingNotification}
         disabled={!isConnected || !conversationId}
       />
     </div>

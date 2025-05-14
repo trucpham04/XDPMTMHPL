@@ -91,6 +91,9 @@ public class UserController {
         if (updateUserRequest.getProfilePictureUrl() != null) {
             user.setProfilePictureUrl(updateUserRequest.getProfilePictureUrl());
         }
+        if (updateUserRequest.getCoverPhotoUrl() != null) {
+            user.setCoverPhotoUrl(updateUserRequest.getCoverPhotoUrl());
+        }
 
         userRepository.save(user);
 

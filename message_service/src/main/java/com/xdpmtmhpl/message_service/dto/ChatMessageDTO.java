@@ -11,6 +11,7 @@ public class ChatMessageDTO {
     private Long id;
     private Long conversationId;
     private Long senderId;
+    private String senderFullName;
     private MessageType messageType;
     private String content;
     private String status;

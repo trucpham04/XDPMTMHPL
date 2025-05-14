@@ -1,5 +1,6 @@
 package com.xdpmtmhpl.post_service.config;
 
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -13,8 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import org.springframework.amqp.core.Queue;
 
 @Configuration
 public class RabbitMQConfig {
@@ -30,6 +29,9 @@ public class RabbitMQConfig {
 
     @Value("${spring.rabbitmq.password}")
     private String password;
+
+    public static final String NOTIFICATION_EXCHANGE = "notification.exchange";
+    public static final String NOTIFICATION_ROUTING_KEY = "notification.routing.key";
 
     @Bean
     public ConnectionFactory connectionFactory() {
@@ -48,7 +50,6 @@ public class RabbitMQConfig {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(mapper);
-
         converter.setClassMapper(null);
         return converter;
     }
@@ -71,5 +72,10 @@ public class RabbitMQConfig {
     @Bean
     public Queue postQueue() {
         return new Queue(postQueueName, true);
+    }
+
+    @Bean
+    public DirectExchange notificationExchange() {
+        return new DirectExchange(NOTIFICATION_EXCHANGE);
     }
 }

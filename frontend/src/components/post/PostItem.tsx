@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { getTimeAgo } from "@/utils";
+import { Link } from "react-router-dom";
 
 interface PostItemProps {
   post: Post;
@@ -60,13 +62,17 @@ export const PostItem: React.FC<PostItemProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <UserAvatar user={post.author} />
+          <Link to={`/profile/${post.author.id}`}>
+            <UserAvatar user={post.author} />
+          </Link>
           <div>
-            <p className="font-semibold">
-              {post.author.firstName} {post.author.lastName}
-            </p>
+            <Link to={`/profile/${post.author.id}`}>
+              <p className="font-semibold">
+                {post.author.firstName} {post.author.lastName}
+              </p>
+            </Link>
             <span className="text-sm text-gray-500">
-              {new Date(post.createdAt).toLocaleString()}
+              {getTimeAgo(post.createdAt)}
             </span>
           </div>
         </div>

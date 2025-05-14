@@ -4,6 +4,7 @@ import {
   Conversation,
   ConversationCreateRequest,
 } from "../types/Message";
+import { User } from "../types/User";
 
 const serviceName = "message-service";
 
@@ -14,6 +15,24 @@ class ChatService {
   async getUserConversations(): Promise<Conversation[]> {
     return apiClient.get<Conversation[]>(
       `${serviceName}/api/chat/conversations`,
+    );
+  }
+
+  /**
+   * Lấy thông tin một cuộc trò chuyện
+   */
+  async getConversation(conversationId: number): Promise<Conversation> {
+    return apiClient.get<Conversation>(
+      `${serviceName}/api/chat/conversations/${conversationId}`,
+    );
+  }
+
+  /**
+   * Lấy danh sách thành viên của cuộc trò chuyện nhóm
+   */
+  async getGroupMembers(conversationId: number): Promise<User[]> {
+    return apiClient.get<User[]>(
+      `${serviceName}/api/chat/conversations/${conversationId}/members`,
     );
   }
 

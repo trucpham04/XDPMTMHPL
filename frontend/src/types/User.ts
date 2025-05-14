@@ -9,10 +9,13 @@ export interface User {
   dateOfBirth?: string | null;
   gender?: string | null;
   createdAt?: string;
+  requestTime?: string;
+  mutualFriends?: number;
+  // createdAt?: number[];
   profilePicture?: string;
   profilePictureUrl?: string | null;
   bio?: string | null;
-  cover_photo_url?: string | null;
+  coverPhotoUrl?: string | null;
   isActive?: boolean;
   roles: {
     id: number;
@@ -25,4 +28,5 @@ export interface UpdateUserRequest {
   lastName?: string;
   bio?: string;
   profilePictureUrl?: string;
+  coverPhotoUrl?: string;
 }

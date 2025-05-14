@@ -36,22 +36,22 @@ export const useNotificationWebSocket = () => {
 
         if (notificationData.type === "FRIEND_REQUEST")
           toast.info("You have a new friend request", {
-            description: `${notificationData.sender.fullName} sent you a friend request.`,
+            description: `${notificationData.sender?.fullName} sent you a friend request.`,
           });
 
         if (notificationData.type === "NEW_MESSAGE")
           toast.info("You have a new message", {
-            description: `${notificationData.sender.fullName} sent you a message.`,
+            description: `${notificationData.sender?.fullName} sent you a message.`,
           });
 
         if (notificationData.type === "POST_LIKE")
           toast.info("Someone liked your post", {
-            description: `${notificationData.sender.fullName} liked your post.`,
+            description: `${notificationData.sender?.fullName} liked your post.`,
           });
 
         if (notificationData.type === "POST_COMMENT")
           toast.info("Someone commented on your post", {
-            description: `${notificationData.sender.fullName} commented on your post.`,
+            description: `${notificationData.sender?.fullName} commented on your post.`,
           });
       } catch (error) {
         console.error("Error parsing WebSocket notification:", error);
@@ -86,7 +86,7 @@ export const useNotificationWebSocket = () => {
   const markAsRead = (notificationId: string) => {
     setNotifications((prevNotifications) =>
       prevNotifications.map((notification) =>
-        notification.id === notificationId
+        notification.id === Number(notificationId)
           ? { ...notification, isRead: true }
           : notification,
       ),

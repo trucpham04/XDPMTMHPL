@@ -26,6 +26,8 @@ public class UserDTO {
     private String coverPhotoUrl;
     private Boolean isVerified;
     private Boolean isActive;
+    private Integer mutualFriends;
+    private String requestTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -37,4 +39,60 @@ public class UserDTO {
     private LocalDateTime lastLoginAt;
 
     private Set<String> roles;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public Integer getMutualFriends() {
+        return mutualFriends;
+    }
+
+    public void setMutualFriends(Integer mutualFriends) {
+        this.mutualFriends = mutualFriends;
+    }
+
+    public String getRequestTime() {
+        return requestTime;
+    }
+
+    public void setRequestTime(String requestTime) {
+        this.requestTime = requestTime;
+    }
 }

@@ -4,7 +4,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.friend_service.Repository.FriendRepository;
+import com.example.friend_service.Repository.FriendRequestRepository;
 import com.example.friend_service.Entity.Friend;
+import com.example.friend_service.Entity.FriendRequest;
 import com.example.friend_service.Client.UserClient;
 import com.example.friend_service.DTO.UserDTO;
 
@@ -12,9 +14,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -25,9 +32,12 @@ public class FriendService {
 
     @Autowired
     private FriendRepository friendRepository;
-
+    @Autowired
+    private FriendRequestRepository friendRequestRepository;
     @Autowired
     private UserClient userClient;
+    @Autowired
+    private NotificationService notificationService;
 
     private String getAuthToken() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -95,6 +105,17 @@ public class FriendService {
             friend2.setFriendshipDate(LocalDateTime.now());
             friendRepository.save(friend2);
 
+            // Send notification to both users
+            UserDTO user1 = userClient.getUserById(user1Id);
+            notificationService.sendFriendRequestAcceptedNotification(
+                    user1Id.toString(),
+                    user1.getUsername(),
+                    user2Id.toString());
+            notificationService.sendFriendRequestAcceptedNotification(
+                    user2Id.toString(),
+                    user2.getUsername(),
+                    user1Id.toString());
+
             return friend1;
         } catch (DataAccessException e) {
             System.err.println("Database error while saving friend: " + e.getMessage());
@@ -137,6 +158,81 @@ public class FriendService {
                 friendRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
         System.out.println("hello");
         return alreadyFriends;
+    }
+
+    public Map<String, Boolean> getFriendStatus(Integer otherUserId) {
+        Integer currentUserId = getCurrentUserId();
+        Map<String, Boolean> status = new HashMap<>();
+        status.put("isFriend", friendRepository.existsByUser1IdAndUser2Id(currentUserId, otherUserId));
+        status.put("isFriendRequestSent",
+                friendRequestRepository.existsBySenderIdAndReceiverId(currentUserId, otherUserId));
+        status.put("isFriendRequestReceived",
+                friendRequestRepository.existsBySenderIdAndReceiverId(otherUserId, currentUserId));
+        return status;
+    }
+
+    public List<UserDTO> getUserFriends(Integer userId) {
+        List<Friend> friendsAsUser1 = friendRepository.findByUser1Id(userId);
+
+        List<UserDTO> friends = friendsAsUser1.stream()
+                .map(friend -> userClient.getUserById(friend.getUser2Id()))
+                .collect(Collectors.toList());
+
+        return friends;
+    }
+
+    public List<UserDTO> getFriendSuggestions() {
+        Integer currentUserId = getCurrentUserId();
+
+        // Get current user's friends
+        List<Friend> userFriends = friendRepository.findByUser1Id(currentUserId);
+        Set<Integer> userFriendIds = userFriends.stream()
+                .map(Friend::getUser2Id)
+                .collect(Collectors.toSet());
+
+        // Get friends of friends
+        List<Friend> friendsOfFriends = friendRepository.findByUser1IdIn(new ArrayList<>(userFriendIds));
+
+        // Filter out current user's friends and get unique potential friends
+        Set<Integer> potentialFriendIds = friendsOfFriends.stream()
+                .map(Friend::getUser2Id)
+                .filter(id -> !id.equals(currentUserId) && !userFriendIds.contains(id))
+                .collect(Collectors.toSet());
+
+        // Get users who have already sent or received friend requests
+        List<FriendRequest> existingRequests = friendRequestRepository.findPendingRequests(currentUserId);
+        Set<Integer> existingRequestUserIds = existingRequests.stream()
+                .flatMap(request -> Stream.of(request.getSenderId(), request.getReceiverId()))
+                .collect(Collectors.toSet());
+
+        // Remove users with existing requests
+        potentialFriendIds.removeAll(existingRequestUserIds);
+
+        // Convert to UserDTOs and calculate mutual friends
+        return potentialFriendIds.stream()
+                .map(userId -> {
+                    UserDTO user = userClient.getUserById(userId);
+                    if (user != null) {
+                        user.setMutualFriends(calculateMutualFriends(currentUserId, userId));
+                    }
+                    return user;
+                })
+                .filter(user -> user != null)
+                .collect(Collectors.toList());
+    }
+
+    private int calculateMutualFriends(Integer userId1, Integer userId2) {
+        List<Friend> user1Friends = friendRepository.findByUser1Id(userId1);
+        List<Friend> user2Friends = friendRepository.findByUser1Id(userId2);
+
+        Set<Integer> user1FriendIds = user1Friends.stream()
+                .map(Friend::getUser2Id)
+                .collect(Collectors.toSet());
+
+        return (int) user2Friends.stream()
+                .map(Friend::getUser2Id)
+                .filter(user1FriendIds::contains)
+                .count();
     }
 
     // private int calculateMutualFriends(Integer userId, Integer friendId,

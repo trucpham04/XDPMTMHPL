@@ -2,137 +2,45 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FriendProfile from "./FriendProfile";
-import axios from "axios";
-import { User } from "@/types/User";
 import UserAvatar from "@/components/app/userAvatar";
+import { useFriend } from "@/hooks/useFriend";
 
-type FriendRequest = {
-  id: number;
-  name: string;
-  mutualFriends: number;
-  avatar: string;
-  time: string;
-};
+import axios from "axios";
 
 axios.defaults.withCredentials = true;
 const FriendRequests: React.FC = () => {
-  const [requests, setRequests] = useState<User[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
-  const [sentRequests, setSentRequests] = useState<User[]>([]);
   const [showSentRequests, setShowSentRequests] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const calculateTimeSince = (date: string): string => {
-    const requestDate = new Date(date);
-    const now = new Date();
-    const diffInMs = now.getTime() - requestDate.getTime();
-
-    const years = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
-    if (years > 0) return `${years} năm`;
-
-    const weeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
-    if (weeks > 0) return `${weeks} tuần`;
-
-    const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    return `${days} ngày`;
-  };
-
-  const fetchFriendRequests = () => {
-    axios
-      .get("http://127.0.0.1:8090/friend-service/api/friends/requests")
-      .then((response) => {
-        // const fetchedRequests = response.data.map((req: any) => ({
-        //   id: req.id,
-        //   name: req.firstName + " " + req.lastName,
-        //   mutualFriends: req.mutualFriends,
-        //   avatar: req.avatar,
-        //   time: calculateTimeSince(req.time),
-        // }));
-
-        setRequests(response.data);
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy danh sách lời mời kết bạn:", error);
-        setError(
-          "Không thể tải danh sách lời mời kết bạn. Vui lòng thử lại sau.",
-        );
-      });
-  };
+  const navigate = useNavigate();
+  const {
+    requests,
+    sentRequests,
+    error,
+    fetchRequests,
+    fetchSentRequests,
+    acceptRequest,
+    deleteRequest,
+    cancelRequest,
+    loading,
+  } = useFriend();
 
   useEffect(() => {
-    fetchFriendRequests();
-  }, []);
-
-  const fetchSentRequests = () => {
-    axios
-      .get("http://127.0.0.1:8090/friend-service/api/friends/requests/allsent")
-      .then((response) => {
-        setSentRequests(response.data);
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy danh sách lời mời đã gửi:", error);
-        setError(
-          "Không thể tải danh sách lời mời đã gửi. Vui lòng thử lại sau."
-        );
-      });
-  };
-
-  useEffect(() => {
+    fetchRequests();
     fetchSentRequests();
-  }, []);
-
-  const handleCancel = (id: number) => {
-    axios
-      .delete(`http://127.0.0.1:8090/friend-service/api/friends/requests/cancel/${id}`)
-      .then(() => {
-        fetchSentRequests();
-      })
-      .catch((error) => {
-        console.error("Lỗi khi hủy lời mời:", error);
-        setError("Không thể hủy lời mời. Vui lòng thử lại.");
-      });
-  };
+  }, [fetchRequests, fetchSentRequests]);
 
   const handleAccept = (id: number) => {
-    console.log("Accepting friend request with id:", id);
-    axios
-      .post(
-        `http://127.0.0.1:8090/friend-service/api/friends/requests/accept/${id}`,
-        null,
-      )
-      .then(() => {
-        fetchFriendRequests();
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi chấp nhận lời mời:", error);
-        const errorMessage =
-          error.response?.data ||
-          "Không thể chấp nhận lời mời. Vui lòng thử lại.";
-        setError(errorMessage);
-      });
+    acceptRequest(id);
   };
 
   const handleDelete = (id: number) => {
-    axios
-      .delete(
-        `http://127.0.0.1:8090/friend-service/api/friends/requests/delete/${id}`,
-      )
-      .then(() => {
-        fetchFriendRequests();
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi xóa lời mời:", error);
-        const errorMessage =
-          error.response?.data || "Không thể xóa lời mời. Vui lòng thử lại.";
-        setError(errorMessage);
-      });
+    deleteRequest(id);
   };
 
-  const navigate = useNavigate();
+  const handleCancel = (id: number) => {
+    cancelRequest(id);
+  };
+
   return (
     <>
       <div className="fixed left-0 h-screen w-90 bg-white shadow-sm">
@@ -147,14 +55,15 @@ const FriendRequests: React.FC = () => {
                 {requests.length}
               </span>
             </h2>
-            <button onClick={() => {
-              fetchSentRequests();
-              setShowSentRequests(true);
+            <button
+              onClick={() => {
+                fetchSentRequests();
+                setShowSentRequests(true);
               }}
-                className="text-blue-500 hover:underline"
+              className="text-blue-500 hover:underline"
             >
               Xem lời mời đã gửi
-            </button> 
+            </button>
             {showSentRequests && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                 <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-lg">
@@ -165,12 +74,17 @@ const FriendRequests: React.FC = () => {
                         {sentRequests.length}
                       </span>
                     </div>
-                    <button onClick={() => setShowSentRequests(false)} className="p-1 ml-auto">
+                    <button
+                      onClick={() => setShowSentRequests(false)}
+                      className="ml-auto p-1"
+                    >
                       <X size={20} className="text-gray-600" />
                     </button>
                   </div>
 
-                  {error && <p className="mb-2 text-sm text-red-500">{error}</p>}
+                  {error && (
+                    <p className="mb-2 text-sm text-red-500">{error}</p>
+                  )}
 
                   {sentRequests.length > 0 ? (
                     <ul className="max-h-[400px] space-y-3 overflow-y-auto">
@@ -195,53 +109,56 @@ const FriendRequests: React.FC = () => {
                       ))}
                     </ul>
                   ) : (
-                    <p className="py-8 text-center text-gray-500">Không có lời mời nào đã gửi</p>
+                    <p className="py-8 text-center text-gray-500">
+                      Không có lời mời nào đã gửi
+                    </p>
                   )}
                 </div>
               </div>
             )}
-           
           </div>
-          {requests.length > 0 ? (
+
+          {error && <p className="py-2 text-center text-red-500">{error}</p>}
+          {loading ? (
+            <p className="py-4 text-center text-gray-500">Đang tải...</p>
+          ) : requests.length > 0 ? (
             requests.map((request) => (
               <div
                 key={request.id}
                 className="flex w-full flex-col rounded-lg px-2 py-3 hover:bg-gray-200"
                 onClick={() => {
-                  if (selectedFriend !== request.id) {
-                    setSelectedFriend(request.id);
-                  }
+                  setSelectedFriend(request.id);
                 }}
               >
                 <div className="flex w-full">
-                  <UserAvatar className="mr-4 size-12" user={request} />
-                  <div className="flex-1">
-                    <p className="font-semibold">{`${request.firstName} ${request.lastName}`}</p>
-                    {/* <p className="flex justify-between text-sm text-gray-500">
-                      <span>{request.mutualFriends} bạn chung</span>
-                      <span>{request.time}</span>
-                    </p> */}
+                  <div className="mr-4 h-12 w-12 rounded-full bg-gray-300">
+                    <UserAvatar user={request} className="size-12" />
                   </div>
-                </div>
-                <div className="mt-1 ml-auto flex-1 space-x-2">
-                  <button
-                    className="w-30 rounded bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAccept(request.id);
-                    }}
-                  >
-                    Xác nhận
-                  </button>
-                  <button
-                    className="w-30 rounded bg-gray-300 px-4 py-1 hover:bg-gray-400"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(request.id);
-                    }}
-                  >
-                    Xóa
-                  </button>
+                  <div className="flex flex-col">
+                    <div className="flex-1">
+                      <p className="font-semibold">{`${request.firstName} ${request.lastName}`}</p>
+                    </div>
+                    <div className="mt-1 ml-auto flex-1 space-x-2">
+                      <button
+                        className="w-30 rounded bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAccept(request.id);
+                        }}
+                      >
+                        Chấp nhận
+                      </button>
+                      <button
+                        className="w-30 rounded bg-gray-400 px-4 py-1 text-nowrap text-white hover:bg-gray-500"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(request.id);
+                        }}
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))

@@ -71,11 +71,19 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   }, []);
 
   if (loadingHistory) {
-    return <div className="p-2 text-sm text-gray-400">Đang tải lịch sử...</div>;
+    return (
+      <div className="absolute z-50 mt-1 w-full rounded-xl border bg-white shadow-lg">
+        <div className="p-2 text-sm text-gray-400">Đang tải lịch sử...</div>
+      </div>
+    );
   }
 
   if (errorHistory) {
-    return <div className="p-2 text-sm text-red-400">{errorHistory}</div>;
+    return (
+      <div className="absolute z-50 mt-1 w-full rounded-xl border bg-white shadow-lg">
+        <div className="p-2 text-sm text-red-400">{errorHistory}</div>
+      </div>
+    );
   }
 
   return (

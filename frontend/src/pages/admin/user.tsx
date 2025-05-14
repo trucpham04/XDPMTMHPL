@@ -40,6 +40,7 @@ import {
   UpdateUserAdminRequest,
 } from "@/services/adminService";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PAGE_SIZE = 25;
 
@@ -107,8 +108,8 @@ export default function AdminUser() {
       firstName: "",
       lastName: "",
       email: "",
-      gender: "MALE",
-      dateOfBirth: "",
+      gender: "MALE" as const,
+      dateOfBirth: undefined,
       roles: ["ROLE_USER"],
     },
   });
@@ -121,8 +122,8 @@ export default function AdminUser() {
       firstName: "",
       lastName: "",
       email: "",
-      gender: "MALE",
-      dateOfBirth: "",
+      gender: "MALE" as const,
+      dateOfBirth: undefined,
       roles: ["ROLE_USER"],
     },
   });
@@ -141,8 +142,8 @@ export default function AdminUser() {
         firstName: editUser.firstName,
         lastName: editUser.lastName,
         email: editUser.email,
-        gender: editUser.gender,
-        dateOfBirth: editUser.dateOfBirth || "",
+        gender: editUser.gender as "MALE" | "FEMALE",
+        dateOfBirth: editUser.dateOfBirth || undefined,
         roles: editUser.roles.map((role) => role.name),
       });
 
@@ -177,8 +178,8 @@ export default function AdminUser() {
         firstName: "",
         lastName: "",
         email: "",
-        gender: "MALE",
-        dateOfBirth: "",
+        gender: "MALE" as const,
+        dateOfBirth: undefined,
         roles: ["ROLE_USER"],
       });
 
@@ -283,7 +284,7 @@ export default function AdminUser() {
 
     try {
       setIsUploading(true);
-      let profilePictureUrl = editUser.profilePictureUrl || null;
+      let profilePictureUrl: string | undefined = editUser.profilePictureUrl ? editUser.profilePictureUrl : undefined;
 
       // Upload profile image if a new one is selected
       if (editProfileImage) {
@@ -323,7 +324,7 @@ export default function AdminUser() {
   const onSubmitAdd = async (values: z.infer<typeof userAddFormSchema>) => {
     try {
       setIsUploading(true);
-      let profilePictureUrl = null;
+      let profilePictureUrl: string | undefined = undefined;
 
       // Upload profile image if selected
       if (addProfileImage) {
@@ -386,10 +387,13 @@ export default function AdminUser() {
   return (
     <>
       <AdminNavbar
+        title="Quản lý người dùng"
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSearch={handleSearch}
+        selectedCount={selectedIds.length}
+        searchPlaceholder="Tìm kiếm người dùng..."
       />
       <div className="w-full space-y-4 p-2">
         {error && (
@@ -400,9 +404,21 @@ export default function AdminUser() {
 
         <div className="overflow-x-auto rounded-md border text-sm shadow-sm">
           {loading ? (
-            <div className="flex h-40 items-center justify-center">
-              <Loader2 className="mr-2 h-8 w-8 animate-spin" />
-              <p>Loading users data...</p>
+            <div className="space-y-2 p-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              ))}
             </div>
           ) : (
             <table className="min-w-full table-auto">
@@ -426,7 +442,7 @@ export default function AdminUser() {
                   </th>
                   <th className="p-3 text-left text-nowrap">ID</th>
                   <th className="p-3 text-left text-nowrap">Ảnh đại diện</th>
-                  <th className="p-3 text-left text-nowrap">Tên người dùng</th>
+                  <th className="p-3 text-left text-nowrap">Tên đăng nhập</th>
                   <th className="p-3 text-left text-nowrap">Tên</th>
                   <th className="p-3 text-left text-nowrap">Email</th>
                   <th className="p-3 text-left text-nowrap">Giới tính</th>
@@ -438,7 +454,7 @@ export default function AdminUser() {
               <tbody>
                 {usersList.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="p-5 text-center text-gray-500">
+                    <td colSpan={10} className="p-5 text-center text-gray-500">
                       {searchKeyword
                         ? "Không tìm thấy người dùng phù hợp."
                         : "Không có dữ liệu người dùng."}
@@ -457,7 +473,7 @@ export default function AdminUser() {
                         />
                       </td>
                       <td className="p-3 text-nowrap">{user.id}</td>
-                      <td className="flex w-full items-center justify-between p-3">
+                      <td className="p-3">
                         {user.profilePictureUrl ? (
                           <img
                             src={user.profilePictureUrl}
@@ -468,7 +484,7 @@ export default function AdminUser() {
                           />
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm text-white">
-                            {user.firstName[0][0].toUpperCase()}
+                            {user.firstName[0].toUpperCase()}
                           </div>
                         )}
                       </td>
@@ -477,17 +493,25 @@ export default function AdminUser() {
                         {user.firstName} {user.lastName}
                       </td>
                       <td className="p-3">{user.email}</td>
-                      <td className="p-3">{user.gender}</td>
+                      <td className="p-3">{user.gender === "MALE" ? "Nam" : "Nữ"}</td>
                       <td className="p-3">
                         {user.dateOfBirth
-                          ? new Date(user.dateOfBirth).toLocaleDateString()
+                          ? new Date(user.dateOfBirth).toLocaleDateString("vi-VN")
                           : "Chưa có"}
                       </td>
                       <td className="p-3">
                         {user.roles.map((role) => role.name).join(", ")}
                       </td>
                       <td className="p-3">
-                        {user.isActive ? "Hoạt động" : "Bị khóa"}
+                        <span
+                          className={`rounded px-2 py-1 text-xs ${
+                            user.isActive
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {user.isActive ? "Hoạt động" : "Bị khóa"}
+                        </span>
                       </td>
                     </tr>
                   ))

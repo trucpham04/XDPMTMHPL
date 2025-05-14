@@ -6,6 +6,8 @@ import com.xdpmtmhpl.message_service.Enum.MessageType;
 import com.xdpmtmhpl.message_service.dto.ChatMessageDTO;
 import com.xdpmtmhpl.message_service.dto.WebSocketRequest;
 import com.xdpmtmhpl.message_service.service.ChatService;
+import com.xdpmtmhpl.message_service.dto.UserDTO;
+import com.xdpmtmhpl.message_service.client.UserClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,9 @@ public class ChatWebSocketController extends TextWebSocketHandler {
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private UserClient userClient;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -112,6 +117,11 @@ public class ChatWebSocketController extends TextWebSocketHandler {
                     content,
                     messageType,
                     mediaUrl);
+
+            UserDTO sender = userClient.getUserById(userId);
+            if (sender != null) {
+                sentMessage.setSenderFullName(sender.getFirstName() + " " + sender.getLastName());
+            }
 
             chatService.broadcastToConversation(conversationId, sentMessage);
 

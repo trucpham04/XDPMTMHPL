@@ -10,18 +10,68 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name="friends_request")
+@Table(name = "friends_request")
 public class FriendRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(nullable = false)
-    private int senderId;
-
-    @Column(nullable =false)
-    private int receiverId;
+    private Integer senderId;
 
     @Column(nullable = false)
-    private LocalDate time;
+    private Integer receiverId;
+
+    @Column(nullable = false)
+    private String time;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RequestStatus status = RequestStatus.PENDING;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(Integer senderId) {
+        this.senderId = senderId;
+    }
+
+    public Integer getReceiverId() {
+        return receiverId;
+    }
+
+    public void setReceiverId(Integer receiverId) {
+        this.receiverId = receiverId;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public RequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RequestStatus status) {
+        this.status = status;
+    }
+
+    public enum RequestStatus {
+        PENDING,
+        ACCEPTED,
+        REJECTED
+    }
 }

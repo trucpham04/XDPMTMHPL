@@ -1,5 +1,6 @@
 package com.xdpmtmhpl.post_service.service;
 
+import com.xdpmtmhpl.post_service.Client.NotificationClient;
 import com.xdpmtmhpl.post_service.Client.UserClient;
 import com.xdpmtmhpl.post_service.DTO.UserDTO;
 import com.xdpmtmhpl.post_service.model.Comment;
@@ -8,6 +9,7 @@ import com.xdpmtmhpl.post_service.repository.CommentRepository;
 import com.xdpmtmhpl.post_service.repository.PostRepository;
 import com.xdpmtmhpl.post_service.request.CommentRequest;
 import com.xdpmtmhpl.post_service.response.CommentResponse;
+import com.xdpmtmhpl.post_service.enums.NotificationType;
 
 import jakarta.transaction.Transactional;
 
@@ -30,6 +32,9 @@ public class CommentService {
     @Autowired
     private UserClient userClient;
 
+    @Autowired
+    private NotificationClient notificationClient;
+
     public CommentResponse addComment(Integer postId, CommentRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found with ID: " + postId));
@@ -42,6 +47,17 @@ public class CommentService {
         comment.setPost(post);
 
         Comment saved = commentRepository.save(comment);
+
+        if (!post.getUserId().equals(request.getUserId())) {
+            notificationClient.sendNotification(
+                    post.getUserId().intValue(),
+                    NotificationType.COMMENT,
+                    postId,
+                    "Bình luận mới",
+                    "Ai đó đã bình luận về bài viết của bạn",
+                    request.getUserId().toString());
+        }
+
         return toResponse(saved);
     }
 

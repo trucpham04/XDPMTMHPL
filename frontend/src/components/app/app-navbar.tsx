@@ -12,7 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { HomeIcon, Users, MessageCircle, SearchIcon } from "lucide-react";
+import { HomeIcon, Users, MessageCircle, SearchIcon, Bell } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import FacebookLogo from "@/assets/logos/facebook_logo.png";
 import { User } from "@/types/User";
@@ -36,11 +36,11 @@ const navItems = [
     icon: Users,
     link: "/friends",
   },
-  // {
-  //   name: "Notifications",
-  //   icon: Bell,
-  //   link: "/notifications",
-  // },
+  {
+    name: "Thông báo",
+    icon: Bell,
+    link: "/notifications",
+  },
   {
     name: "Tin nhắn",
     icon: MessageCircle,
